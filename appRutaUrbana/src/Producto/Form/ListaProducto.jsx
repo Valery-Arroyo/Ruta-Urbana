@@ -49,7 +49,7 @@ export default function ListProductosPublic() {
 
       <Grid container spacing={4}>
         {data.map((row) => (
-          <Grid key={row.IdProducto} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+          <Grid key={row.IdProducto} size={{ xs: 12, sm: 6, md: 4, lg: 3  }}>
             <Card
               sx={{
                 height: "100%",
