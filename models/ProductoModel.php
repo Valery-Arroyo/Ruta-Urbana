@@ -37,30 +37,30 @@ public function all()
     /*Obtener */
     public function get($id)
     {
-           try {
-        $sql = "SELECT 
-                    p.IdProducto,
-                    p.Nombre,
-                    p.Descripcion,
-                    p.Precio,
-                    p.Activo,
-                    p.IdCategoria,
-                    i.IdImagen,
-                    i.Imagen,
-                    i.EsPrincipal
-                FROM Producto p
-                INNER JOIN ProductoImagen i 
-                    ON p.IdProducto = i.IdProducto";
+        try {
+            $sql = "SELECT 
+                        p.IdProducto,
+                        p.Nombre,
+                        p.Descripcion,
+                        p.Precio,
+                        p.Activo,
+                        p.IdCategoria,
+                        i.IdImagen,
+                        i.Imagen,
+                        i.EsPrincipal
+                    FROM Producto p
+                    LEFT JOIN ProductoImagen i 
+                        ON p.IdProducto = i.IdProducto";
 
-        if ($id !== null) {
-            $sql .= " WHERE p.IdProducto = $id";
+            if ($id !== null) {
+                $sql .= " WHERE p.IdProducto = $id";
+            }
+
+            $resultado = $this->enlace->ExecuteSQL($sql);
+            return $resultado;
+        } catch (Exception $e) {
+            handleException($e);
         }
-
-        $resultado = $this->enlace->ExecuteSQL($sql);
-        return $resultado;
-    } catch (Exception $e) {
-        handleException($e);
-    }
     }
 
     /*Obtener los productos de una categoria */
@@ -68,8 +68,8 @@ public function all()
     {
         try {
             //Consulta SQL
-            $sql = "SELECT * FROM Producto WHERE IdCategoria = $IdCategoria;";
-            $resultado = $this->enlace->executeSQL($sql);
+            $sql = "SELECT * FROM Producto WHERE IdCategoria = $IdCategoria";
+            $resultado = $this->enlace->ExecuteSQL($sql);
             return $resultado;
         } catch (Exception $e) {
             handleException($e);
