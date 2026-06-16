@@ -18,16 +18,28 @@ import {
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 
 export default function ListProductosPublic() {
+
+  // Sirve para navegar a la página de detalle del producto
   const navigate = useNavigate();
+
+  // Estado local para almacenar la lista de productos obtenida de la API
   const [data, setData] = useState([]);
 
+  // Se ejecuta al montar el componente, 
+  // llamando a la función getProductos del servicio para obtener la lista de productos
   React.useEffect(() => {
+    // Llama al servicio para obtener la lista de productos 
+    // y maneja la respuesta para actualizar el estado local
     ProductoService.getProductos()
       .then((response) => {
+        // Dependiendo de la estructura de la respuesta, 
+        // se actualiza el estado "data" con la lista de productos
         if (Array.isArray(response.data)) {
           setData(response.data);
+          // Si la respuesta es un array, se asigna directamente al estado
         } else if (response.data && Array.isArray(response.data.data)) {
           setData(response.data.data);
+          // Si la respuesta tiene una propiedad "data" que es un array, se asigna esa propiedad al estado
         } else if (response.data) {
           setData([response.data]);
         } else {
@@ -37,6 +49,8 @@ export default function ListProductosPublic() {
       .catch((error) => console.error("Error cargando productos:", error));
   }, []);
 
+  // Función para manejar el clic en el botón de detalle, 
+  // navegando a la página de detalle del producto usando su ID
   const detalle = (id) => {
     navigate(`/productos/${id}`);
   };
@@ -44,12 +58,12 @@ export default function ListProductosPublic() {
   return (
     <Box sx={{ p: 3 }}>
       <Typography variant="h4" align="center" gutterBottom sx={{ mb: 4 }}>
-        Nuestros Productos 
+        Nuestros Productos
       </Typography>
 
       <Grid container spacing={4}>
         {data.map((row) => (
-          <Grid key={row.IdProducto} size={{ xs: 12, sm: 6, md: 4, lg: 3  }}>
+          <Grid key={row.IdProducto} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
             <Card
               sx={{
                 height: "100%",
