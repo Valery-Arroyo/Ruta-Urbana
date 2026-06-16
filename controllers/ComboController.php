@@ -59,6 +59,8 @@ class Combo
             // Llama al método "get" del modelo, pasando el ID como parámetro,
             // para obtener el combo que corresponde a ese ID
             $result = $combo->get($id);
+
+            // Utiliza el método "toJSON" del objeto Response para formatear el resultado
             $response->toJSON($result);
         } catch (Exception $e) {
             handleException($e);

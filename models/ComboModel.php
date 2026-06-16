@@ -5,6 +5,7 @@ class ComboModel
     
     public function __construct()
     {
+        // En el constructor de la clase ComboModel, se establece una conexión a la base de datos
         $this->enlace = new MySqlConnect();
     }
 
@@ -66,6 +67,8 @@ class ComboModel
     {
         try {
             $sql = "SELECT * FROM Combo WHERE IdCategoria = $IdCategoria";
+
+            // Ejecuta la consulta SQL y devuelve el resultado
             $resultado = $this->enlace->ExecuteSQL($sql);
             return $resultado;
             
