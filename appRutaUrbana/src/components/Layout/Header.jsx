@@ -32,6 +32,10 @@ export default function Header() {
           <Button color="inherit" component={Link} to="/productos">
             Lista Productos
           </Button>
+          <Button color="inherit" component={Link} to="/combos">
+            Nuestros Combos
+          </Button>
+
         </Toolbar>
       </AppBar>
     </Box>

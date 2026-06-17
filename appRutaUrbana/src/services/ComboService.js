@@ -32,4 +32,7 @@ class ComboService {
   deleteCombo(id) {
     return axios.delete(`${BASE_URL}/delete/${id}`);
   }
+  
 }
+
+export default new ComboService();

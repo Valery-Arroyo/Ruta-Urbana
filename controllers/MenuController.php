@@ -57,6 +57,5 @@ class Menu
         } catch (Exception $e) {
             handleException($e);
         }
-}
-
+    }
 }

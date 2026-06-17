@@ -15,20 +15,6 @@ class ProductoService {
     return axios.get(`${BASE_URL}/${id}`);
   }
 
-  // Métodos para crear, actualizar y eliminar productos
-  createProducto(producto) {
-    return axios.post(`${BASE_URL}/create`, producto);
-  }
-
-  // Método para actualizar un producto existente, identificado por su ID
-  updateProducto(id, producto) {
-    return axios.put(`${BASE_URL}/update/${id}`, producto);
-  }
-
-  // Método para eliminar un producto por su ID
-  deleteProducto(id) {
-    return axios.delete(`${BASE_URL}/delete/${id}`);
-  }
 }
 
 // Se exporta la instancia

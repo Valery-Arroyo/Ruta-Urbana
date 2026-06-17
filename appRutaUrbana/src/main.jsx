@@ -8,7 +8,7 @@ import { Home } from './components/Home/Home';
 import { PageNotFound } from './components/Home/PageNotFound';
 import ListaProducto from './Producto/Form/ListaProducto';
 import DetalleProducto from './Producto/Form/DetalleProducto';
-
+import ListaCombo from './Producto/Form/ListaCombo';
 const rutas = createBrowserRouter([
   {
     element: <App />,
@@ -22,8 +22,12 @@ const rutas = createBrowserRouter([
         element: <ListaProducto />
       },
       {
-        path: '/productos/:id', // Corregido: 'productos' en plural para coincidir con el navigate
+        path: '/productos/:id', 
         element: <DetalleProducto />
+      },
+      {
+        path: '/combos', 
+        element: <ListaCombo />
       },
       {
         path: '*',
