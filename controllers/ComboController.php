@@ -48,7 +48,6 @@ class Combo
     public function getCombo($id)
     {
         try {
-
             // Crea un objeto Response, encargado de formatear la respuesta en JSON
             $response = new Response();
 
@@ -56,8 +55,7 @@ class Combo
             // interactuar con la base de datos
             $combo = new ComboModel();
 
-            // Llama al método "get" del modelo, pasando el ID como parámetro,
-            // para obtener el combo que corresponde a ese ID
+            // CAMBIO AQUÍ: Llama al método correcto del modelo para buscar por ID, no por categoría
             $result = $combo->get($id);
 
             // Utiliza el método "toJSON" del objeto Response para formatear el resultado
