@@ -15,6 +15,11 @@ class ProductoService {
     return axios.get(`${BASE_URL}/${id}`);
   }
 
+ // Método para obtener los ingredientes de un producto
+  getIngredientes(idProducto) {
+    // Si tu ruta en el backend es algo como: /producto/getIngredientes/{id}
+    return axios.get(`${BASE_URL}/getIngredientes/${idProducto}`);
+  }
 }
 
 // Se exporta la instancia

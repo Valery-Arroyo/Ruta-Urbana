@@ -18,30 +18,28 @@ import {
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 
 export default function ListCombosPublic() {
-  console.log("ListCombosPublic cargado");
   const navigate = useNavigate();
   const [data, setData] = useState([]);
 
   React.useEffect(() => {
-    console.log("useEffect ejecutado");
     ComboService.getCombos()
       .then((response) => {
         console.log("Respuesta cruda:", response);
+        console.log("Datos:", response.data);
+
         if (Array.isArray(response.data)) {
           setData(response.data);
-          console.log(response.data);
         } else if (response.data && Array.isArray(response.data.data)) {
           setData(response.data.data);
-          console.log(response.data.data);
         } else if (response.data) {
           setData([response.data]);
-          console.log(response.data);
         } else {
           setData([]);
-          console.log(response.data);
         }
       })
-      .catch((error) => console.error("Error cargando combos:", error));
+      .catch((error) => {
+        console.error("Error cargando combos:", error);
+      });
   }, []);
 
   const detalle = (id) => {
@@ -50,13 +48,20 @@ export default function ListCombosPublic() {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Typography variant="h4" align="center" gutterBottom sx={{ mb: 4 }}>
+      <Typography variant="h4" align="center" gutterBottom sx={{ mb: 2 }}>
         Nuestros Combos
+      </Typography>
+
+      <Typography variant="body1" align="center" sx={{ mb: 4 }}>
+        Registros encontrados: {data.length}
       </Typography>
 
       <Grid container spacing={4}>
         {data.map((row) => (
-          <Grid key={row.IdCombo} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+          <Grid
+            key={row.IdCombo}
+            size={{ xs: 12, sm: 6, md: 4, lg: 3 }}
+          >
             <Card
               sx={{
                 height: "100%",
@@ -69,8 +74,11 @@ export default function ListCombosPublic() {
               <CardMedia
                 component="img"
                 height="220"
-                image={`http://localhost:81/apirutaurbana/${row.Imagen}`}
+                image={`http://localhost:81/apirutaurbana/${row.RutaImagen}`}
                 alt={row.Nombre}
+                onError={(e) => {
+                  console.log("No se pudo cargar:", row.RutaImagen);
+                }}
               />
 
               <CardContent sx={{ flexGrow: 1 }}>

@@ -8,11 +8,11 @@ class ProductoModel
     }
 
     /*Listar */
-public function all()
-{
-    try {
+    public function all()
+    {
+        try {
 
-        $sql = "SELECT
+            $sql = "SELECT
                     p.IdProducto,
                     p.Nombre,
                     p.Descripcion,
@@ -25,15 +25,14 @@ public function all()
                     ON p.IdProducto = pi.IdProducto
                     AND pi.EsPrincipal = 1";
 
-        $resultado = $this->enlace->ExecuteSQL($sql);
+            $resultado = $this->enlace->ExecuteSQL($sql);
 
-        return $resultado;
-
-    } catch (Exception $e) {
-        handleException($e);
+            return $resultado;
+        } catch (Exception $e) {
+            handleException($e);
+        }
     }
-}
-    
+
     /*Obtener */
     public function get($id)
     {
@@ -75,5 +74,23 @@ public function all()
             handleException($e);
         }
     }
-    
+
+    /* Obtener ingredientes de un producto específico */
+    public function getIngredientesByProducto($idProducto)
+    {
+        try {
+            $sql = "SELECT 
+                    i.IdIngrediente, 
+                    i.Nombre, 
+                    i.Descripcion 
+                FROM Ingrediente i
+                INNER JOIN ProductoIngrediente pi 
+                    ON i.IdIngrediente = pi.IdIngrediente
+                WHERE pi.IdProducto = " . intval($idProducto);
+
+            return $this->enlace->ExecuteSQL($sql);
+        } catch (Exception $e) {
+            handleException($e);
+        }
+    }
 }

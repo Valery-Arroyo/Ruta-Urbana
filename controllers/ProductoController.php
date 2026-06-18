@@ -59,4 +59,21 @@ class Producto
             handleException($e);
         }
     }
+
+    // Método para obtener los ingredientes de un producto
+    public function getIngredientes($idProducto)
+    {
+        try {
+            $response = new Response();
+            $producto = new ProductoModel();
+
+            // Llamamos al nuevo método que definimos en el modelo
+            $result = $producto->getIngredientesByProducto($idProducto);
+
+            // Retornamos el resultado en formato JSON
+            $response->toJSON($result);
+        } catch (Exception $e) {
+            handleException($e);
+        }
+    }
 }
