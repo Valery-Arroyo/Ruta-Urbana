@@ -11,23 +11,20 @@ class ProductoModel
     public function all()
     {
         try {
-
-            $sql = "SELECT
-                    p.IdProducto,
-                    p.Nombre,
-                    p.Descripcion,
-                    p.Precio,
-                    p.Activo,
-                    p.IdCategoria,
-                    pi.Imagen
+            $sql = "SELECT p.*, pi.Imagen
                 FROM Producto p
                 LEFT JOIN ProductoImagen pi
                     ON p.IdProducto = pi.IdProducto
                     AND pi.EsPrincipal = 1";
 
-            $resultado = $this->enlace->ExecuteSQL($sql);
+            $productos = $this->enlace->ExecuteSQL($sql);
 
-            return $resultado;
+            foreach ($productos as &$producto) {
+                $producto->Ingredientes =
+                    $this->getIngredientesByProducto($producto->IdProducto);
+            }
+
+            return $productos;
         } catch (Exception $e) {
             handleException($e);
         }
@@ -38,24 +35,27 @@ class ProductoModel
     {
         try {
             $sql = "SELECT 
-                        p.IdProducto,
-                        p.Nombre,
-                        p.Descripcion,
-                        p.Precio,
-                        p.Activo,
-                        p.IdCategoria,
-                        i.IdImagen,
-                        i.Imagen,
-                        i.EsPrincipal
-                    FROM Producto p
-                    LEFT JOIN ProductoImagen i 
-                        ON p.IdProducto = i.IdProducto";
-
-            if ($id !== null) {
-                $sql .= " WHERE p.IdProducto = $id";
-            }
+                p.IdProducto,
+                p.Nombre,
+                p.Descripcion,
+                p.Precio,
+                p.Activo,
+                p.IdCategoria,
+                i.IdImagen,
+                i.Imagen,
+                i.EsPrincipal
+            FROM Producto p
+            LEFT JOIN ProductoImagen i
+                ON p.IdProducto = i.IdProducto
+            WHERE p.IdProducto = $id";
 
             $resultado = $this->enlace->ExecuteSQL($sql);
+
+            if (!empty($resultado) && isset($resultado[0])) {
+                $resultado[0]->Ingredientes = $this->getIngredientesByProducto($id);
+            }
+
+
             return $resultado;
         } catch (Exception $e) {
             handleException($e);
@@ -79,14 +79,13 @@ class ProductoModel
     public function getIngredientesByProducto($idProducto)
     {
         try {
-            $sql = "SELECT 
-                    i.IdIngrediente, 
-                    i.Nombre, 
-                    i.Descripcion 
+            $idProducto = intval($idProducto);
+
+            $sql = "SELECT i.*
                 FROM Ingrediente i
-                INNER JOIN ProductoIngrediente pi 
-                    ON i.IdIngrediente = pi.IdIngrediente
-                WHERE pi.IdProducto = " . intval($idProducto);
+                INNER JOIN ProductoIngrediente pi
+                    ON pi.IdIngrediente = i.IdIngrediente
+                WHERE pi.IdProducto = $idProducto";
 
             return $this->enlace->ExecuteSQL($sql);
         } catch (Exception $e) {

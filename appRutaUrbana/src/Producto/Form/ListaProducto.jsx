@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ProductoService from "../../services/ProductoService";
 
@@ -13,44 +13,37 @@ import {
   Grid,
   Tooltip,
   Box,
+  Chip,
 } from "@mui/material";
 
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 
 export default function ListProductosPublic() {
-
-  // Sirve para navegar a la página de detalle del producto
   const navigate = useNavigate();
-
-  // Estado local para almacenar la lista de productos obtenida de la API
   const [data, setData] = useState([]);
 
-  // Se ejecuta al montar el componente, 
-  // llamando a la función getProductos del servicio para obtener la lista de productos
-  React.useEffect(() => {
-    // Llama al servicio para obtener la lista de productos 
-    // y maneja la respuesta para actualizar el estado local
+  useEffect(() => {
     ProductoService.getProductos()
       .then((response) => {
-        // Dependiendo de la estructura de la respuesta, 
-        // se actualiza el estado "data" con la lista de productos
-        if (Array.isArray(response.data)) {
-          setData(response.data);
-          // Si la respuesta es un array, se asigna directamente al estado
-        } else if (response.data && Array.isArray(response.data.data)) {
-          setData(response.data.data);
-          // Si la respuesta tiene una propiedad "data" que es un array, se asigna esa propiedad al estado
-        } else if (response.data) {
-          setData([response.data]);
+        const resData = response.data;
+
+        console.log("PRODUCTOS:", resData);
+
+        if (Array.isArray(resData)) {
+          setData(resData);
+        } else if (resData?.data && Array.isArray(resData.data)) {
+          setData(resData.data);
+        } else if (resData) {
+          setData([resData]);
         } else {
           setData([]);
         }
       })
-      .catch((error) => console.error("Error cargando productos:", error));
+      .catch((error) => {
+        console.error("Error cargando productos:", error);
+      });
   }, []);
 
-  // Función para manejar el clic en el botón de detalle, 
-  // navegando a la página de detalle del producto usando su ID
   const detalle = (id) => {
     navigate(`/productos/${id}`);
   };
@@ -100,6 +93,19 @@ export default function ListProductosPublic() {
                 >
                   {row.Descripcion}
                 </Typography>
+
+                {row.Ingredientes?.length > 0 && (
+                  
+                  <Box sx={{ mt: 2 }}>
+                    <Typography variant="body2">Ingredientes:</Typography>
+
+                    {row.Ingredientes.map((ing) => (
+                      <Typography key={ing.IdIngrediente}>
+                        {ing.Nombre}
+                      </Typography>
+                    ))}
+                  </Box>
+                )}
               </CardContent>
 
               <CardActions
