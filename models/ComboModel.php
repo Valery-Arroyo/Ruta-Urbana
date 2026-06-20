@@ -2,7 +2,7 @@
 class ComboModel
 {
     public $enlace;
-    
+
     public function __construct()
     {
         // En el constructor de la clase ComboModel, se establece una conexión a la base de datos
@@ -13,24 +13,25 @@ class ComboModel
     public function all()
     {
         try {
+            // Se agregó 'RutaImagen' a la lista de columnas seleccionadas
             $sql = "SELECT 
                         IdCombo,
                         Nombre,
                         Descripcion,
                         PrecioEspecial,
                         Activo,
-                        IdCategoria
+                        IdCategoria,
+                        RutaImagen 
                     FROM Combo 
                     WHERE Activo = 1";
 
             $resultado = $this->enlace->ExecuteSQL($sql);
             return $resultado;
-
         } catch (Exception $e) {
             handleException($e);
         }
     }
-    
+
     /* Obtener un combo específico con el detalle de sus productos asociados */
     public function get($id)
     {
@@ -56,7 +57,6 @@ class ComboModel
 
             $resultado = $this->enlace->ExecuteSQL($sql);
             return $resultado;
-            
         } catch (Exception $e) {
             handleException($e);
         }
@@ -71,7 +71,6 @@ class ComboModel
             // Ejecuta la consulta SQL y devuelve el resultado
             $resultado = $this->enlace->ExecuteSQL($sql);
             return $resultado;
-            
         } catch (Exception $e) {
             handleException($e);
         }

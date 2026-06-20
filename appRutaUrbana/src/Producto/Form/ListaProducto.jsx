@@ -93,19 +93,6 @@ export default function ListProductosPublic() {
                 >
                   {row.Descripcion}
                 </Typography>
-
-                {row.Ingredientes?.length > 0 && (
-                  
-                  <Box sx={{ mt: 2 }}>
-                    <Typography variant="body2">Ingredientes:</Typography>
-
-                    {row.Ingredientes.map((ing) => (
-                      <Typography key={ing.IdIngrediente}>
-                        {ing.Nombre}
-                      </Typography>
-                    ))}
-                  </Box>
-                )}
               </CardContent>
 
               <CardActions

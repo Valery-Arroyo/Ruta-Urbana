@@ -69,9 +69,9 @@ export default function DetalleProducto() {
         Ingredientes
       </Typography>
 
-      {producto.ingredientes?.map((ingrediente) => (
+      {producto.Ingredientes?.map((ingrediente) => (
         <Typography key={ingrediente.IdIngrediente} variant="body2">
-          • {ingrediente.Nombre}
+          {ingrediente.Nombre}
         </Typography>
       ))}
 
