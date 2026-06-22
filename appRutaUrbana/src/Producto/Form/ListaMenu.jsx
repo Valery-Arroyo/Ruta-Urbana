@@ -2,6 +2,7 @@ import * as React from "react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import MenuService from "../../services/MenuService";
+
 import {
   Card,
   CardContent,
@@ -20,7 +21,6 @@ export default function ListMenus() {
   useEffect(() => {
     MenuService.getMenus()
       .then((response) => {
-        // ✅ Ordenamiento robusto: Activos primero (1), luego los de mayor ID (más recientes)
         const sortedMenus = response.data.sort((a, b) => {
           if (b.EstaActivo !== a.EstaActivo) return b.EstaActivo - a.EstaActivo;
           return b.IdMenu - a.IdMenu;
@@ -37,6 +37,7 @@ export default function ListMenus() {
   const isDisponibleAhora = (menu) => {
     const ahora = new Date();
     const horaActual = ahora.toTimeString().slice(0, 8);
+
     return (
       horaActual >= menu.HoraInicio &&
       horaActual <= menu.HoraFin &&
@@ -44,12 +45,13 @@ export default function ListMenus() {
     );
   };
 
-  if (loading)
+  if (loading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", mt: 10 }}>
         <CircularProgress />
       </Box>
     );
+  }
 
   return (
     <Box sx={{ p: 4, bgcolor: "#fdfdfd", minHeight: "100vh" }}>
@@ -62,14 +64,20 @@ export default function ListMenus() {
         Todos los Menús
       </Typography>
 
-      <Grid container spacing={3} alignItems="stretch">
+      {/* FIX: alignItems pasa a sx */}
+      <Grid container spacing={3} sx={{ alignItems: "stretch" }}>
         {menus.map((menu) => {
           const disponible = isDisponibleAhora(menu);
+
           return (
-            <Grid item xs={12} sm={6} md={4} key={menu.IdMenu}>
+            <Grid
+              key={menu.IdMenu}
+              sx={{ width: "100%", display: "flex" }}
+              size={{ xs: 12, sm: 6, md: 4 }}
+            >
               <Card
                 sx={{
-                  height: "100%",
+                  width: "100%",
                   borderRadius: 2,
                   p: 2,
                   opacity: disponible ? 1 : 0.6,
@@ -82,6 +90,7 @@ export default function ListMenus() {
                   <Typography variant="h6" fontWeight="bold">
                     {menu.Nombre}
                   </Typography>
+
                   <Typography
                     variant="body2"
                     color={
@@ -91,6 +100,7 @@ export default function ListMenus() {
                   >
                     Estado: {menu.EstaActivo === "1" ? "Activo" : "Inactivo"}
                   </Typography>
+
                   <Typography variant="body2" color="text.secondary">
                     Horario: {menu.HoraInicio} - {menu.HoraFin}
                   </Typography>
