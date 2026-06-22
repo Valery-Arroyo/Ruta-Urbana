@@ -38,7 +38,7 @@ export default function Header() {
               Tabla Productos
             </Button>
             <Button color="inherit" component={Link} to="/preparacion">
-              Preparaciones
+              Procesos
             </Button>
           </Box>
           <Box sx={{ flexGrow: 1 }} /> {/* espacio flexible */}

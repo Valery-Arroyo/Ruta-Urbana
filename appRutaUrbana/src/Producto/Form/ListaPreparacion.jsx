@@ -82,26 +82,24 @@ export default function ListPreparacionPublic() {
         Procesos de Preparación
       </Typography>
 
-      {/* Grid container con alignItems="stretch" para alinear filas */}
-      <Grid container spacing={3} alignItems="stretch">
-        {data.map((item, index) => (
-          /* Grid item con display="flex" para que la Card llene la celda */
-          <Grid item xs={12} sm={6} md={4} key={index} sx={{ display: "flex" }}>
+      {/* GRID v9 CORRECTO */}
+      <Grid container spacing={3} sx={{ alignItems: "stretch" }}>
+        {data.map((item) => (
+          <Grid
+            key={`${item.esProducto ? "prod" : "combo"}-${item.IdProducto || item.IdCombo}`}
+            size={{ xs: 12, sm: 6, md: 4 }}
+            sx={{ display: "flex" }}
+          >
             <Card
               sx={{
-                width: "100%", // Asegura que llene el ancho de la columna
+                width: "100%",
                 display: "flex",
-                flexDirection: "column", // Organiza contenido en columna
+                flexDirection: "column",
                 boxShadow: 3,
               }}
             >
-              {/* flexGrow: 1 hace que este contenedor crezca para ocupar el espacio sobrante */}
               <CardContent sx={{ flexGrow: 1 }}>
-                <Typography
-                  variant="h6"
-                  component="h2"
-                  sx={{ fontWeight: "bold", mb: 2 }}
-                >
+                <Typography variant="h6" sx={{ fontWeight: "bold", mb: 2 }}>
                   {item.Nombre}
                 </Typography>
 
@@ -109,12 +107,10 @@ export default function ListPreparacionPublic() {
                   <Chip
                     label={`Total de pasos: ${item.totalPasos}`}
                     color={item.esProducto ? "primary" : "success"}
-                    variant="filled"
                   />
                 </Box>
               </CardContent>
 
-              {/* Las acciones siempre quedarán fijas al fondo */}
               <CardActions sx={{ justifyContent: "flex-end", p: 2, pt: 0 }}>
                 <Tooltip title="Ver detalle completo">
                   <IconButton
@@ -130,7 +126,7 @@ export default function ListPreparacionPublic() {
         ))}
 
         {data.length === 0 && (
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Typography
               variant="body1"
               color="text.secondary"
