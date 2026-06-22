@@ -38,7 +38,7 @@ export default function DetalleCombo() {
 
         setCombo({
           IdCombo: base.IdCombo,
-          Nombre: base.Nombre,
+          Nombre: base.NombreCombo,
           Descripcion: base.Descripcion,
           PrecioEspecial: base.PrecioEspecial,
           RutaImagen: base.RutaImagen,

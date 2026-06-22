@@ -11,20 +11,16 @@ import {
 } from "@mui/material";
 
 export default function DetalleProducto() {
-  // Captura el parámetro "id" de la URL
   const { id } = useParams();
 
-  // Estados locales:
   const [producto, setProducto] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Se ejecuta al montar el componente o cuando el "id" cambia
   useEffect(() => {
     ProductoService.getProducto(id)
       .then((response) => {
-        // Se toma el primer elemento como el producto
         setProducto(response.data[0]);
-        console.log(response.data);
+        console.log(response.data[0]);
         setLoading(false);
       })
       .catch((error) => {
@@ -33,7 +29,6 @@ export default function DetalleProducto() {
       });
   }, [id]);
 
-  // Si está cargando, muestra un indicador de carga.
   if (loading) return <CircularProgress />;
   if (!producto) return <Typography>Producto no encontrado.</Typography>;
 
@@ -54,7 +49,8 @@ export default function DetalleProducto() {
         sx={{
           maxWidth: 600,
           minHeight: 600,
-          height: 600,
+          maxHeight: "90vh",
+          overflowY: "auto",
           p: 2,
           display: "flex",
           flexDirection: "column",
@@ -76,13 +72,17 @@ export default function DetalleProducto() {
           />
         </Box>
 
-        <Typography variant="body1">
+        <Typography variant="body1" sx={{ mt: 2 }}>
           Categoría: {producto.NombreCategoria}
         </Typography>
 
-        <Typography variant="h3">{producto.Nombre}</Typography>
+        <Typography variant="h3" sx={{ mt: 1 }}>
+          {producto.Nombre}
+        </Typography>
 
-        <Typography variant="body1">{producto.Descripcion}</Typography>
+        <Typography variant="body1" sx={{ mt: 1 }}>
+          {producto.Descripcion}
+        </Typography>
 
         <Typography variant="h6" sx={{ mt: 2 }}>
           Ingredientes
@@ -95,7 +95,7 @@ export default function DetalleProducto() {
         ))}
 
         <Typography variant="h5" color="primary" sx={{ mt: 2 }}>
-          Precio: ₡{producto.Precio}
+          Precio: ₡{Number(producto.Precio).toLocaleString("es-CR")}
         </Typography>
       </Card>
     </Box>

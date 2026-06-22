@@ -32,7 +32,7 @@ export default function ListCombosPublic() {
           if (!combo) {
             combo = {
               IdCombo: item.IdCombo,
-              NombreCombo: item.NombreCombo, // ✅ corrección aquí
+              NombreCombo: item.NombreCombo, 
               Descripcion: item.Descripcion,
               PrecioEspecial: item.PrecioEspecial,
               RutaImagen: item.RutaImagen,
@@ -69,7 +69,6 @@ export default function ListCombosPublic() {
       </Typography>
 
       <Typography variant="body1" align="center" sx={{ mb: 4 }}>
-        Registros encontrados: {data.length}
       </Typography>
 
       <Grid container spacing={4}>
@@ -98,7 +97,7 @@ export default function ListCombosPublic() {
                   fontWeight="bold"
                   gutterBottom
                 >
-                  {combo.NombreCombo} {/* ✅ ahora sí se muestra */}
+                  {combo.NombreCombo} 
                 </Typography>
 
                 <Typography

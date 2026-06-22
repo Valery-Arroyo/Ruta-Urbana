@@ -41,9 +41,9 @@ export default function Header() {
               Procesos
             </Button>
           </Box>
-          <Box sx={{ flexGrow: 1 }} /> {/* espacio flexible */}
+          <Box sx={{ flexGrow: 1 }} /> 
           <Button color="inherit" component={Link} to="/login">
-            Login
+            Inciar Sesión 
           </Button>
         </Toolbar>
       </AppBar>
