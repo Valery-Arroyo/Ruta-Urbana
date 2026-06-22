@@ -9,20 +9,35 @@ class ComboModel
         $this->enlace = new MySqlConnect();
     }
 
-    /* Listar todos los combos activos */
     public function all()
     {
         try {
             $sql = "SELECT 
-                        IdCombo,
-                        Nombre,
-                        Descripcion,
-                        PrecioEspecial,
-                        Activo,
-                        IdCategoria,
-                        RutaImagen 
-                    FROM Combo 
-                    WHERE Activo = 1";
+                    c.IdCombo,
+                    c.Nombre AS NombreCombo,
+                    c.Descripcion,
+                    c.PrecioEspecial,
+                    c.Activo,
+                    c.IdCategoria,
+                    cat.Nombre AS NombreCategoria,
+                    c.RutaImagen,
+
+                    p.IdProducto,
+                    p.Nombre AS NombreProducto,
+                    p.Descripcion AS DescripcionProducto,
+                    cp.Cantidad
+
+                FROM Combo c
+                INNER JOIN Categoria cat 
+                    ON c.IdCategoria = cat.IdCategoria
+
+                INNER JOIN ComboProducto cp 
+                    ON c.IdCombo = cp.IdCombo
+
+                INNER JOIN Producto p 
+                    ON cp.IdProducto = p.IdProducto
+
+                WHERE c.Activo = 1";
 
             $resultado = $this->enlace->ExecuteSQL($sql);
             return $resultado;
@@ -31,25 +46,28 @@ class ComboModel
         }
     }
 
+
     /* Obtener un combo específico con el detalle de sus productos asociados */
     public function get($id)
     {
         try {
             $sql = "SELECT 
-                       c.IdCombo,
-                       c.Nombre AS NombreCombo,
-                       c.Descripcion AS DescripcionCombo,
-                       c.PrecioEspecial,
-                       c.Activo,
-                       c.IdCategoria,
-                       c.RutaImagen,
-                       cp.Cantidad,
-                       p.IdProducto,
-                       p.Nombre AS NombreProducto,
-                       p.Precio AS PrecioIndividual
-                       FROM Combo c
-                       INNER JOIN ComboProducto cp ON c.IdCombo = cp.IdCombo
-                       INNER JOIN Producto p ON cp.IdProducto = p.IdProducto";
+                   c.IdCombo,
+                   c.Nombre AS NombreCombo,
+                   c.Descripcion AS DescripcionCombo,
+                   c.PrecioEspecial,
+                   c.Activo,
+                   c.IdCategoria,
+                   cat.Nombre AS NombreCategoria,   
+                   c.RutaImagen,
+                   cp.Cantidad,
+                   p.IdProducto,
+                   p.Nombre AS NombreProducto,
+                   p.Precio AS PrecioIndividual
+                FROM Combo c
+                INNER JOIN Categoria cat ON c.IdCategoria = cat.IdCategoria
+                INNER JOIN ComboProducto cp ON c.IdCombo = cp.IdCombo
+                INNER JOIN Producto p ON cp.IdProducto = p.IdProducto";
 
             if ($id !== null) {
                 $sql .= " WHERE c.IdCombo = $id";

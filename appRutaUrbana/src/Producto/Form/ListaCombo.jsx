@@ -24,21 +24,37 @@ export default function ListCombosPublic() {
   React.useEffect(() => {
     ComboService.getCombos()
       .then((response) => {
-        console.log("Respuesta cruda:", response);
-        console.log("Datos:", response.data);
+        const raw = response.data || [];
 
-        if (Array.isArray(response.data)) {
-          setData(response.data);
-        } else if (response.data && Array.isArray(response.data.data)) {
-          setData(response.data.data);
-        } else if (response.data) {
-          setData([response.data]);
-        } else {
-          setData([]);
-        }
+        const agrupado = raw.reduce((acc, item) => {
+          let combo = acc.find((c) => c.IdCombo === item.IdCombo);
+
+          if (!combo) {
+            combo = {
+              IdCombo: item.IdCombo,
+              Nombre: item.Nombre,
+              Descripcion: item.Descripcion,
+              PrecioEspecial: item.PrecioEspecial,
+              RutaImagen: item.RutaImagen,
+              productos: [],
+            };
+            acc.push(combo);
+          }
+
+          combo.productos.push({
+            IdProducto: item.IdProducto,
+            Nombre: item.NombreProducto,
+            Cantidad: item.Cantidad,
+          });
+
+          return acc;
+        }, []);
+
+        setData(agrupado);
       })
       .catch((error) => {
         console.error("Error cargando combos:", error);
+        setData([]);
       });
   }, []);
 
@@ -57,11 +73,8 @@ export default function ListCombosPublic() {
       </Typography>
 
       <Grid container spacing={4}>
-        {data.map((row) => (
-          <Grid
-            key={row.IdCombo}
-            size={{ xs: 12, sm: 6, md: 4, lg: 3 }}
-          >
+        {data.map((combo) => (
+          <Grid key={combo.IdCombo} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
             <Card
               sx={{
                 height: "100%",
@@ -74,11 +87,8 @@ export default function ListCombosPublic() {
               <CardMedia
                 component="img"
                 height="220"
-                image={`http://localhost:81/apirutaurbana/${row.RutaImagen}`}
-                alt={row.Nombre}
-                onError={(e) => {
-                  console.log("No se pudo cargar:", row.RutaImagen);
-                }}
+                image={`http://localhost:81/apirutaurbana/${combo.RutaImagen}`}
+                alt={combo.Nombre}
               />
 
               <CardContent sx={{ flexGrow: 1 }}>
@@ -88,7 +98,7 @@ export default function ListCombosPublic() {
                   fontWeight="bold"
                   gutterBottom
                 >
-                  {row.Nombre}
+                  {combo.Nombre}
                 </Typography>
 
                 <Typography
@@ -96,23 +106,18 @@ export default function ListCombosPublic() {
                   color="text.secondary"
                   sx={{
                     minHeight: 60,
-                    textAlign: "center",
+                    textAlign: "center", // ✔ FIX correcto (NO textAlign prop)
                   }}
                 >
-                  {row.Descripcion}
+                  {combo.Descripcion}
                 </Typography>
               </CardContent>
 
-              <CardActions
-                sx={{
-                  justifyContent: "center",
-                  pb: 2,
-                }}
-              >
+              <CardActions sx={{ justifyContent: "center", pb: 2 }}>
                 <Tooltip title="Ver detalle">
                   <IconButton
                     color="success"
-                    onClick={() => detalle(row.IdCombo)}
+                    onClick={() => detalle(combo.IdCombo)}
                   >
                     <ZoomInIcon />
                   </IconButton>

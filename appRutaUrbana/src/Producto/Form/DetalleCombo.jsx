@@ -2,6 +2,7 @@ import * as React from "react";
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import ComboService from "../../services/ComboService";
+
 import {
   Box,
   Typography,
@@ -12,17 +13,39 @@ import {
 
 export default function DetalleCombo() {
   const { id } = useParams();
+
   const [combo, setCombo] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     ComboService.getCombo(id)
       .then((response) => {
-        if (Array.isArray(response.data) && response.data.length > 0) {
-          setCombo(response.data[0]);
-        } else {
+        const data = response.data || [];
+
+        if (!Array.isArray(data) || data.length === 0) {
           setCombo(null);
+          setLoading(false);
+          return;
         }
+
+        const base = data[0];
+
+        const productos = data.map((item) => ({
+          IdProducto: item.IdProducto,
+          Nombre: item.NombreProducto,
+          Cantidad: item.Cantidad,
+        }));
+
+        setCombo({
+          IdCombo: base.IdCombo,
+          Nombre: base.Nombre,
+          Descripcion: base.Descripcion,
+          PrecioEspecial: base.PrecioEspecial,
+          RutaImagen: base.RutaImagen,
+          NombreCategoria: base.NombreCategoria,
+          productos,
+        });
+
         setLoading(false);
       })
       .catch((error) => {
@@ -44,37 +67,39 @@ export default function DetalleCombo() {
         p: 2,
       }}
     >
-      <Card sx={{ maxWidth: 600, p: 2, borderRadius: 3, boxShadow: 3 }}>
+      <Card sx={{ maxWidth: 600, p: 2, borderRadius: 3 }}>
         <Box sx={{ display: "flex", justifyContent: "center" }}>
           <CardMedia
             component="img"
-            image={`http://localhost:81/apirutaurbana/${
-              combo.RutaImagen || combo.ImagenCombo || combo.Imagen || ""
-            }`}
-            alt={combo.NombreCombo}
-            sx={{
-              width: 300,
-              height: 300,
-              objectFit: "cover",
-              borderRadius: 2,
-            }}
+            image={`http://localhost:81/apirutaurbana/${combo.RutaImagen}`}
+            alt={combo.Nombre}
+            sx={{ width: 300, height: 300, objectFit: "cover" }}
           />
         </Box>
 
         <Typography variant="body1" sx={{ mt: 2 }}>
-          Categoría: {combo.IdCategoria}
+          Categoría: {combo.NombreCategoria}
         </Typography>
 
-        <Typography variant="h3" sx={{ mt: 1 }}>
-          {combo.NombreCombo}
+        <Typography variant="h3">{combo.Nombre}</Typography>
+
+        <Typography variant="body1">{combo.Descripcion}</Typography>
+
+        <Typography variant="h6" sx={{ mt: 2 }}>
+          Productos
         </Typography>
 
-        <Typography variant="body1" sx={{ mt: 1 }}>
-          {combo.DescripcionCombo}
-        </Typography>
+        {combo.productos.map((p, index) => (
+          <Typography
+            key={`${combo.IdCombo}-${p.IdProducto}-${index}`}
+            variant="body2"
+          >
+            • {p.Nombre} x{p.Cantidad}
+          </Typography>
+        ))}
 
         <Typography variant="h5" color="primary" sx={{ mt: 2 }}>
-          Precio: ${combo.PrecioEspecial}
+          ₡{combo.PrecioEspecial}
         </Typography>
       </Card>
     </Box>
