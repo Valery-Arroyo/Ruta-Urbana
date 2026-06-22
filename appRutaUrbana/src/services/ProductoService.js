@@ -24,3 +24,4 @@ class ProductoService {
 
 // Se exporta la instancia
 export default new ProductoService();
+ 

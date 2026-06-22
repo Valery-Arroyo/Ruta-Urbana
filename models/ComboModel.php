@@ -13,7 +13,6 @@ class ComboModel
     public function all()
     {
         try {
-            // Se agregó 'RutaImagen' a la lista de columnas seleccionadas
             $sql = "SELECT 
                         IdCombo,
                         Nombre,

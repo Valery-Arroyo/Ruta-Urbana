@@ -1,61 +1,85 @@
 <?php
 class Menu
 {
-    // Método para obtener todos los menús
+    private $response;
+    private $menuModel;
+
+    public function __construct()
+    {
+        $this->response = new Response();
+        $this->menuModel = new MenuModel();
+    }
+
+    // Ruta: /menu/index 
     public function index()
     {
-        // La clase Response en tu backend es una utilidad que se encarga de 
-        // formatear y devolver las respuestas al cliente (frontend) de manera consistente.
         try {
-            $response = new Response();
-            $menu = new MenuModel();
-            $result = $menu->all();
-            $response->toJSON($result);
+            $result = $this->menuModel->all();
+            $this->response->toJSON($result);
         } catch (Exception $e) {
             handleException($e);
         }
     }
 
-    public function get($categoria)
+    // Ruta: /menu/disponible
+    public function disponible()
     {
         try {
-            // Crea un objeto Response, encargado de formatear la respuesta en JSON
-            $response = new Response();
+            $data = $this->menuModel->disponible();
+            $menuAgrupado = [];
 
-            // Crea una instancia del modelo MenuModel, que se encarga de 
-            //interactuar con la base de datos
-            $menu = new MenuModel();
+            if (is_array($data)) {
+                foreach ($data as $item) {
+                    $categoria = $item['Categoria'];
 
-            // Llama al método "get" del modelo, pasando la categoría como parámetro,
-            // para obtener los menús que pertenecen a esa categoría
-            $result = $menu->get($categoria);
+                    $menuAgrupado[$categoria][] = [
+                        'nombre'      => $item['ProductoCombo'],
+                        'descripcion' => $item['Descripcion'],
+                        'precio'      => $item['Precio']
+                    ];
+                }
+            }
 
-            // Utiliza el método "toJSON" del objeto Response para formatear el resultado
-            $response->toJSON($result);
+            $this->response->toJSON([
+                'menu' => $menuAgrupado
+            ]);
         } catch (Exception $e) {
             handleException($e);
         }
     }
 
-    // Método para obtener un producto por su ID
-    public function getMenu($id)
-    {
-        try {
-            // Crea un objeto Response, encargado de formatear la respuesta en JSON
-            $response = new Response();
+    /**
+     * Ruta: /menu/detalle/{id}
+     * Devuelve el detalle de un menú específico, incluyendo sus productos y combos.
+     */
+   public function detalle($id)
+{
+    try {
+        // Info básica del menú
+        $sqlMenu = "SELECT IdMenu, Nombre AS NombreMenu, EstaActivo, HoraInicio, HoraFin 
+                    FROM Menu WHERE IdMenu = " . (int)$id;
+        $menu = $this->menuModel->enlace->ExecuteSQL($sqlMenu);
 
-            // Crea una instancia del modelo MenuModel, que se encarga de 
-            //interactuar con la base de datos
-            $menu = new MenuModel();
-
-            // Llama al método "get" del modelo, pasando el ID como parámetro,
-            // para obtener el menú que corresponde a ese ID
-            $result = $menu->get($id);
-
-            // Utiliza el método "toJSON" del objeto Response para formatear el resultado
-            $response->toJSON($result);
-        } catch (Exception $e) {
-            handleException($e);
+        if (!$menu) {
+            http_response_code(404);
+            echo json_encode(["error" => "Menú no encontrado"]);
+            return;
         }
+
+        // Ítems con imágenes
+        $items = $this->menuModel->getMenuItemsConImagen($id);
+
+        $detalle = [
+            "menu" => $menu[0],
+            "items" => $items
+        ];
+
+        $this->response->toJSON($detalle);
+    } catch (Exception $e) {
+        handleException($e);
     }
+}
+
+
+    
 }

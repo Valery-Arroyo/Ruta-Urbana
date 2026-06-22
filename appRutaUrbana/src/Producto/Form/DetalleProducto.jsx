@@ -45,39 +45,63 @@ export default function DetalleProducto() {
   console.log(producto);
   console.log(producto.ingredientes);
   return (
-    <Card sx={{ maxWidth: 600, p: 2 }}>
-      <Box sx={{ display: "flex", justifyContent: "center" }}>
-        <CardMedia
-          component="img"
-          image={`http://localhost:81/apirutaurbana/${producto.Imagen}`}
-          alt={producto.Nombre}
-          sx={{
-            width: 300,
-            height: 300,
-            objectFit: "cover",
-          }}
-        />
-      </Box>
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        minHeight: "100vh",
+        p: 2,
+      }}
+    >
+      <Card
+        sx={{
+          maxWidth: 600,
+          minHeight: 600,
+          height: 600,
+          p: 2,
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <Box sx={{ display: "flex", justifyContent: "center" }}>
+          <CardMedia
+            component="img"
+            image={`http://localhost:81/apirutaurbana/${producto.Imagen}`}
+            alt={producto.Nombre}
+            sx={{
+              width: 300,
+              height: 300,
+              minHeight: 300,
+              maxHeight: 300,
+              objectFit: "cover",
+              flexShrink: 0,
+            }}
+          />
+        </Box>
 
-      <Typography variant="body1">Categoría: {producto.IdCategoria}</Typography>
-
-      <Typography variant="h3">{producto.Nombre}</Typography>
-
-      <Typography variant="body1">{producto.Descripcion}</Typography>
-
-      <Typography variant="h6" sx={{ mt: 2 }}>
-        Ingredientes
-      </Typography>
-
-      {producto.Ingredientes?.map((ingrediente) => (
-        <Typography key={ingrediente.IdIngrediente} variant="body2">
-          {ingrediente.Nombre}
+        <Typography variant="body1">
+          Categoría: {producto.IdCategoria}
         </Typography>
-      ))}
 
-      <Typography variant="h5" color="primary" sx={{ mt: 2 }}>
-        Precio: ₡{producto.Precio}
-      </Typography>
-    </Card>
+        <Typography variant="h3">{producto.Nombre}</Typography>
+
+        <Typography variant="body1">{producto.Descripcion}</Typography>
+
+        <Typography variant="h6" sx={{ mt: 2 }}>
+          Ingredientes
+        </Typography>
+
+        {producto.Ingredientes?.map((ingrediente) => (
+          <Typography key={ingrediente.IdIngrediente} variant="body2">
+            {ingrediente.Nombre}
+          </Typography>
+        ))}
+
+        <Typography variant="h5" color="primary" sx={{ mt: 2 }}>
+          Precio: ₡{producto.Precio}
+        </Typography>
+      </Card>
+    </Box>
   );
 }
