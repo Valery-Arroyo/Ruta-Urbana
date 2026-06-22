@@ -19,7 +19,6 @@ export default function DetalleCombo() {
     ComboService.getCombo(id)
       .then((response) => {
         if (Array.isArray(response.data) && response.data.length > 0) {
-          // Tomamos el primer elemento porque la información del combo es idéntica en todos
           setCombo(response.data[0]);
         } else {
           setCombo(null);
@@ -36,31 +35,48 @@ export default function DetalleCombo() {
   if (!combo) return <Typography>Combo no encontrado.</Typography>;
 
   return (
-    <Card sx={{ maxWidth: 600, p: 2 }}>
-      {/* Si tienes una columna ImagenCombo o similar, reemplaza combo.Imagen */}
-      <Box sx={{ display: "flex", justifyContent: "center" }}>
-        <CardMedia
-          component="img"
-          image={`http://localhost:81/apirutaurbana/${combo.ImagenCombo || combo.Imagen || ""}`}
-          alt={combo.NombreCombo}
-          sx={{
-            width: 300,
-            height: 300,
-            objectFit: "cover",
-          }}
-        />
-      </Box>
+    <Box
+      sx={{
+        minHeight: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        p: 2,
+      }}
+    >
+      <Card sx={{ maxWidth: 600, p: 2, borderRadius: 3, boxShadow: 3 }}>
+        <Box sx={{ display: "flex", justifyContent: "center" }}>
+          <CardMedia
+            component="img"
+            image={`http://localhost:81/apirutaurbana/${
+              combo.RutaImagen || combo.ImagenCombo || combo.Imagen || ""
+            }`}
+            alt={combo.NombreCombo}
+            sx={{
+              width: 300,
+              height: 300,
+              objectFit: "cover",
+              borderRadius: 2,
+            }}
+          />
+        </Box>
 
-      <Typography variant="body1">Categoría: {combo.IdCategoria}</Typography>
+        <Typography variant="body1" sx={{ mt: 2 }}>
+          Categoría: {combo.IdCategoria}
+        </Typography>
 
-      {/* Cambiados los nombres de las propiedades para que coincidan con tu JSON */}
-      <Typography variant="h3">{combo.NombreCombo}</Typography>
+        <Typography variant="h3" sx={{ mt: 1 }}>
+          {combo.NombreCombo}
+        </Typography>
 
-      <Typography variant="body1">{combo.DescripcionCombo}</Typography>
+        <Typography variant="body1" sx={{ mt: 1 }}>
+          {combo.DescripcionCombo}
+        </Typography>
 
-      <Typography variant="h5" color="primary">
-        Precio: ${combo.PrecioEspecial}
-      </Typography>
-    </Card>
+        <Typography variant="h5" color="primary" sx={{ mt: 2 }}>
+          Precio: ${combo.PrecioEspecial}
+        </Typography>
+      </Card>
+    </Box>
   );
 }

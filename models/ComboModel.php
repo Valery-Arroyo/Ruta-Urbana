@@ -36,19 +36,20 @@ class ComboModel
     {
         try {
             $sql = "SELECT 
-                        c.IdCombo,
-                        c.Nombre AS NombreCombo,
-                        c.Descripcion AS DescripcionCombo,
-                        c.PrecioEspecial,
-                        c.Activo,
-                        c.IdCategoria,
-                        cp.Cantidad,
-                        p.IdProducto,
-                        p.Nombre AS NombreProducto,
-                        p.Precio AS PrecioIndividual
-                    FROM Combo c
-                    INNER JOIN ComboProducto cp ON c.IdCombo = cp.IdCombo
-                    INNER JOIN Producto p ON cp.IdProducto = p.IdProducto";
+                       c.IdCombo,
+                       c.Nombre AS NombreCombo,
+                       c.Descripcion AS DescripcionCombo,
+                       c.PrecioEspecial,
+                       c.Activo,
+                       c.IdCategoria,
+                       c.RutaImagen,
+                       cp.Cantidad,
+                       p.IdProducto,
+                       p.Nombre AS NombreProducto,
+                       p.Precio AS PrecioIndividual
+                       FROM Combo c
+                       INNER JOIN ComboProducto cp ON c.IdCombo = cp.IdCombo
+                       INNER JOIN Producto p ON cp.IdProducto = p.IdProducto";
 
             if ($id !== null) {
                 $sql .= " WHERE c.IdCombo = $id";

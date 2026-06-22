@@ -21,33 +21,6 @@ class Menu
         }
     }
 
-    // Ruta: /menu/disponible
-    public function disponible()
-    {
-        try {
-            $data = $this->menuModel->disponible();
-            $menuAgrupado = [];
-
-            if (is_array($data)) {
-                foreach ($data as $item) {
-                    $categoria = $item['Categoria'];
-
-                    $menuAgrupado[$categoria][] = [
-                        'nombre'      => $item['ProductoCombo'],
-                        'descripcion' => $item['Descripcion'],
-                        'precio'      => $item['Precio']
-                    ];
-                }
-            }
-
-            $this->response->toJSON([
-                'menu' => $menuAgrupado
-            ]);
-        } catch (Exception $e) {
-            handleException($e);
-        }
-    }
-
     /**
      * Ruta: /menu/detalle/{id}
      * Devuelve el detalle de un menú específico, incluyendo sus productos y combos.

@@ -32,6 +32,7 @@ export default function DetalleMenu() {
 
   if (!detalle) {
     return <Typography>Cargando detalle...</Typography>;
+    console.log("COMBO:", combo);
   }
 
   const { menu, items } = detalle;
