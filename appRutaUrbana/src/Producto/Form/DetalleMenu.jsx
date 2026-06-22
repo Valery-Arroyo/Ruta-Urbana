@@ -155,10 +155,6 @@ export default function DetalleMenu() {
                     >
                       ₡{item.Precio}
                     </Typography>
-
-                    <Typography variant="caption" color="text.secondary">
-                      {item.Categoria}
-                    </Typography>
                   </CardContent>
                 </Card>
               </Grid>

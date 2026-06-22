@@ -32,7 +32,7 @@ export default function ListCombosPublic() {
           if (!combo) {
             combo = {
               IdCombo: item.IdCombo,
-              Nombre: item.Nombre,
+              NombreCombo: item.NombreCombo, // ✅ corrección aquí
               Descripcion: item.Descripcion,
               PrecioEspecial: item.PrecioEspecial,
               RutaImagen: item.RutaImagen,
@@ -88,7 +88,7 @@ export default function ListCombosPublic() {
                 component="img"
                 height="220"
                 image={`http://localhost:81/apirutaurbana/${combo.RutaImagen}`}
-                alt={combo.Nombre}
+                alt={combo.NombreCombo}
               />
 
               <CardContent sx={{ flexGrow: 1 }}>
@@ -98,7 +98,7 @@ export default function ListCombosPublic() {
                   fontWeight="bold"
                   gutterBottom
                 >
-                  {combo.Nombre}
+                  {combo.NombreCombo} {/* ✅ ahora sí se muestra */}
                 </Typography>
 
                 <Typography
@@ -106,7 +106,7 @@ export default function ListCombosPublic() {
                   color="text.secondary"
                   sx={{
                     minHeight: 60,
-                    textAlign: "center", // ✔ FIX correcto (NO textAlign prop)
+                    textAlign: "center",
                   }}
                 >
                   {combo.Descripcion}
