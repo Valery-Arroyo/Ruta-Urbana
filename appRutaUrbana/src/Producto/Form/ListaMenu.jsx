@@ -54,19 +54,20 @@ export default function ListMenus() {
           const disponible = isDisponibleAhora(menu);
 
           return (
-            <Grid item xs={12} sm={6} md={4} key={menu.IdMenu}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={menu.IdMenu}>
               <Card
                 sx={{
                   height: "100%",
                   borderRadius: 2,
                   p: 2,
-                  opacity: disponible ? 1 : 0.5, 
+                  opacity: disponible ? 1 : 0.5,
                 }}
               >
                 <CardContent>
                   <Typography variant="h6" fontWeight="bold">
                     {menu.NombreMenu}
                   </Typography>
+
                   <Typography
                     variant="body2"
                     color={
@@ -76,6 +77,7 @@ export default function ListMenus() {
                   >
                     Estado: {menu.EstaActivo === "1" ? "Activo" : "Inactivo"}
                   </Typography>
+
                   <Typography variant="body2" color="text.secondary">
                     Horario: {menu.HoraInicio} - {menu.HoraFin}
                   </Typography>
@@ -85,7 +87,7 @@ export default function ListMenus() {
                       variant="contained"
                       color="primary"
                       size="small"
-                      onClick={() => navigate(`/menu/${menu.IdMenu}`)} 
+                      onClick={() => navigate(`/menu/${menu.IdMenu}`)}
                       disabled={!disponible}
                     >
                       Ver detalle

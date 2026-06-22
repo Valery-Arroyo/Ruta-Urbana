@@ -1,13 +1,13 @@
 // eslint-disable-next-line no-unused-vars
-import * as React from 'react';
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import MenuIcon from '@mui/icons-material/Menu';
-import { Link } from 'react-router-dom';
+import * as React from "react";
+import AppBar from "@mui/material/AppBar";
+import Box from "@mui/material/Box";
+import Toolbar from "@mui/material/Toolbar";
+import Typography from "@mui/material/Typography";
+import Button from "@mui/material/Button";
+import IconButton from "@mui/material/IconButton";
+import MenuIcon from "@mui/icons-material/Menu";
+import { Link } from "react-router-dom";
 
 export default function Header() {
   return (
@@ -36,9 +36,12 @@ export default function Header() {
             Nuestros Combos
           </Button>
           <Button color="inherit" component={Link} to="/menu">
-            Nuestro Menú
+            Nuestro Menús
           </Button>
 
+          <Button color="inherit" component={Link} to="/tabla">
+            Tabla Productos
+          </Button>
         </Toolbar>
       </AppBar>
     </Box>

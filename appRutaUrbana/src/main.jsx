@@ -12,6 +12,7 @@ import DetalleCombo from "./Producto/Form/DetalleCombo";
 import ListaCombo from "./Producto/Form/ListaCombo";
 import ListaMenu from "./Producto/Form/ListaMenu";
 import DetalleMenu from "./Producto/Form/DetalleMenu";
+import TablaProducto from "./Producto/Form/TablaProducto";
 const rutas = createBrowserRouter([
   {
     element: <App />,
@@ -40,14 +41,18 @@ const rutas = createBrowserRouter([
         path: "/menu",
         element: <ListaMenu />,
       },
-            {
+      {
         path: "/menu/:id",
-        element: <DetalleMenu/>,
+        element: <DetalleMenu />,
+      },
+      {
+        path: "/tabla",
+        element: <TablaProducto />,
       },
       {
         path: "*",
         element: <PageNotFound />,
-      }
+      },
     ],
   },
 ]);
