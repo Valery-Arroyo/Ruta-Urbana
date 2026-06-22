@@ -14,6 +14,7 @@ export default function Header() {
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static">
         <Toolbar>
+          {/* Icono menú */}
           <IconButton
             size="large"
             edge="start"
@@ -23,24 +24,25 @@ export default function Header() {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            News
-          </Typography>
+
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <Button color="inherit" component={Link} to="/productos">
+              Productos
+            </Button>
+            <Button color="inherit" component={Link} to="/combos">
+              Combos
+            </Button>
+            <Button color="inherit" component={Link} to="/menu">
+              Menús
+            </Button>
+            <Button color="inherit" component={Link} to="/tabla">
+              Tabla Productos
+            </Button>
+          </Box>
+
+          <Box sx={{ flexGrow: 1 }} /> {/* espacio flexible */}
           <Button color="inherit" component={Link} to="/login">
             Login
-          </Button>
-          <Button color="inherit" component={Link} to="/productos">
-            Lista Productos
-          </Button>
-          <Button color="inherit" component={Link} to="/combos">
-            Nuestros Combos
-          </Button>
-          <Button color="inherit" component={Link} to="/menu">
-            Nuestro Menús
-          </Button>
-
-          <Button color="inherit" component={Link} to="/tabla">
-            Tabla Productos
           </Button>
         </Toolbar>
       </AppBar>
