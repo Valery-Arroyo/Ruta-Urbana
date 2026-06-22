@@ -11,8 +11,18 @@ class ProductoModel
     public function all()
     {
         try {
-            $sql = "SELECT p.*, pi.Imagen
+            $sql = "SELECT 
+                    p.IdProducto,
+                    p.Nombre,
+                    p.Descripcion,
+                    p.Precio,
+                    p.Activo,
+                    p.IdCategoria,
+                    c.Nombre AS NombreCategoria,
+                    pi.Imagen
                 FROM Producto p
+                LEFT JOIN Categoria c
+                    ON p.IdCategoria = c.IdCategoria
                 LEFT JOIN ProductoImagen pi
                     ON p.IdProducto = pi.IdProducto
                     AND pi.EsPrincipal = 1";
@@ -35,19 +45,20 @@ class ProductoModel
     {
         try {
             $sql = "SELECT 
-                p.IdProducto,
-                p.Nombre,
-                p.Descripcion,
-                p.Precio,
-                p.Activo,
-                p.IdCategoria,
-                i.IdImagen,
-                i.Imagen,
-                i.EsPrincipal
-            FROM Producto p
-            LEFT JOIN ProductoImagen i
-                ON p.IdProducto = i.IdProducto
-            WHERE p.IdProducto = $id";
+            p.IdProducto,
+            p.Nombre,
+            p.Descripcion,
+            p.Precio,
+            p.Activo,
+            c.Nombre AS NombreCategoria,
+            pi.Imagen
+        FROM Producto p
+        LEFT JOIN Categoria c
+            ON p.IdCategoria = c.IdCategoria
+        LEFT JOIN ProductoImagen pi
+            ON p.IdProducto = pi.IdProducto
+            AND pi.EsPrincipal = 1
+        WHERE p.IdProducto = $id";
 
             $resultado = $this->enlace->ExecuteSQL($sql);
 

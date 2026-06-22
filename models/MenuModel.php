@@ -16,13 +16,26 @@ class MenuModel
     {
         try {
             $sql = "SELECT 
-                        m.IdMenu,
-                        m.Nombre AS NombreMenu,
-                        m.EstaActivo,
-                        m.HoraInicio,
-                        m.HoraFin
-                    FROM Menu m
-                    ORDER BY m.IdMenu DESC";
+                    m.IdMenu,
+                    m.Nombre,
+                    m.EstaActivo,
+                    m.HoraInicio,
+                    m.HoraFin,
+                    md.FechaInicio,
+                    md.FechaFin,
+                    md.DiaSemana
+                FROM Menu m
+                LEFT JOIN MenuDisponibilidad md 
+                    ON md.IdMenu = m.IdMenu
+                    AND md.FechaInicio = (
+                        SELECT MAX(md2.FechaInicio)
+                        FROM MenuDisponibilidad md2
+                        WHERE md2.IdMenu = m.IdMenu
+                    )
+                ORDER BY 
+                    m.EstaActivo DESC,
+                    md.FechaInicio DESC,
+                    m.HoraInicio DESC";
 
             return $this->enlace->ExecuteSQL($sql);
         } catch (Exception $e) {

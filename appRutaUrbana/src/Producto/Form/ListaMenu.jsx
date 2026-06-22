@@ -19,6 +19,7 @@ export default function ListMenus() {
     MenuService.getMenus()
       .then((response) => {
         console.log("MENÚS:", response.data);
+        console.log("MENU COMPLETO:", menus);
         setMenus(response.data);
       })
       .catch((error) => {
@@ -65,7 +66,7 @@ export default function ListMenus() {
               >
                 <CardContent>
                   <Typography variant="h6" fontWeight="bold">
-                    {menu.NombreMenu}
+                    {menu.Nombre}
                   </Typography>
 
                   <Typography

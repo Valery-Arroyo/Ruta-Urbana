@@ -47,6 +47,10 @@ export default function DetalleMenu() {
         Estado: {menu.EstaActivo === "1" ? "Activo" : "Inactivo"}
       </Typography>
 
+      <Typography variant="body1" color="text.secondary">
+        Día(s): {menu.DiasDisponibles || menu.DiaSemana || "No definido"}
+      </Typography>
+
       <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
         Horario: {menu.HoraInicio} - {menu.HoraFin}
       </Typography>

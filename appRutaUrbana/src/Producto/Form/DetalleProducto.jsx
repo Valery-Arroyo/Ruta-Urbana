@@ -15,19 +15,14 @@ export default function DetalleProducto() {
   const { id } = useParams();
 
   // Estados locales:
-  // producto: para almacenar los detalles del producto obtenido de la API
-  // loading: para indicar si la información aún se está cargando
   const [producto, setProducto] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Se ejecuta al montar el componente o cuando el "id" cambia. Llama a la
-  // función getProducto del servicio para obtener los detalles del producto.
+  // Se ejecuta al montar el componente o cuando el "id" cambia
   useEffect(() => {
-    // Llama al servicio para obtener los detalles del producto usando el ID de la URL
     ProductoService.getProducto(id)
-      // Maneja la respuesta de la API, actualizando el estado del producto y el estado de carga
       .then((response) => {
-        // Asumiendo que la respuesta es un array, se toma el primer elemento como el producto
+        // Se toma el primer elemento como el producto
         setProducto(response.data[0]);
         console.log(response.data);
         setLoading(false);
@@ -39,11 +34,12 @@ export default function DetalleProducto() {
   }, [id]);
 
   // Si está cargando, muestra un indicador de carga.
-  // Si no se encuentra el producto, muestra un mensaje de error.
   if (loading) return <CircularProgress />;
   if (!producto) return <Typography>Producto no encontrado.</Typography>;
+
   console.log(producto);
-  console.log(producto.ingredientes);
+  console.log(producto.Ingredientes);
+
   return (
     <Box
       sx={{
@@ -80,8 +76,9 @@ export default function DetalleProducto() {
           />
         </Box>
 
+        {/* ✅ Aquí se muestra el nombre de la categoría */}
         <Typography variant="body1">
-          Categoría: {producto.IdCategoria}
+          Categoría: {producto.NombreCategoria}
         </Typography>
 
         <Typography variant="h3">{producto.Nombre}</Typography>
