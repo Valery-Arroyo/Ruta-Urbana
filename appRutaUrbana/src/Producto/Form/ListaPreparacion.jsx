@@ -24,37 +24,34 @@ export default function ListPreparacionPublic() {
   useEffect(() => {
     PreparacionService.getPreparaciones()
       .then((response) => {
-        // AGRUPACIÓN CORREGIDA POR PRODUCTO O COMBO ESPECÍFICO
         const agrupado = response.data.reduce((acc, item) => {
-          // Detectar correctamente el ID soportando mayúsculas/minúsculas de la BD
           const idProd = item.IdProducto || item.idProducto || item.idproducto;
           const idCombo = item.IdCombo || item.idCombo || item.idcombo;
-          
-          // Generar una llave única real por cada elemento individual
+
           const key = idProd ? `prod-${idProd}` : `combo-${idCombo}`;
-          
+
           if (!acc[key]) {
             acc[key] = {
               Nombre: item.NombreProducto || item.NombreCombo || "Sin Nombre",
               IdProducto: idProd || null,
               IdCombo: idCombo || null,
               esProducto: !!idProd,
-              pasos: []
+              pasos: [],
+              totalPasos: 0,
             };
           }
-          
-          // Insertar el paso correspondiente a este producto o combo específico
+
           acc[key].pasos.push({
             OrdenPaso: item.OrdenPaso,
             NombreEstacion: item.NombreEstacion,
-            TiempoEstimadoMinutos: item.TiempoEstimadoMinutos
+            TiempoEstimadoMinutos: item.TiempoEstimadoMinutos,
           });
-          
+
+          acc[key].totalPasos++;
           return acc;
         }, {});
 
-        // Ordenar los pasos internamente para cada tarjeta por su número de paso
-        const resultadoFinal = Object.values(agrupado).map(elemento => {
+        const resultadoFinal = Object.values(agrupado).map((elemento) => {
           elemento.pasos.sort((a, b) => a.OrdenPaso - b.OrdenPaso);
           return elemento;
         });
@@ -76,61 +73,70 @@ export default function ListPreparacionPublic() {
 
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>
-      <Typography variant="h4" component="h1" gutterBottom sx={{ mb: 4, fontWeight: "bold" }}>
+      <Typography
+        variant="h4"
+        component="h1"
+        gutterBottom
+        sx={{ mb: 4, fontWeight: "bold" }}
+      >
         Procesos de Preparación
       </Typography>
 
-      <Grid container spacing={3}>
+      {/* Grid container con alignItems="stretch" para alinear filas */}
+      <Grid container spacing={3} alignItems="stretch">
         {data.map((item, index) => (
-          <Grid item xs={12} sm={6} md={4} key={index}>
-            <Card sx={{ height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between", boxShadow: 3 }}>
-              
-              <CardContent>
-                {/* Nombre único del Producto o Combo */}
-                <Typography variant="h6" component="h2" sx={{ fontWeight: "bold", mb: 2 }}>
+          /* Grid item con display="flex" para que la Card llene la celda */
+          <Grid item xs={12} sm={6} md={4} key={index} sx={{ display: "flex" }}>
+            <Card
+              sx={{
+                width: "100%", // Asegura que llene el ancho de la columna
+                display: "flex",
+                flexDirection: "column", // Organiza contenido en columna
+                boxShadow: 3,
+              }}
+            >
+              {/* flexGrow: 1 hace que este contenedor crezca para ocupar el espacio sobrante */}
+              <CardContent sx={{ flexGrow: 1 }}>
+                <Typography
+                  variant="h6"
+                  component="h2"
+                  sx={{ fontWeight: "bold", mb: 2 }}
+                >
                   {item.Nombre}
                 </Typography>
 
-                {/* Lista exclusiva de pasos pertenecientes a este artículo */}
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-                  {item.pasos.map((paso, pIndex) => (
-                    <Box key={pIndex} sx={{ display: "flex", gap: 1, alignItems: "center", flexWrap: "wrap" }}>
-                      <Chip 
-                        label={`Paso ${paso.OrdenPaso}: ${paso.NombreEstacion}`} 
-                        color={item.esProducto ? "primary" : "success"} 
-                        variant="outlined" 
-                        size="small"
-                      />
-                      {paso.TiempoEstimadoMinutos && (
-                        <Chip 
-                          label={`${paso.TiempoEstimadoMinutos} min`} 
-                          color="secondary" 
-                          size="small"
-                        />
-                      )}
-                    </Box>
-                  ))}
+                <Box sx={{ mt: 2 }}>
+                  <Chip
+                    label={`Total de pasos: ${item.totalPasos}`}
+                    color={item.esProducto ? "primary" : "success"}
+                    variant="filled"
+                  />
                 </Box>
               </CardContent>
 
+              {/* Las acciones siempre quedarán fijas al fondo */}
               <CardActions sx={{ justifyContent: "flex-end", p: 2, pt: 0 }}>
                 <Tooltip title="Ver detalle completo">
-                  <IconButton 
-                    color="primary" 
+                  <IconButton
+                    sx={{ color: "black" }}
                     onClick={() => handleDetail(item.IdProducto, item.IdCombo)}
                   >
                     <ZoomInIcon />
                   </IconButton>
                 </Tooltip>
               </CardActions>
-
             </Card>
           </Grid>
         ))}
 
         {data.length === 0 && (
           <Grid item xs={12}>
-            <Typography variant="body1" color="text.secondary" align="center" sx={{ mt: 4 }}>
+            <Typography
+              variant="body1"
+              color="text.secondary"
+              align="center"
+              sx={{ mt: 4 }}
+            >
               No hay procesos de preparación disponibles en este momento.
             </Typography>
           </Grid>

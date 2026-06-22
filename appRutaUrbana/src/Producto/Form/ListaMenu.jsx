@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; // 👈 para navegación
+import { useNavigate } from "react-router-dom";
 import MenuService from "../../services/MenuService";
 import {
   Card,
@@ -9,35 +9,47 @@ import {
   Grid,
   Box,
   Button,
+  CircularProgress,
 } from "@mui/material";
 
 export default function ListMenus() {
   const [menus, setMenus] = useState([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     MenuService.getMenus()
       .then((response) => {
-        console.log("MENÚS:", response.data);
-        console.log("MENU COMPLETO:", menus);
-        setMenus(response.data);
+        // ✅ Ordenamiento robusto: Activos primero (1), luego los de mayor ID (más recientes)
+        const sortedMenus = response.data.sort((a, b) => {
+          if (b.EstaActivo !== a.EstaActivo) return b.EstaActivo - a.EstaActivo;
+          return b.IdMenu - a.IdMenu;
+        });
+        setMenus(sortedMenus);
+        setLoading(false);
       })
       .catch((error) => {
         console.error("Error cargando los menús:", error);
+        setLoading(false);
       });
   }, []);
 
-  // Función para validar si el menú está disponible según hora actual
   const isDisponibleAhora = (menu) => {
     const ahora = new Date();
-    const horaActual = ahora.toTimeString().slice(0, 8); // HH:mm:ss
-
+    const horaActual = ahora.toTimeString().slice(0, 8);
     return (
       horaActual >= menu.HoraInicio &&
       horaActual <= menu.HoraFin &&
       menu.EstaActivo === "1"
     );
   };
+
+  if (loading)
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 10 }}>
+        <CircularProgress />
+      </Box>
+    );
 
   return (
     <Box sx={{ p: 4, bgcolor: "#fdfdfd", minHeight: "100vh" }}>
@@ -50,25 +62,26 @@ export default function ListMenus() {
         Todos los Menús
       </Typography>
 
-      <Grid container spacing={3}>
+      <Grid container spacing={3} alignItems="stretch">
         {menus.map((menu) => {
           const disponible = isDisponibleAhora(menu);
-
           return (
-            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={menu.IdMenu}>
+            <Grid item xs={12} sm={6} md={4} key={menu.IdMenu}>
               <Card
                 sx={{
                   height: "100%",
                   borderRadius: 2,
                   p: 2,
-                  opacity: disponible ? 1 : 0.5,
+                  opacity: disponible ? 1 : 0.6,
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
                 }}
               >
                 <CardContent>
                   <Typography variant="h6" fontWeight="bold">
                     {menu.Nombre}
                   </Typography>
-
                   <Typography
                     variant="body2"
                     color={
@@ -78,7 +91,6 @@ export default function ListMenus() {
                   >
                     Estado: {menu.EstaActivo === "1" ? "Activo" : "Inactivo"}
                   </Typography>
-
                   <Typography variant="body2" color="text.secondary">
                     Horario: {menu.HoraInicio} - {menu.HoraFin}
                   </Typography>

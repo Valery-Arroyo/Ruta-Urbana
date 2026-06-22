@@ -48,7 +48,7 @@ export default function DetalleMenu() {
       </Typography>
 
       <Typography variant="body1" color="text.secondary">
-        Día(s): {menu.DiasDisponibles || menu.DiaSemana || "No definido"}
+        Día(s): {menu.DiasDisponibles ? menu.DiasDisponibles : "No definido"}
       </Typography>
 
       <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>

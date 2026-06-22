@@ -21,21 +21,15 @@ class MenuModel
                     m.EstaActivo,
                     m.HoraInicio,
                     m.HoraFin,
-                    md.FechaInicio,
-                    md.FechaFin,
-                    md.DiaSemana
+                    GROUP_CONCAT(DISTINCT md.DiaSemana ORDER BY md.DiaSemana SEPARATOR ', ') AS DiasDisponibles,
+                    MAX(md.FechaInicio) AS FechaMax
                 FROM Menu m
-                LEFT JOIN MenuDisponibilidad md 
-                    ON md.IdMenu = m.IdMenu
-                    AND md.FechaInicio = (
-                        SELECT MAX(md2.FechaInicio)
-                        FROM MenuDisponibilidad md2
-                        WHERE md2.IdMenu = m.IdMenu
-                    )
+                LEFT JOIN MenuDisponibilidad md ON m.IdMenu = md.IdMenu
+                GROUP BY m.IdMenu, m.Nombre, m.EstaActivo, m.HoraInicio, m.HoraFin
+                -- Aquí está la clave: ordenamos por la fecha más reciente encontrada en md
                 ORDER BY 
-                    m.EstaActivo DESC,
-                    md.FechaInicio DESC,
-                    m.HoraInicio DESC";
+                    m.EstaActivo DESC, 
+                    COALESCE(MAX(md.FechaInicio), '1900-01-01') DESC";
 
             return $this->enlace->ExecuteSQL($sql);
         } catch (Exception $e) {

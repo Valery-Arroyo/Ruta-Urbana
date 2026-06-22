@@ -25,34 +25,41 @@ class Menu
      * Ruta: /menu/detalle/{id}
      * Devuelve el detalle de un menú específico, incluyendo sus productos y combos.
      */
-   public function detalle($id)
-{
-    try {
-        // Info básica del menú
-        $sqlMenu = "SELECT IdMenu, Nombre AS NombreMenu, EstaActivo, HoraInicio, HoraFin 
-                    FROM Menu WHERE IdMenu = " . (int)$id;
-        $menu = $this->menuModel->enlace->ExecuteSQL($sqlMenu);
+    public function detalle($id)
+    {
+        try {
+            // Nueva consulta con JOIN y GROUP_CONCAT para traer los días
+            $sqlMenu = "SELECT 
+                        m.IdMenu, 
+                        m.Nombre AS NombreMenu, 
+                        m.EstaActivo, 
+                        m.HoraInicio, 
+                        m.HoraFin,
+                        GROUP_CONCAT(DISTINCT md.DiaSemana SEPARATOR ', ') AS DiasDisponibles
+                    FROM Menu m
+                    LEFT JOIN MenuDisponibilidad md ON m.IdMenu = md.IdMenu
+                    WHERE m.IdMenu = " . (int)$id . "
+                    GROUP BY m.IdMenu";
 
-        if (!$menu) {
-            http_response_code(404);
-            echo json_encode(["error" => "Menú no encontrado"]);
-            return;
+            $menu = $this->menuModel->enlace->ExecuteSQL($sqlMenu);
+
+            if (!$menu) {
+                http_response_code(404);
+                echo json_encode(["error" => "Menú no encontrado"]);
+                return;
+            }
+
+            // Ítems con imágenes
+            $items = $this->menuModel->getMenuItemsConImagen($id);
+
+            $detalle = [
+                "menu" => $menu[0],
+                "items" => $items
+            ];
+
+            $this->response->toJSON($detalle);
+        } catch (Exception $e) {
+            handleException($e);
         }
-
-        // Ítems con imágenes
-        $items = $this->menuModel->getMenuItemsConImagen($id);
-
-        $detalle = [
-            "menu" => $menu[0],
-            "items" => $items
-        ];
-
-        $this->response->toJSON($detalle);
-    } catch (Exception $e) {
-        handleException($e);
     }
-}
-
-
-    
 }

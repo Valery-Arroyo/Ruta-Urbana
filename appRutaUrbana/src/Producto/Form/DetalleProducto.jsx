@@ -76,7 +76,6 @@ export default function DetalleProducto() {
           />
         </Box>
 
-        {/* ✅ Aquí se muestra el nombre de la categoría */}
         <Typography variant="body1">
           Categoría: {producto.NombreCategoria}
         </Typography>
