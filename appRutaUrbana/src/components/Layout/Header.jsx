@@ -24,7 +24,6 @@ export default function Header() {
           >
             <MenuIcon />
           </IconButton>
-
           <Box sx={{ display: "flex", gap: 1 }}>
             <Button color="inherit" component={Link} to="/productos">
               Productos
@@ -38,8 +37,10 @@ export default function Header() {
             <Button color="inherit" component={Link} to="/tabla">
               Tabla Productos
             </Button>
+            <Button color="inherit" component={Link} to="/preparacion">
+              Preparaciones
+            </Button>
           </Box>
-
           <Box sx={{ flexGrow: 1 }} /> {/* espacio flexible */}
           <Button color="inherit" component={Link} to="/login">
             Login
