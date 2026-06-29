@@ -17,21 +17,6 @@ class ComboService {
   getCombo(id) {
     return axios.get(`${BASE_URL}/${id}`);
   }
-
-  /* Función que crea un nuevo combo que recibe como parametro */
-  createCombo(combo) {
-    return axios.post(`${BASE_URL}/create`, combo);
-  }
-
-  /* Función que actualiza un código identificado por su ID y le mete el combo modificado */
-  updateCombo(id, combo) {
-    return axios.put(`${BASE_URL}/update/${id}`, combo);
-  }
-
-  /* Función que elimina un combo usando su ID */
-  deleteCombo(id) {
-    return axios.delete(`${BASE_URL}/delete/${id}`);
-  }
   
 }
 

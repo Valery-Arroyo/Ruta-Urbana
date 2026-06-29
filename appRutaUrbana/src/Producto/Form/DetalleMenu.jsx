@@ -35,11 +35,16 @@ export default function DetalleMenu() {
 
   const { menu, items } = detalle;
 
+  // variable para manejar el caso en que items no sea un array
   const safeItems = Array.isArray(items) ? items : [];
 
+  // Agrupar los items por categoría
   const itemsPorCategoria = safeItems.reduce((acc, item) => {
+    // Usar la propiedad 'Categoria' del item, o un valor por defecto si no existe
     const cat = item.Categoria || "Sin categoría";
+    // Inicializar el array de la categoría si no existe
     if (!acc[cat]) acc[cat] = [];
+    // Agregar el item al array de la categoría correspondiente
     acc[cat].push(item);
     return acc;
   }, {});

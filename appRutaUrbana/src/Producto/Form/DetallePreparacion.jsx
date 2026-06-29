@@ -15,13 +15,20 @@ import {
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 export default function DetallePreparacion() {
+  // Obtenemos el ID de la preparación desde los parámetros de la URL
   const { id } = useParams();
+
+  // Inicializamos el hook de navegación
   const navigate = useNavigate();
   
+  // Estado para almacenar los datos de la preparación y el estado de carga
   const [data, setData] = useState(null);
+  // Estado para manejar la carga de datos
   const [loading, setLoading] = useState(true);
 
+  // Efecto para obtener los datos de la preparación al montar el componente
   useEffect(() => {
+    // Llamada al servicio para obtener el proceso de preparación por ID
     PreparacionService.getProcesoPreparacion(id)
       .then((response) => {
         if (response.data && response.data.length > 0) {
@@ -94,7 +101,6 @@ export default function DetallePreparacion() {
           Volver
         </Button>
 
-        {/* Renderizado de Imagen */}
         {data.Imagen && (
           <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>
             <CardMedia
@@ -111,14 +117,12 @@ export default function DetallePreparacion() {
           </Box>
         )}
 
-        {/* Información Principal del Artículo */}
         <Typography variant="h4" component="h1" sx={{ fontWeight: "bold", mb: 3 }}>
           {data.Nombre}
         </Typography>
 
         <Divider sx={{ mb: 3 }} />
 
-        {/* Secuencia Operativa de Cocina */}
         <Typography variant="h6" sx={{ fontWeight: "bold", mb: 2 }}>
           Flujo de Preparación por Pasos
         </Typography>

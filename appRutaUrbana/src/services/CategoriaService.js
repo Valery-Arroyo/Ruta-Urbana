@@ -17,20 +17,6 @@ class CategoriaService {
     return axios.get(`${BASE_URL}/${id}`);
   }
 
-  // Función que crea una nueva categoría que recibe cómo parametro
-  createCategoria(categoria) {
-    return axios.post(`${BASE_URL}/create`, categoria);
-  }
-
-  /* Función que actualiza un código identificado por su ID y le mete la categoria modificada */
-  updateCategoria(id, categoria) {
-    return axios.put(`${BASE_URL}/update/${id}`, categoria);
-  }
-
-  /* Función que elimina una categoria usando su ID */
-  deleteCategoria(id) {
-    return axios.delete(`${BASE_URL}/delete/${id}`);
-  }
 }
 
-export default new ComboService();
+export default new CategoriaService();

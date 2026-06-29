@@ -13,10 +13,8 @@ export function Home() {
         gutterBottom
         sx={{ fontFamily: 'Oswald', letterSpacing: 4, textTransform: 'uppercase' }}
       >
-        Ruta Urbana
       </Typography>
       <Typography variant="h5" align="center" color="text.secondary">
-        El sabor de la ciudad.
       </Typography>
     </Container>
   );

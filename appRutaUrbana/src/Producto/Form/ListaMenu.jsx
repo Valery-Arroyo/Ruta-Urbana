@@ -13,18 +13,32 @@ import {
   CircularProgress,
 } from "@mui/material";
 
+// Componente para listar los menús
 export default function ListMenus() {
+
+  // Estado para almacenar los menús y el estado de carga
   const [menus, setMenus] = useState([]);
+
+  // Estado para manejar la carga de datos
   const [loading, setLoading] = useState(true);
+
+  // Hook de navegación para redirigir a la página de detalle del menú
   const navigate = useNavigate();
 
+  // Efecto para cargar los menús al montar el componente
   useEffect(() => {
     MenuService.getMenus()
       .then((response) => {
+        console.log(response.data);
+
+        //
         const sortedMenus = response.data.sort((a, b) => {
-          if (b.EstaActivo !== a.EstaActivo) return b.EstaActivo - a.EstaActivo;
-          return b.IdMenu - a.IdMenu;
+          if (b.EstaActivo !== a.EstaActivo) {
+            return b.EstaActivo - a.EstaActivo;
+          }
+
         });
+
         setMenus(sortedMenus);
         setLoading(false);
       })
@@ -36,18 +50,62 @@ export default function ListMenus() {
 
   const isDisponibleAhora = (menu) => {
     const ahora = new Date();
-    const horaActual = ahora.toTimeString().slice(0, 8);
 
-    return (
-      horaActual >= menu.HoraInicio &&
-      horaActual <= menu.HoraFin &&
-      menu.EstaActivo === "1"
-    );
+    if (String(menu.EstaActivo) !== "1") {
+      return false;
+    }
+
+    const [hIni, mIni, sIni] = menu.HoraInicio.split(":").map(Number);
+    const [hFin, mFin, sFin] = menu.HoraFin.split(":").map(Number);
+
+    const horaInicio = new Date(ahora);
+    horaInicio.setHours(hIni, mIni, sIni, 0);
+
+    const horaFin = new Date(ahora);
+    horaFin.setHours(hFin, mFin, sFin, 0);
+
+    const horarioValido =
+      ahora >= horaInicio &&
+      ahora <= horaFin;
+
+    if (!horarioValido) {
+      return false;
+    }
+
+    const diasSemana = [
+      "Domingo",
+      "Lunes",
+      "Martes",
+      "Miércoles",
+      "Jueves",
+      "Viernes",
+      "Sábado",
+    ];
+
+    const diaActual = diasSemana[ahora.getDay()];
+
+    if (
+      menu.DiasDisponibles &&
+      menu.DiasDisponibles.trim() !== ""
+    ) {
+      return menu.DiasDisponibles
+        .split(",")
+        .map((d) => d.trim())
+        .includes(diaActual);
+    }
+
+    return true;
   };
 
   if (loading) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", mt: 10 }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          mt: 10,
+        }}
+      >
         <CircularProgress />
       </Box>
     );
@@ -59,21 +117,26 @@ export default function ListMenus() {
         variant="h3"
         align="center"
         gutterBottom
-        sx={{ fontWeight: "bold", color: "#2c3e50" }}
+        sx={{
+          fontWeight: "bold",
+          color: "#2c3e50",
+        }}
       >
         Todos los Menús
       </Typography>
 
-      {/* FIX: alignItems pasa a sx */}
-      <Grid container spacing={3} sx={{ alignItems: "stretch" }}>
+      <Grid container spacing={3}>
         {menus.map((menu) => {
           const disponible = isDisponibleAhora(menu);
 
           return (
             <Grid
               key={menu.IdMenu}
-              sx={{ width: "100%", display: "flex" }}
-              size={{ xs: 12, sm: 6, md: 4 }}
+              item
+              xs={12}
+              sm={6}
+              md={4}
+              sx={{ display: "flex" }}
             >
               <Card
                 sx={{
@@ -94,15 +157,31 @@ export default function ListMenus() {
                   <Typography
                     variant="body2"
                     color={
-                      menu.EstaActivo === "1" ? "success.main" : "error.main"
+                      String(menu.EstaActivo) === "1"
+                        ? "success.main"
+                        : "error.main"
                     }
                     sx={{ mb: 1 }}
                   >
-                    Estado: {menu.EstaActivo === "1" ? "Activo" : "Inactivo"}
+                    Estado:{" "}
+                    {String(menu.EstaActivo) === "1"
+                      ? "Activo"
+                      : "Inactivo"}
                   </Typography>
 
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                  >
                     Horario: {menu.HoraInicio} - {menu.HoraFin}
+                  </Typography>
+
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mt: 1 }}
+                  >
+                    Días: {menu.DiasDisponibles || "Sin restricción"}
                   </Typography>
 
                   <Box sx={{ mt: 2, textAlign: "right" }}>
@@ -110,7 +189,9 @@ export default function ListMenus() {
                       variant="contained"
                       color="primary"
                       size="small"
-                      onClick={() => navigate(`/menu/${menu.IdMenu}`)}
+                      onClick={() =>
+                        navigate(`/menu/${menu.IdMenu}`)
+                      }
                       disabled={!disponible}
                     >
                       Ver detalle
