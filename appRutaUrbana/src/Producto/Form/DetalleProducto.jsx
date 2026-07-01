@@ -1,17 +1,22 @@
 import * as React from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import ProductoService from "../../services/ProductoService";
+
 import {
   Box,
   Typography,
   Card,
   CardMedia,
   CircularProgress,
+  Button,
 } from "@mui/material";
+
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 export default function DetalleProducto() {
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const [producto, setProducto] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -29,11 +34,21 @@ export default function DetalleProducto() {
       });
   }, [id]);
 
-  if (loading) return <CircularProgress />;
-  if (!producto) return <Typography>Producto no encontrado.</Typography>;
+  if (loading)
+    return (
+      <Box
+        sx={{
+          minHeight: "100vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <CircularProgress size={55} sx={{ color: "#FF8C00" }} />
+      </Box>
+    );
 
-  console.log(producto);
-  console.log(producto.Ingredientes);
+  if (!producto) return <Typography>Producto no encontrado.</Typography>;
 
   return (
     <Box
@@ -51,11 +66,34 @@ export default function DetalleProducto() {
           minHeight: 600,
           maxHeight: "90vh",
           overflowY: "auto",
-          p: 2,
+          p: 3,
           display: "flex",
           flexDirection: "column",
+          borderRadius: 4,
+          border: "2px solid #FF8C00",
+          boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
         }}
       >
+        <Button
+          variant="outlined"
+          startIcon={<ArrowBackIcon />}
+          onClick={() => navigate(-1)}
+          sx={{
+            mb: 2,
+            alignSelf: "flex-start",
+            color: "#FF8C00",
+            borderColor: "#FF8C00",
+            fontWeight: "bold",
+            textTransform: "none",
+            "&:hover": {
+              borderColor: "#E67E00",
+              backgroundColor: "#FFF3E0",
+            },
+          }}
+        >
+          Volver
+        </Button>
+
         <Box sx={{ display: "flex", justifyContent: "center" }}>
           <CardMedia
             component="img"
@@ -67,36 +105,101 @@ export default function DetalleProducto() {
               minHeight: 300,
               maxHeight: 300,
               objectFit: "cover",
+              borderRadius: 3,
               flexShrink: 0,
             }}
           />
         </Box>
 
-        <Typography variant="body1" sx={{ mt: 2 }}>
+        <Typography
+          variant="body1"
+          sx={{
+            mt: 2,
+            fontSize: "1.05rem",
+            color: "text.secondary",
+            letterSpacing: 0.5,
+          }}
+        >
           Categoría: {producto.NombreCategoria}
         </Typography>
 
-        <Typography variant="h3" sx={{ mt: 1 }}>
+        <Typography
+          variant="h3"
+          sx={{
+            mt: 1,
+            fontSize: "2.2rem",
+            fontWeight: 700,
+            letterSpacing: 1,
+          }}
+        >
           {producto.Nombre}
         </Typography>
 
-        <Typography variant="body1" sx={{ mt: 1 }}>
+        <Typography
+          variant="body1"
+          sx={{
+            mt: 1,
+            fontSize: "1.05rem",
+            lineHeight: 1.7,
+          }}
+        >
           {producto.Descripcion}
         </Typography>
 
-        <Typography variant="h6" sx={{ mt: 2 }}>
+        <Typography
+          variant="h6"
+          sx={{
+            mt: 3,
+            fontWeight: 700,
+            letterSpacing: 1,
+          }}
+        >
           Ingredientes
         </Typography>
 
         {producto.Ingredientes?.map((ingrediente) => (
-          <Typography key={ingrediente.IdIngrediente} variant="body2">
-            {ingrediente.Nombre}
+          <Typography
+            key={ingrediente.IdIngrediente}
+            variant="body2"
+            sx={{
+              fontSize: "1rem",
+              py: 0.3,
+            }}
+          >
+            • {ingrediente.Nombre}
           </Typography>
         ))}
 
-        <Typography variant="h5" color="primary" sx={{ mt: 2 }}>
-          Precio: ₡{Number(producto.Precio).toLocaleString("es-CR")}
-        </Typography>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mt: 3,
+            pt: 2,
+            borderTop: "1px solid #e0e0e0",
+          }}
+        >
+          <Typography
+            variant="h6"
+            sx={{
+              fontWeight: "bold",
+            }}
+          >
+            Precio
+          </Typography>
+
+          <Typography
+            variant="h5"
+            sx={{
+              fontWeight: "bold",
+              color: "black",
+              fontSize: "1.7rem",
+            }}
+          >
+            ₡{Number(producto.Precio).toLocaleString("es-CR")}
+          </Typography>
+        </Box>
       </Card>
     </Box>
   );

@@ -28,64 +28,99 @@ export default function TablaProductosAdmin() {
   useEffect(() => {
     ProductoService.getProductos()
       .then((response) => {
-        console.log("PRODUCTOS:", response.data);
         setProductos(Array.isArray(response.data) ? response.data : []);
         setLoading(false);
       })
-      .catch((error) => {
-        console.error("Error cargando productos:", error);
-        setLoading(false);
-      });
+      .catch(() => setLoading(false));
   }, []);
 
-  if (loading) return <CircularProgress />;
+  if (loading) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h4" sx={{ mb: 3 }}>
+    <Box sx={{ p: 2, maxWidth: "100%" }}>
+      <Typography variant="h5" sx={{ mb: 2, fontWeight: 600 }}>
         Administración de Productos
       </Typography>
 
-      <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: 3 }}>
-        <Table>
+      <TableContainer
+        component={Paper}
+        sx={{
+          borderRadius: 2,
+          boxShadow: 2,
+          overflowX: "auto",
+        }}
+      >
+        <Table size="small">
           <TableHead>
-            <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
-              <TableCell>ID</TableCell>
-              <TableCell>Nombre</TableCell>
-              <TableCell>Descripción</TableCell>
-              <TableCell>Precio</TableCell>
-              <TableCell>Estado</TableCell>
-              <TableCell align="center">Acciones</TableCell>
+            <TableRow sx={{ backgroundColor: "#f2f2f2" }}>
+              <TableCell sx={{ fontWeight: 600, fontSize: "15px" }}>
+                ID
+              </TableCell>
+              <TableCell sx={{ fontWeight: 600, fontSize: "15px" }}>
+                Nombre
+              </TableCell>
+              <TableCell sx={{ fontWeight: 600, fontSize: "15px" }}>
+                Descripción
+              </TableCell>
+              <TableCell sx={{ fontWeight: 600, fontSize: "15px" }}>
+                Precio
+              </TableCell>
+              <TableCell sx={{ fontWeight: 600, fontSize: "15px" }}>
+                Estado
+              </TableCell>
+              <TableCell
+                align="center"
+                sx={{ fontWeight: 600, fontSize: "15px", width: 140 }}
+              >
+                Acciones
+              </TableCell>
             </TableRow>
           </TableHead>
 
           <TableBody>
             {productos.map((p) => (
-              <TableRow key={p.IdProducto} hover>
+              <TableRow
+                key={p.IdProducto}
+                hover
+                sx={{
+                  "& td": {
+                    py: 1,
+                    fontSize: "14.5px", // 👈 aquí sube todo el texto
+                  },
+                }}
+              >
                 <TableCell>{p.IdProducto}</TableCell>
-                <TableCell>{p.Nombre}</TableCell>
-                <TableCell>{p.Descripcion}</TableCell>
+                <TableCell sx={{ fontWeight: 500 }}>{p.Nombre}</TableCell>
+                <TableCell sx={{ color: "text.secondary" }}>
+                  {p.Descripcion}
+                </TableCell>
                 <TableCell>₡{p.Precio}</TableCell>
 
                 <TableCell>
                   <Chip
                     label={p.Activo === "1" ? "Activo" : "Inactivo"}
-                    color={p.Activo === "1" ? "success" : "error"}
+                    color={p.Activo === "1" ? "success" : "default"}
                     size="small"
                   />
                 </TableCell>
 
                 <TableCell align="center">
-                  <IconButton color="primary">
-                    <VisibilityIcon />
+                  <IconButton size="small" sx={{ color: "#000" }}>
+                    <VisibilityIcon fontSize="small" />
                   </IconButton>
 
-                  <IconButton color="warning">
-                    <EditIcon />
+                  <IconButton size="small" sx={{ color: "#333" }}>
+                    <EditIcon fontSize="small" />
                   </IconButton>
 
-                  <IconButton color="error">
-                    <DeleteIcon />
+                  <IconButton size="small" sx={{ color: "#000" }}>
+                    <DeleteIcon fontSize="small" />
                   </IconButton>
                 </TableCell>
               </TableRow>

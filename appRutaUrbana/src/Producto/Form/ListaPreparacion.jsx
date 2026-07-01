@@ -10,7 +10,6 @@ import {
   IconButton,
   Typography,
   Grid,
-  Tooltip,
   Box,
   Chip,
 } from "@mui/material";
@@ -51,9 +50,9 @@ export default function ListPreparacionPublic() {
           return acc;
         }, {});
 
-        const resultadoFinal = Object.values(agrupado).map((elemento) => {
-          elemento.pasos.sort((a, b) => a.OrdenPaso - b.OrdenPaso);
-          return elemento;
+        const resultadoFinal = Object.values(agrupado).map((e) => {
+          e.pasos.sort((a, b) => a.OrdenPaso - b.OrdenPaso);
+          return e;
         });
 
         setData(resultadoFinal);
@@ -64,80 +63,96 @@ export default function ListPreparacionPublic() {
   }, []);
 
   const handleDetail = (idProducto, idCombo) => {
-    if (idProducto) {
-      navigate(`/preparacion/${idProducto}`);
-    } else {
-      navigate(`/preparacion/combo/${idCombo}`);
-    }
+    if (idProducto) navigate(`/preparacion/${idProducto}`);
+    else navigate(`/preparacion/combo/${idCombo}`);
   };
 
   return (
-    <Box sx={{ flexGrow: 1, p: 3 }}>
-      <Typography
-        variant="h4"
-        component="h1"
-        gutterBottom
-        sx={{ mb: 4, fontWeight: "bold" }}
-      >
-        Procesos de Preparación
-      </Typography>
+    <Box
+      sx={{
+        p: 3,
+        display: "flex",
+        justifyContent: "center",
+      }}
+    >
+      {/* CONTENEDOR CENTRADO (clave para quitar espacio blanco) */}
+      <Box sx={{ width: "100%", maxWidth: "1200px" }}>
+        <Typography
+          variant="h3"
+          sx={{
+            mb: 4,
+            fontWeight: "bold",
+            color: "#FF8C00",
+            textAlign: "center",
+            fontSize: "2.3rem",
+          }}
+        >
+          Procesos de Preparación
+        </Typography>
 
-      {/* GRID v9 CORRECTO */}
-      <Grid container spacing={3} sx={{ alignItems: "stretch" }}>
-        {data.map((item) => (
-          <Grid
-            key={`${item.esProducto ? "prod" : "combo"}-${item.IdProducto || item.IdCombo}`}
-            size={{ xs: 12, sm: 6, md: 4 }}
-            sx={{ display: "flex" }}
-          >
-            <Card
-              sx={{
-                width: "100%",
-                display: "flex",
-                flexDirection: "column",
-                boxShadow: 3,
-              }}
+        <Grid container spacing={2}>
+          {data.map((item) => (
+            <Grid
+              key={`${item.esProducto ? "prod" : "combo"}-${item.IdProducto || item.IdCombo}`}
+              size={{ xs: 12, sm: 6, md: 3 }}
+              sx={{ display: "flex" }}
             >
-              <CardContent sx={{ flexGrow: 1 }}>
-                <Typography variant="h6" sx={{ fontWeight: "bold", mb: 2 }}>
-                  {item.Nombre}
-                </Typography>
+              <Card
+                sx={{
+                  width: "100%",
+                  borderRadius: 3,
+                  boxShadow: "0 3px 10px rgba(0,0,0,0.10)",
+                  display: "flex",
+                  flexDirection: "column",
+                  p: 1.5,
+                  transition: "0.2s",
+                  minHeight: 120,
+                  "&:hover": {
+                    transform: "translateY(-3px)",
+                  },
+                }}
+              >
+                <CardContent sx={{ p: 0 }}>
+                  <Typography
+                    sx={{
+                      fontWeight: "bold",
+                      fontSize: "1.05rem",
+                      mb: 1,
+                    }}
+                  >
+                    {item.Nombre}
+                  </Typography>
 
-                <Box sx={{ mt: 2 }}>
                   <Chip
-                    label={`Total de pasos: ${item.totalPasos}`}
+                    label={`Pasos: ${item.totalPasos}`}
+                    size="small"
                     color={item.esProducto ? "primary" : "success"}
+                    sx={{
+                      fontSize: "0.75rem",
+                      fontWeight: "bold",
+                    }}
                   />
-                </Box>
-              </CardContent>
+                </CardContent>
 
-              <CardActions sx={{ justifyContent: "flex-end", p: 2, pt: 0 }}>
-                <Tooltip title="Ver detalle completo">
+                <CardActions
+                  sx={{
+                    justifyContent: "flex-end",
+                    p: 0,
+                    mt: 1,
+                  }}
+                >
                   <IconButton
-                    sx={{ color: "black" }}
                     onClick={() => handleDetail(item.IdProducto, item.IdCombo)}
+                    sx={{ color: "#000" }}
                   >
                     <ZoomInIcon />
                   </IconButton>
-                </Tooltip>
-              </CardActions>
-            </Card>
-          </Grid>
-        ))}
-
-        {data.length === 0 && (
-          <Grid size={{ xs: 12 }}>
-            <Typography
-              variant="body1"
-              color="text.secondary"
-              align="center"
-              sx={{ mt: 4 }}
-            >
-              No hay procesos de preparación disponibles en este momento.
-            </Typography>
-          </Grid>
-        )}
-      </Grid>
+                </CardActions>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      </Box>
     </Box>
   );
 }

@@ -10,7 +10,10 @@ import {
   Grid,
   Box,
   Button,
+  CircularProgress,
 } from "@mui/material";
+
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 const API_URL = import.meta.env.VITE_BASE_URL;
 
@@ -30,52 +33,90 @@ export default function DetalleMenu() {
   }, [id]);
 
   if (!detalle) {
-    return <Typography>Cargando detalle...</Typography>;
+    return (
+      <Box
+        sx={{
+          minHeight: "100vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <CircularProgress size={55} sx={{ color: "#FF8C00" }} />
+      </Box>
+    );
   }
 
   const { menu, items } = detalle;
-
-  // variable para manejar el caso en que items no sea un array
   const safeItems = Array.isArray(items) ? items : [];
 
-  // Agrupar los items por categoría
   const itemsPorCategoria = safeItems.reduce((acc, item) => {
-    // Usar la propiedad 'Categoria' del item, o un valor por defecto si no existe
     const cat = item.Categoria || "Sin categoría";
-    // Inicializar el array de la categoría si no existe
     if (!acc[cat]) acc[cat] = [];
-    // Agregar el item al array de la categoría correspondiente
     acc[cat].push(item);
     return acc;
   }, {});
 
   return (
-    <Box sx={{ p: 4, bgcolor: "#fdfdfd", minHeight: "100vh" }}>
-      <Typography variant="h3" gutterBottom>
+    <Box sx={{ p: 4, minHeight: "100vh", bgcolor: "#fafafa" }}>
+      {/* HEADER */}
+      <Typography
+        variant="h3"
+        sx={{
+          fontWeight: "bold",
+          color: "black",
+          mb: 1,
+          fontSize: "2.4rem",
+        }}
+      >
         {menu?.NombreMenu}
       </Typography>
 
-      <Typography variant="body1" color="text.secondary">
+      <Typography
+        variant="body1"
+        sx={{ fontSize: "1.05rem" }}
+        color="text.secondary"
+      >
         Estado: {menu?.EstaActivo === "1" ? "Activo" : "Inactivo"}
       </Typography>
 
-      <Typography variant="body1" color="text.secondary">
+      <Typography
+        variant="body1"
+        sx={{ fontSize: "1.05rem" }}
+        color="text.secondary"
+      >
         Día(s): {menu?.DiasDisponibles || "No definido"}
       </Typography>
 
-      <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+      <Typography
+        variant="body1"
+        sx={{ fontSize: "1.05rem", mb: 2 }}
+        color="text.secondary"
+      >
         Horario: {menu?.HoraInicio} - {menu?.HoraFin}
       </Typography>
 
       <Button
         variant="outlined"
-        color="secondary"
-        sx={{ mb: 4 }}
+        startIcon={<ArrowBackIcon />}
         onClick={() => navigate("/menu")}
+        sx={{
+          mb: 4,
+          color: "#FF8C00",
+          borderColor: "#FF8C00",
+          fontWeight: "bold",
+          textTransform: "none",
+          fontSize: "1rem",
+          "&:hover": {
+            borderColor: "#E67E00",
+            backgroundColor: "#FFF3E0",
+          },
+        }}
       >
         Volver al listado
       </Button>
 
+      {/* CATEGORÍAS */}
       {Object.entries(itemsPorCategoria).map(([categoria, productos]) => (
         <Box key={categoria} sx={{ mb: 5 }}>
           <Typography
@@ -85,6 +126,7 @@ export default function DetalleMenu() {
               fontWeight: "bold",
               borderBottom: "2px solid #ddd",
               pb: 1,
+              fontSize: "1.6rem",
             }}
           >
             {categoria}
@@ -98,11 +140,16 @@ export default function DetalleMenu() {
               >
                 <Card
                   sx={{
-                    height: 450,
+                    height: "100%",
                     display: "flex",
                     flexDirection: "column",
-                    borderRadius: 2,
-                    overflow: "hidden",
+                    borderRadius: 4,
+                    boxShadow: "0 10px 20px rgba(0,0,0,.12)",
+                    transition: "0.3s",
+                    "&:hover": {
+                      transform: "translateY(-6px)",
+                      boxShadow: "0 16px 28px rgba(0,0,0,.18)",
+                    },
                   }}
                 >
                   <CardContent
@@ -119,22 +166,23 @@ export default function DetalleMenu() {
                           item.ImagenProducto || item.ImagenCombo
                         }`}
                         alt={item.NombreItem}
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = "/placeholder-combo.png";
-                        }}
                         sx={{
                           width: "100%",
                           height: 180,
                           objectFit: "cover",
-                          borderRadius: 2,
+                          borderRadius: 3,
                           mb: 2,
-                          bgcolor: "#f0f0f0",
                         }}
                       />
                     )}
 
-                    <Typography variant="h6" fontWeight="bold">
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        fontWeight: "bold",
+                        fontSize: "1.25rem",
+                      }}
+                    >
                       {item.NombreItem}
                     </Typography>
 
@@ -144,22 +192,38 @@ export default function DetalleMenu() {
                       sx={{
                         mt: 1,
                         flexGrow: 1,
-                        overflow: "hidden",
-                        display: "-webkit-box",
-                        WebkitLineClamp: 3,
-                        WebkitBoxOrient: "vertical",
+                        fontSize: "1rem",
+                        lineHeight: 1.6,
                       }}
                     >
                       {item.Descripcion}
                     </Typography>
 
-                    <Typography
-                      variant="h6"
-                      color="success.main"
-                      sx={{ mt: 2 }}
+                    {/* PRECIO */}
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        mt: 2,
+                        pt: 2,
+                        borderTop: "1px solid #eee",
+                      }}
                     >
-                      ₡{item.Precio}
-                    </Typography>
+                      <Typography sx={{ fontWeight: "bold", fontSize: "1rem" }}>
+                        Precio
+                      </Typography>
+
+                      <Typography
+                        sx={{
+                          fontWeight: "bold",
+                          color: "black",
+                          fontSize: "1.3rem",
+                        }}
+                      >
+                        ₡{item.Precio}
+                      </Typography>
+                    </Box>
                   </CardContent>
                 </Card>
               </Grid>
