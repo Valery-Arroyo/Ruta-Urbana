@@ -20,6 +20,21 @@ class PreparacionService {
   getProcesoCombo(idCombo) {
     return axios.get(`${BASE_URL}/getProcesoCombo/${idCombo}`);
   }
+
+  // Método para crear una preparación
+  createPreparacion(data) {
+    return axios.post(`${BASE_URL}/create`, data);
+  }
+
+  // Método para actualizar una preparación
+  updatePreparacion(id, data) {
+    return axios.put(`${BASE_URL}/update/${id}`, data);
+  }
+
+  // Método para eliminar una preparación
+  deletePreparacion(id) {
+    return axios.delete(`${BASE_URL}/delete/${id}`);
+  }
 }
 
 //Se exporta la instancia
