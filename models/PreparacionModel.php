@@ -80,4 +80,61 @@ class PreparacionModel
             handleException($e);
         }
     }
+
+    /* Crear Proceso de Preparación */
+    public function create($data)
+    {
+        try {
+            $ordenPaso = intval($data['OrdenPaso']);
+            $tiempoEstimadoMinutos = isset($data['TiempoEstimadoMinutos']) ? intval($data['TiempoEstimadoMinutos']) : 'NULL';
+            $idProducto = !empty($data['IdProducto']) ? intval($data['IdProducto']) : 'NULL';
+            $idCombo = !empty($data['IdCombo']) ? intval($data['IdCombo']) : 'NULL';
+            $idEstacion = intval($data['IdEstacion']);
+
+            $sql = "INSERT INTO ProcesoPreparacion (OrdenPaso, TiempoEstimadoMinutos, IdProducto, IdCombo, IdEstacion) 
+                    VALUES ($ordenPaso, $tiempoEstimadoMinutos, $idProducto, $idCombo, $idEstacion)";
+
+            return $this->enlace->executeSQL_DML_last($sql);
+        } catch (Exception $e) {
+            handleException($e);
+        }
+    }
+
+    /* Actualizar Proceso de Preparación */
+    public function update($id, $data)
+    {
+        try {
+            $idProceso = intval($id);
+            $ordenPaso = intval($data['OrdenPaso']);
+            $tiempoEstimadoMinutos = isset($data['TiempoEstimadoMinutos']) ? intval($data['TiempoEstimadoMinutos']) : 'NULL';
+            $idProducto = !empty($data['IdProducto']) ? intval($data['IdProducto']) : 'NULL';
+            $idCombo = !empty($data['IdCombo']) ? intval($data['IdCombo']) : 'NULL';
+            $idEstacion = intval($data['IdEstacion']);
+
+            $sql = "UPDATE ProcesoPreparacion SET 
+                        OrdenPaso = $ordenPaso, 
+                        TiempoEstimadoMinutos = $tiempoEstimadoMinutos, 
+                        IdProducto = $idProducto, 
+                        IdCombo = $idCombo, 
+                        IdEstacion = $idEstacion 
+                    WHERE IdProceso = $idProceso";
+
+            return $this->enlace->executeSQL_DML($sql);
+        } catch (Exception $e) {
+            handleException($e);
+        }
+    }
+
+    /* Eliminar Proceso de Preparación (Físico) */
+    public function delete($id)
+    {
+        try {
+            $idProceso = intval($id);
+            $sql = "DELETE FROM ProcesoPreparacion WHERE IdProceso = $idProceso";
+
+            return $this->enlace->executeSQL_DML($sql);
+        } catch (Exception $e) {
+            handleException($e);
+        }
+    }
 }
