@@ -17,6 +17,20 @@ class CategoriaService {
     return axios.get(`${BASE_URL}/${id}`);
   }
 
+  // Crear una nueva categoría
+  createCategoria(data) {
+    return axios.post(`${BASE_URL}/create`, data);
+  }
+
+  // Actualizar una categoría existente
+  updateCategoria(id, data) {
+    return axios.put(`${BASE_URL}/update/${id}`, data);
+  }
+
+  // Eliminar una categoría
+  deleteCategoria(id) {
+    return axios.delete(`${BASE_URL}/delete/${id}`);
+  }
 }
 
 export default new CategoriaService();
