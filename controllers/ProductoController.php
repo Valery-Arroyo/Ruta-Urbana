@@ -76,4 +76,51 @@ class Producto
             handleException($e);
         }
     }
+
+    // Método para crear un nuevo producto
+    public function create()
+    {
+        try {
+            $response = new Response();
+            $producto = new ProductoModel();
+
+            // Obtener datos del cuerpo de la petición
+            $data = json_decode(file_get_contents("php://input"), true);
+
+            $result = $producto->create($data);
+            $response->toJSON(['id' => $result]);
+        } catch (Exception $e) {
+            handleException($e);
+        }
+    }
+
+    // Método para actualizar un producto existente
+    public function update($id)
+    {
+        try {
+            $response = new Response();
+            $producto = new ProductoModel();
+
+            $data = json_decode(file_get_contents("php://input"), true);
+
+            $result = $producto->update($id, $data);
+            $response->toJSON(['success' => $result]);
+        } catch (Exception $e) {
+            handleException($e);
+        }
+    }
+
+    // Método para realizar el borrado lógico de un producto
+    public function delete($id)
+    {
+        try {
+            $response = new Response();
+            $producto = new ProductoModel();
+
+            $result = $producto->delete($id);
+            $response->toJSON(['success' => $result]);
+        } catch (Exception $e) {
+            handleException($e);
+        }
+    }
 }
