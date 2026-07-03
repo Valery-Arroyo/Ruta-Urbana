@@ -20,6 +20,22 @@ class ProductoService {
     // Si tu ruta en el backend es algo como: /producto/getIngredientes/{id}
     return axios.get(`${BASE_URL}/getIngredientes/${idProducto}`);
   }
+
+// Método para crear un producto
+  createProducto(data) {
+    return axios.post(`${BASE_URL}/create`, data);
+  }
+
+  // Método para actualizar un producto
+  updateProducto(id, data) {
+    return axios.put(`${BASE_URL}/update/${id}`, data);
+  }
+
+  // Método para eliminar un producto
+  deleteProducto(id) {
+    return axios.delete(`${BASE_URL}/delete/${id}`);
+  }
+
 }
 
 // Se exporta la instancia
