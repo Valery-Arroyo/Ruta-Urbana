@@ -2,20 +2,23 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ProductoService from "../../services/ProductoService";
 import {
-  Card, CardMedia, CardContent, CardActions, Typography, Grid, Box, Button, IconButton, Dialog, DialogTitle, DialogContent, TextField, DialogActions
+  Card, CardMedia, CardContent, CardActions, Typography, Grid, Box, Button, IconButton, Dialog, DialogTitle, DialogContent, TextField, DialogActions, MenuItem
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
+import AddIcon from "@mui/icons-material/Add";
 
 export default function ListProductosAdmin() {
   const navigate = useNavigate();
   const [data, setData] = useState([]);
+  const [categorias, setCategorias] = useState([]);
   const [open, setOpen] = useState(false);
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
 
   useEffect(() => {
     cargarProductos();
+    cargarCategorias();
   }, []);
 
   const cargarProductos = () => {
@@ -24,8 +27,15 @@ export default function ListProductosAdmin() {
     });
   };
 
+  const cargarCategorias = () => {
+    // Ajusta esta ruta a tu servicio real de categorías
+    ProductoService.getCategorias().then((response) => {
+      setCategorias(response.data);
+    });
+  };
+
   const handleEdit = (producto) => {
-    setProductoSeleccionado(producto);
+    setProductoSeleccionado(producto || { Nombre: "", Precio: "", IdCategoria: "", Descripcion: "" });
     setOpen(true);
   };
 
@@ -33,9 +43,6 @@ export default function ListProductosAdmin() {
     if (window.confirm("¿Estás seguro de eliminar este producto?")) {
       try {
         const response = await ProductoService.deleteProducto(id);
-        
-        // Verificamos si el backend realmente tuvo éxito antes de quitarlo de la vista
-        // Ajusta 'response.data.success' según cómo venga el objeto de respuesta de tu API
         if (response.data && response.data.success == 1) {
           setData((prevData) => prevData.filter((item) => String(item.IdProducto) !== String(id)));
         } else {
@@ -69,41 +76,30 @@ export default function ListProductosAdmin() {
         Gestión de Productos
       </Typography>
 
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 3 }}>
+        <Button 
+          variant="contained" 
+          startIcon={<AddIcon />} 
+          onClick={() => handleEdit(null)}
+          sx={{ bgcolor: "#FF8C00", "&:hover": { bgcolor: "#e07b00" } }}
+        >
+          Nuevo Producto
+        </Button>
+      </Box>
+
       <Grid container spacing={4} alignItems="stretch">
         {data.map((row) => (
           <Grid key={row.IdProducto} item xs={12} sm={6} md={4} lg={3} sx={{ display: 'flex' }}>
-            <Card sx={{ 
-              width: "100%", 
-              height: "400px", 
-              display: "flex", 
-              flexDirection: "column", 
-              borderRadius: 4,
-              overflow: 'hidden'
-            }}>
-              <CardMedia 
-                component="img" 
-                image={`http://localhost:81/apirutaurbana/${row.Imagen}`} 
-                alt={row.Nombre} 
-                sx={{ height: "200px", width: "100%", objectFit: "cover", flexShrink: 0 }} 
-              />
+            <Card sx={{ width: "100%", height: "400px", display: "flex", flexDirection: "column", borderRadius: 4, overflow: 'hidden' }}>
+              <CardMedia component="img" image={`http://localhost:81/apirutaurbana/${row.Imagen}`} alt={row.Nombre} sx={{ height: "200px", width: "100%", objectFit: "cover", flexShrink: 0 }} />
               <CardContent sx={{ height: "120px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
-                <Typography variant="h6" align="center" sx={{ fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                  {row.Nombre}
-                </Typography>
-                <Typography variant="body2" color="text.secondary" align="center">
-                  {row.NombreCategoria}
-                </Typography>
+                <Typography variant="h6" align="center" sx={{ fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{row.Nombre}</Typography>
+                <Typography variant="body2" color="text.secondary" align="center">{row.NombreCategoria}</Typography>
               </CardContent>
               <CardActions sx={{ height: "80px", justifyContent: "center" }}>
-                <IconButton sx={{ color: "#FF8C00" }} onClick={() => navigate(`/productos/${row.IdProducto}`)}>
-                  <ZoomInIcon />
-                </IconButton>
-                <IconButton color="primary" onClick={() => handleEdit(row)}>
-                  <EditIcon />
-                </IconButton>
-                <IconButton color="error" onClick={() => handleDelete(row.IdProducto)}>
-                  <DeleteIcon />
-                </IconButton>
+                <IconButton sx={{ color: "#FF8C00" }} onClick={() => navigate(`/productos/${row.IdProducto}`)}><ZoomInIcon /></IconButton>
+                <IconButton color="primary" onClick={() => handleEdit(row)}><EditIcon /></IconButton>
+                <IconButton color="error" onClick={() => handleDelete(row.IdProducto)}><DeleteIcon /></IconButton>
               </CardActions>
             </Card>
           </Grid>
@@ -114,7 +110,23 @@ export default function ListProductosAdmin() {
         <DialogTitle>{productoSeleccionado?.IdProducto ? "Editar Producto" : "Nuevo Producto"}</DialogTitle>
         <DialogContent>
           <TextField fullWidth margin="dense" label="Nombre" value={productoSeleccionado?.Nombre || ""} onChange={(e) => setProductoSeleccionado({ ...productoSeleccionado, Nombre: e.target.value })} />
-          <TextField fullWidth margin="dense" label="Categoría" value={productoSeleccionado?.NombreCategoria || ""} onChange={(e) => setProductoSeleccionado({ ...productoSeleccionado, NombreCategoria: e.target.value })} />
+          <TextField fullWidth margin="dense" label="Precio" type="number" value={productoSeleccionado?.Precio || ""} onChange={(e) => setProductoSeleccionado({ ...productoSeleccionado, Precio: e.target.value })} />
+          
+          <TextField
+            select
+            fullWidth
+            margin="dense"
+            label="Categoría"
+            value={productoSeleccionado?.IdCategoria || ""}
+            onChange={(e) => setProductoSeleccionado({ ...productoSeleccionado, IdCategoria: e.target.value })}
+          >
+            {categorias.map((cat) => (
+              <MenuItem key={cat.IdCategoria} value={cat.IdCategoria}>
+                {cat.Nombre}
+              </MenuItem>
+            ))}
+          </TextField>
+
           <TextField fullWidth margin="dense" label="Descripción" value={productoSeleccionado?.Descripcion || ""} onChange={(e) => setProductoSeleccionado({ ...productoSeleccionado, Descripcion: e.target.value })} />
         </DialogContent>
         <DialogActions>

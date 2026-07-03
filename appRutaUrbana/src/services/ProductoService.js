@@ -17,6 +17,12 @@ class ProductoService {
     return axios.get(`${BASE_URL}/getIngredientes/${idProducto}`);
   }
 
+  // --- NUEVO MÉTODO AGREGADO ---
+  getCategorias() {
+    return axios.get(`${API_URL}categoria/all`);
+  }
+  // -----------------------------
+
   createProducto(data) {
     return axios.post(`${BASE_URL}/create`, data);
   }
@@ -26,8 +32,6 @@ class ProductoService {
   }
 
   deleteProducto(id) {
-    // Si la ruta en tu backend es: http://localhost:81/apirutaurbana/producto/delete/{id}
-    // este método es correcto, siempre que BASE_URL apunte a .../apirutaurbana/producto
     return axios.delete(`${BASE_URL}/delete/${id}`);
   }
 }
