@@ -53,4 +53,53 @@ class Preparacion
             $response->toJSON(["status" => 404, "result" => "Método no encontrado"]);
         }
     }
+
+
+
+
+    // Crear un nuevo proceso de preparación
+    public function create()
+    {
+        try {
+            $response = new Response();
+            $preparacion = new PreparacionModel();
+
+            $data = json_decode(file_get_contents("php://input"), true);
+
+            $result = $preparacion->create($data);
+            $response->toJSON(['id' => $result]);
+        } catch (Exception $e) {
+            handleException($e);
+        }
+    }
+
+    // Actualizar un proceso de preparación existente
+    public function update($id)
+    {
+        try {
+            $response = new Response();
+            $preparacion = new PreparacionModel();
+
+            $data = json_decode(file_get_contents("php://input"), true);
+
+            $result = $preparacion->update($id, $data);
+            $response->toJSON(['success' => $result]);
+        } catch (Exception $e) {
+            handleException($e);
+        }
+    }
+
+    // Eliminar un proceso de preparación
+    public function delete($id)
+    {
+        try {
+            $response = new Response();
+            $preparacion = new PreparacionModel();
+
+            $result = $preparacion->delete($id);
+            $response->toJSON(['success' => $result]);
+        } catch (Exception $e) {
+            handleException($e);
+        }
+    }
 }
