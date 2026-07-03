@@ -61,4 +61,50 @@ class Categoria
             handleException($e);
         }
     }
+
+    // Crear una nueva Categoría
+    public function create()
+    {
+        try {
+            $response = new Response();
+            $categoria = new CategoriaModel();
+
+            $data = json_decode(file_get_contents("php://input"), true);
+
+            $result = $categoria->create($data);
+            $response->toJSON(['id' => $result]);
+        } catch (Exception $e) {
+            handleException($e);
+        }
+    }
+
+    // Actualizar una Categoría existente
+    public function update($id)
+    {
+        try {
+            $response = new Response();
+            $categoria = new CategoriaModel();
+
+            $data = json_decode(file_get_contents("php://input"), true);
+
+            $result = $categoria->update($id, $data);
+            $response->toJSON(['success' => $result]);
+        } catch (Exception $e) {
+            handleException($e);
+        }
+    }
+
+    // Eliminar una Categoría
+    public function delete($id)
+    {
+        try {
+            $response = new Response();
+            $categoria = new CategoriaModel();
+
+            $result = $categoria->delete($id);
+            $response->toJSON(['success' => $result]);
+        } catch (Exception $e) {
+            handleException($e);
+        }
+    }
 }
