@@ -64,4 +64,53 @@ class Combo
             handleException($e);
         }
     }
+
+
+    // Crear un nuevo Combo
+    public function create()
+    {
+        try {
+            $response = new Response();
+            $combo = new ComboModel();
+            
+            $data = json_decode(file_get_contents("php://input"), true);
+            
+            $result = $combo->create($data);
+            $response->toJSON(['id' => $result]);
+        } catch (Exception $e) {
+            handleException($e);
+        }
+    }
+
+    // Actualizar un Combo existente
+    public function update($id)
+    {
+        try {
+            $response = new Response();
+            $combo = new ComboModel();
+            
+            $data = json_decode(file_get_contents("php://input"), true);
+            
+            $result = $combo->update($id, $data);
+            $response->toJSON(['success' => $result]);
+        } catch (Exception $e) {
+            handleException($e);
+        }
+    }
+
+    // Eliminar (Inhabilitar) un Combo
+    public function delete($id)
+    {
+        try {
+            $response = new Response();
+            $combo = new ComboModel();
+            
+            $result = $combo->delete($id);
+            $response->toJSON(['success' => $result]);
+        } catch (Exception $e) {
+            handleException($e);
+        }
+    }
+
+
 }
