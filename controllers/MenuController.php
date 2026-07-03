@@ -62,4 +62,39 @@ class Menu
             handleException($e);
         }
     }
+
+    // Crear un nuevo Menú
+    public function create()
+    {
+        try {
+            $data = json_decode(file_get_contents("php://input"), true);
+            $id = $this->menuModel->create($data);
+            $this->response->toJSON(['id' => $id]);
+        } catch (Exception $e) {
+            handleException($e);
+        }
+    }
+
+    // Actualizar un Menú existente
+    public function update($id)
+    {
+        try {
+            $data = json_decode(file_get_contents("php://input"), true);
+            $result = $this->menuModel->update($id, $data);
+            $this->response->toJSON(['success' => $result]);
+        } catch (Exception $e) {
+            handleException($e);
+        }
+    }
+
+    // Eliminar (Inhabilitar) un Menú
+    public function delete($id)
+    {
+        try {
+            $result = $this->menuModel->delete($id);
+            $this->response->toJSON(['success' => $result]);
+        } catch (Exception $e) {
+            handleException($e);
+        }
+    }
 }
