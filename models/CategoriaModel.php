@@ -60,4 +60,46 @@ class CategoriaModel
             handleException($e);
         }
     }
+
+    /* Crear Categoría */
+    public function create($data)
+    {
+        try {
+            $nombre = addslashes($data['Nombre']);
+
+            $sql = "INSERT INTO Categoria (Nombre) VALUES ('$nombre')";
+
+            return $this->enlace->executeSQL_DML_last($sql);
+        } catch (Exception $e) {
+            handleException($e);
+        }
+    }
+
+    /* Actualizar Categoría */
+    public function update($id, $data)
+    {
+        try {
+            $idCategoria = intval($id);
+            $nombre = addslashes($data['Nombre']);
+
+            $sql = "UPDATE Categoria SET Nombre = '$nombre' WHERE IdCategoria = $idCategoria";
+
+            return $this->enlace->executeSQL_DML($sql);
+        } catch (Exception $e) {
+            handleException($e);
+        }
+    }
+
+    /* Eliminar Categoría (Borrado Físico) */
+    public function delete($id)
+    {
+        try {
+            $idCategoria = intval($id);
+            $sql = "DELETE FROM Categoria WHERE IdCategoria = $idCategoria";
+
+            return $this->enlace->executeSQL_DML($sql);
+        } catch (Exception $e) {
+            handleException($e);
+        }
+    }
 }
