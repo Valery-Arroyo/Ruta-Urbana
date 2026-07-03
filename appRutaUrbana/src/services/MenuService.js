@@ -25,6 +25,20 @@ class MenuService {
       throw error;
     });
   }
+  // Método para crear un menú
+  createMenu(data) {
+    return axios.post(`${BASE_URL}/create`, data);
+  }
+
+  // Método para actualizar un menú
+  updateMenu(id, data) {
+    return axios.put(`${BASE_URL}/update/${id}`, data);
+  }
+
+  // Método para eliminar un menú
+  deleteMenu(id) {
+    return axios.delete(`${BASE_URL}/delete/${id}`);
+  }
 }
 
 export default new MenuService();
