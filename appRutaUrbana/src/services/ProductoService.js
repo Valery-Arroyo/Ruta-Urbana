@@ -1,43 +1,35 @@
 import axios from "axios";
 
-// Se define la URL base para las solicitudes relacionadas con productos, 
-// utilizando una variable de entorno para mayor flexibilidad
-const BASE_URL = import.meta.env.VITE_BASE_URL + "producto";
+// Ajusta la URL base directamente si la variable de entorno falla
+const API_URL = import.meta.env.VITE_BASE_URL || "http://localhost:81/apirutaurbana/";
+const BASE_URL = `${API_URL}producto`;
 
-// Clase ProductoService que contiene métodos para interactuar con la API de productos
 class ProductoService {
   getProductos() {
-    return axios.get(BASE_URL); // Usamos la constante definida arriba
+    return axios.get(BASE_URL);
   }
 
-  // Método para obtener un producto específico por su ID
   getProducto(id) {
     return axios.get(`${BASE_URL}/${id}`);
   }
 
- // Método para obtener los ingredientes de un producto
   getIngredientes(idProducto) {
-    // Si tu ruta en el backend es algo como: /producto/getIngredientes/{id}
     return axios.get(`${BASE_URL}/getIngredientes/${idProducto}`);
   }
 
-// Método para crear un producto
   createProducto(data) {
     return axios.post(`${BASE_URL}/create`, data);
   }
 
-  // Método para actualizar un producto
   updateProducto(id, data) {
     return axios.put(`${BASE_URL}/update/${id}`, data);
   }
 
-  // Método para eliminar un producto
   deleteProducto(id) {
+    // Si la ruta en tu backend es: http://localhost:81/apirutaurbana/producto/delete/{id}
+    // este método es correcto, siempre que BASE_URL apunte a .../apirutaurbana/producto
     return axios.delete(`${BASE_URL}/delete/${id}`);
   }
-
 }
 
-// Se exporta la instancia
 export default new ProductoService();
- 

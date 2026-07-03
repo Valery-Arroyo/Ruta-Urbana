@@ -1,161 +1,127 @@
-import * as React from "react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ProductoService from "../../services/ProductoService";
-
 import {
-  Card,
-  CardMedia,
-  CardContent,
-  CardActions,
-  Typography,
-  Grid,
-  Box,
-  Button,
+  Card, CardMedia, CardContent, CardActions, Typography, Grid, Box, Button, IconButton, Dialog, DialogTitle, DialogContent, TextField, DialogActions
 } from "@mui/material";
-
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 
-export default function ListProductosPublic() {
+export default function ListProductosAdmin() {
   const navigate = useNavigate();
   const [data, setData] = useState([]);
+  const [open, setOpen] = useState(false);
+  const [productoSeleccionado, setProductoSeleccionado] = useState(null);
 
   useEffect(() => {
-    ProductoService.getProductos()
-      .then((response) => {
-        const resData = response.data;
-
-        console.log("PRODUCTOS:", resData);
-
-        if (Array.isArray(resData)) {
-          setData(resData);
-        } else if (resData?.data && Array.isArray(resData.data)) {
-          setData(resData.data);
-        } else if (resData) {
-          setData([resData]);
-        } else {
-          setData([]);
-        }
-      })
-      .catch((error) => {
-        console.error("Error cargando productos:", error);
-      });
+    cargarProductos();
   }, []);
 
-  const detalle = (id) => {
-    navigate(`/productos/${id}`);
+  const cargarProductos = () => {
+    ProductoService.getProductos().then((response) => {
+      setData(response.data);
+    });
+  };
+
+  const handleEdit = (producto) => {
+    setProductoSeleccionado(producto);
+    setOpen(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm("¿Estás seguro de eliminar este producto?")) {
+      try {
+        const response = await ProductoService.deleteProducto(id);
+        
+        // Verificamos si el backend realmente tuvo éxito antes de quitarlo de la vista
+        // Ajusta 'response.data.success' según cómo venga el objeto de respuesta de tu API
+        if (response.data && response.data.success == 1) {
+          setData((prevData) => prevData.filter((item) => String(item.IdProducto) !== String(id)));
+        } else {
+          alert("El servidor reportó un error al intentar eliminar.");
+        }
+      } catch (error) {
+        console.error("Error al eliminar:", error);
+        alert("Error al eliminar el producto.");
+      }
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      if (productoSeleccionado.IdProducto) {
+        await ProductoService.updateProducto(productoSeleccionado.IdProducto, productoSeleccionado);
+      } else {
+        await ProductoService.createProducto(productoSeleccionado);
+      }
+      setOpen(false);
+      cargarProductos();
+    } catch (error) {
+      console.error("Error al guardar:", error);
+      alert("Error al guardar el producto.");
+    }
   };
 
   return (
     <Box sx={{ p: 3 }}>
-      <Typography
-        variant="h3"
-        align="center"
-        gutterBottom
-        sx={{
-          mb: 1,
-          fontWeight: "bold",
-          color: "black",
-          letterSpacing: 1,
-        }}
-      >
-        Nuestros Productos
+      <Typography variant="h3" align="center" gutterBottom sx={{ mb: 4, fontWeight: "bold" }}>
+        Gestión de Productos
       </Typography>
 
-      <Typography
-        variant="body1"
-        align="center"
-        sx={{
-          mb: 4,
-          color: "text.secondary",
-        }}
-      >
-        Conoce nuestros productos preparados con ingredientes de calidad.
-      </Typography>
-
-      <Grid container spacing={4}>
+      <Grid container spacing={4} alignItems="stretch">
         {data.map((row) => (
-          <Grid key={row.IdProducto} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-            <Card
-              sx={{
-                height: "100%",
-                display: "flex",
-                flexDirection: "column",
-                borderRadius: 4,
-                boxShadow: "0 10px 20px rgba(0,0,0,.12)",
-                transition: "0.3s",
-                "&:hover": {
-                  transform: "translateY(-8px)",
-                  boxShadow: "0 16px 28px rgba(0,0,0,.18)",
-                },
-              }}
-            >
-              <CardMedia
-                component="img"
-                height="220"
-                image={`http://localhost:81/apirutaurbana/${row.Imagen}`}
-                alt={row.Nombre}
-                sx={{
-                  objectFit: "cover",
-                }}
+          <Grid key={row.IdProducto} item xs={12} sm={6} md={4} lg={3} sx={{ display: 'flex' }}>
+            <Card sx={{ 
+              width: "100%", 
+              height: "400px", 
+              display: "flex", 
+              flexDirection: "column", 
+              borderRadius: 4,
+              overflow: 'hidden'
+            }}>
+              <CardMedia 
+                component="img" 
+                image={`http://localhost:81/apirutaurbana/${row.Imagen}`} 
+                alt={row.Nombre} 
+                sx={{ height: "200px", width: "100%", objectFit: "cover", flexShrink: 0 }} 
               />
-
-              <CardContent sx={{ flexGrow: 1 }}>
-                <Typography
-                  variant="h6"
-                  align="center"
-                  sx={{
-                    fontWeight: 700,
-                    letterSpacing: 0.8,
-                    color: "#333",
-                    mb: 1,
-                  }}
-                >
+              <CardContent sx={{ height: "120px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+                <Typography variant="h6" align="center" sx={{ fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   {row.Nombre}
                 </Typography>
-
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{
-                    minHeight: 70,
-                    textAlign: "center",
-                    lineHeight: 1.6,
-                    fontSize: "0.98rem",
-                  }}
-                >
-                  {row.Descripcion}
+                <Typography variant="body2" color="text.secondary" align="center">
+                  {row.NombreCategoria}
                 </Typography>
               </CardContent>
-
-              <CardActions
-                sx={{
-                  justifyContent: "center",
-                  pb: 2,
-                }}
-              >
-                <Button
-                  variant="contained"
-                  startIcon={<ZoomInIcon />}
-                  onClick={() => detalle(row.IdProducto)}
-                  sx={{
-                    bgcolor: "#FF8C00",
-                    borderRadius: 3,
-                    textTransform: "none",
-                    fontWeight: "bold",
-                    px: 3,
-                    "&:hover": {
-                      bgcolor: "#E67E00",
-                    },
-                  }}
-                >
-                  Ver detalle
-                </Button>
+              <CardActions sx={{ height: "80px", justifyContent: "center" }}>
+                <IconButton sx={{ color: "#FF8C00" }} onClick={() => navigate(`/productos/${row.IdProducto}`)}>
+                  <ZoomInIcon />
+                </IconButton>
+                <IconButton color="primary" onClick={() => handleEdit(row)}>
+                  <EditIcon />
+                </IconButton>
+                <IconButton color="error" onClick={() => handleDelete(row.IdProducto)}>
+                  <DeleteIcon />
+                </IconButton>
               </CardActions>
             </Card>
           </Grid>
         ))}
       </Grid>
+
+      <Dialog open={open} onClose={() => setOpen(false)} fullWidth>
+        <DialogTitle>{productoSeleccionado?.IdProducto ? "Editar Producto" : "Nuevo Producto"}</DialogTitle>
+        <DialogContent>
+          <TextField fullWidth margin="dense" label="Nombre" value={productoSeleccionado?.Nombre || ""} onChange={(e) => setProductoSeleccionado({ ...productoSeleccionado, Nombre: e.target.value })} />
+          <TextField fullWidth margin="dense" label="Categoría" value={productoSeleccionado?.NombreCategoria || ""} onChange={(e) => setProductoSeleccionado({ ...productoSeleccionado, NombreCategoria: e.target.value })} />
+          <TextField fullWidth margin="dense" label="Descripción" value={productoSeleccionado?.Descripcion || ""} onChange={(e) => setProductoSeleccionado({ ...productoSeleccionado, Descripcion: e.target.value })} />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpen(false)}>Cancelar</Button>
+          <Button variant="contained" onClick={handleSave} sx={{ bgcolor: "#FF8C00" }}>Guardar</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
