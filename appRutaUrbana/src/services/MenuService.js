@@ -39,6 +39,28 @@ class MenuService {
   deleteMenu(id) {
     return axios.delete(`${BASE_URL}/delete/${id}`);
   }
+
+
+  // Método para crear un menú
+  createMenu(data) {
+    // Si la ruta en el router es /menu/create
+    return axios.post(`${BASE_URL}/create`, data);
+  }
+
+  // Método para actualizar un menú
+  updateMenu(id, data) {
+    // Asegúrate de que tu backend tenga definida la ruta /menu/update/{id}
+    return axios.put(`${BASE_URL}/update/${id}`, data);
+  }
+
+  // Método para eliminar un menú
+  deleteMenu(id) {
+    // Asegúrate de que tu backend tenga definida la ruta /menu/delete/{id}
+    return axios.delete(`${BASE_URL}/delete/${id}`);
+  }
+
+
+
 }
 
 export default new MenuService();
