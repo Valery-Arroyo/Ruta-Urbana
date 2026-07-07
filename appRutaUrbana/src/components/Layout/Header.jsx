@@ -44,6 +44,11 @@ const menu = [
     ruta: "/preparacion",
     icono: <SettingsOutlinedIcon />,
   },
+    {
+    nombre: "Ingrediente",
+    ruta: "/ingrediente",
+    icono: <SettingsOutlinedIcon />,
+  },
 ];
 
 export default function Header() {

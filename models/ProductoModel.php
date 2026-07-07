@@ -12,20 +12,21 @@ class ProductoModel
     {
         try {
             $sql = "SELECT 
-                    p.IdProducto,
-                    p.Nombre,
-                    p.Descripcion,
-                    p.Precio,
-                    p.Activo,
-                    p.IdCategoria,
-                    c.Nombre AS NombreCategoria,
-                    pi.Imagen
-                FROM Producto p
-                LEFT JOIN Categoria c
-                    ON p.IdCategoria = c.IdCategoria
-                LEFT JOIN ProductoImagen pi
-                    ON p.IdProducto = pi.IdProducto
-                    AND pi.EsPrincipal = 1";
+            p.IdProducto,
+            p.Nombre,
+            p.Descripcion,
+            p.Precio,
+            p.Activo,
+            p.IdCategoria,
+            c.Nombre AS NombreCategoria,
+            pi.IdImagen,
+            pi.Imagen
+            FROM Producto p
+            LEFT JOIN Categoria c
+            ON p.IdCategoria = c.IdCategoria
+            LEFT JOIN ProductoImagen pi
+            ON p.IdProducto = pi.IdProducto
+            AND pi.EsPrincipal = 1";
 
             $productos = $this->enlace->ExecuteSQL($sql);
 

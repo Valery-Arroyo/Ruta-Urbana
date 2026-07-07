@@ -28,7 +28,7 @@
     "prop-types": "^15.8.1",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
-    "react-hook-form": "^7.77.0",
+    "react-hook-form": "^7.81.0",
     "react-hot-toast": "^2.6.0",
     "styled-components": "^6.4.2",
     "yup": "^1.7.1"

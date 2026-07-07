@@ -15,6 +15,7 @@ import DetalleMenu from "./Producto/Form/DetalleMenu";
 import TablaProducto from "./Producto/Form/TablaProducto";
 import ListaPreparacion from "./Producto/Form/ListaPreparacion";
 import DetallePreparacion from "./Producto/Form/DetallePreparacion";
+import Ingrediente from "./Producto/Form/Ingrediente";
 const rutas = createBrowserRouter([
   {
     element: <App />,
@@ -59,7 +60,10 @@ const rutas = createBrowserRouter([
         path: "/tabla",
         element: <TablaProducto />,
       },
-
+            {
+        path: "/ingrediente",
+        element: <Ingrediente />,
+      },
       {
         path: "*",
         element: <PageNotFound />,

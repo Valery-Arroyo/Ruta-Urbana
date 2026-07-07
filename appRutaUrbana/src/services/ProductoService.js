@@ -17,11 +17,9 @@ class ProductoService {
     return axios.get(`${BASE_URL}/getIngredientes/${idProducto}`);
   }
 
-  // --- NUEVO MÉTODO AGREGADO ---
   getCategorias() {
     return axios.get(`${API_URL}categoria/all`);
   }
-  // -----------------------------
 
   createProducto(data) {
     return axios.post(`${BASE_URL}/create`, data);
