@@ -21,7 +21,6 @@ class IngredienteModel
         }
     }
 
-
     /* Obtener un ingrediente específico */
     public function get($id)
     {
@@ -39,7 +38,6 @@ class IngredienteModel
         }
     }
 
-
     /* Crear ingrediente */
     public function create($data)
     {
@@ -55,23 +53,31 @@ class IngredienteModel
         }
     }
 
-
     /* Actualizar ingrediente */
     public function update($id, $data)
     {
         try {
             $idIngrediente = intval($id);
-            $nombre = addslashes($data['Nombre']);
+            // Convierte todas las claves a minúsculas
+            $data = array_change_key_case($data, CASE_LOWER);
+
+            $nombre = isset($data['nombre']) ? addslashes($data['nombre']) : null;
+
+            if ($nombre === null) {
+                throw new Exception("Campo 'Nombre' requerido");
+            }
 
             $sql = "UPDATE Ingrediente 
-                    SET Nombre = '$nombre'
-                    WHERE IdIngrediente = $idIngrediente";
+                SET Nombre = '$nombre'
+                WHERE IdIngrediente = $idIngrediente";
 
             return $this->enlace->executeSQL_DML($sql);
         } catch (Exception $e) {
             handleException($e);
         }
     }
+
+
 
 
     /* Eliminar ingrediente */

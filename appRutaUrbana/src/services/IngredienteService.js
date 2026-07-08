@@ -1,6 +1,9 @@
 import axios from "axios";
 
-const BASE_URL = import.meta.env.VITE_BASE_URL + "ingrediente";
+// Ajusta la URL base directamente si la variable de entorno falla
+const API_URL =
+  import.meta.env.VITE_BASE_URL || "http://localhost:81/apirutaurbana/";
+const BASE_URL = `${API_URL}ingrediente`;
 
 class IngredienteService {
   /* Obtener todos los ingredientes */
@@ -9,22 +12,22 @@ class IngredienteService {
   }
 
   /* Obtener un ingrediente por ID */
-  getIngrediente(id) {
+  get(id) {
     return axios.get(`${BASE_URL}/${id}`);
   }
 
   /* Crear ingrediente */
-  createIngrediente(data) {
+  create(data) {
     return axios.post(`${BASE_URL}/create`, data);
   }
 
   /* Actualizar ingrediente */
-  updateIngrediente(id, data) {
+  update(id, data) {
     return axios.put(`${BASE_URL}/update/${id}`, data);
   }
 
   /* Eliminar ingrediente */
-  deleteIngrediente(id) {
+  delete(id) {
     return axios.delete(`${BASE_URL}/delete/${id}`);
   }
 }

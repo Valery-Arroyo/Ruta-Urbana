@@ -1,6 +1,6 @@
 <?php
 
-class IngredienteController
+class Ingrediente
 {
     private $model;
 
@@ -9,13 +9,13 @@ class IngredienteController
         $this->model = new IngredienteModel();
     }
 
-
     /* Listar ingredientes */
     public function index()
     {
         try {
+            $response = new Response();
             $resultado = $this->model->all();
-            return $resultado;
+            $response->toJSON($resultado);
         } catch (Exception $e) {
             handleException($e);
         }
@@ -33,30 +33,39 @@ class IngredienteController
         }
     }
 
-
     /* Crear ingrediente */
-    public function create($data)
+    public function create()
     {
         try {
+            $request = new Request();
+            $data = (array) $request->getJSON();
+
+            $response = new Response();
             $resultado = $this->model->create($data);
-            return $resultado;
+
+            $response->toJSON(['success' => $resultado]);
         } catch (Exception $e) {
             handleException($e);
         }
     }
-
 
     /* Actualizar ingrediente */
-    public function update($id, $data)
+    public function update($id)
     {
         try {
+            $request = new Request();
+
+            // Convertir el objeto a arreglo
+            $data = (array) $request->getJSON();
+
+            $response = new Response();
             $resultado = $this->model->update($id, $data);
-            return $resultado;
+
+            $response->toJSON(['success' => $resultado]);
         } catch (Exception $e) {
             handleException($e);
         }
     }
-
 
     /* Eliminar ingrediente */
     public function delete($id)

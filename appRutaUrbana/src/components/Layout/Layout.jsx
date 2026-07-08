@@ -16,7 +16,7 @@ export function Layout({ children }) {
         maxWidth="xl" 
         style={{ paddingTop: '1rem', paddingBottom: '4.5rem' }} 
       > 
-      <Toaster position='bottom-right' />
+      <Toaster position='top-center' />
         {children} 
       </Container> 
       <Footer /> 

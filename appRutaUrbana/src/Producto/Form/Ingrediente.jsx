@@ -25,6 +25,8 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 
+import toast from "react-hot-toast";
+
 export default function ListIngredientesAdmin() {
   const [data, setData] = useState([]);
   const [open, setOpen] = useState(false);
@@ -40,7 +42,8 @@ export default function ListIngredientesAdmin() {
         setData(response.data || []);
       })
       .catch((error) => {
-        console.log("Error cargando ingredientes", error);
+        console.error(error);
+        toast.error("No se pudieron cargar los ingredientes.");
       });
   };
 
@@ -56,32 +59,61 @@ export default function ListIngredientesAdmin() {
     setOpen(true);
   };
 
+  const handleClose = () => {
+    setOpen(false);
+    setIngredienteSeleccionado(null);
+  };
+
   const handleDelete = async (id) => {
-    if (window.confirm("¿Está seguro de eliminar este ingrediente?")) {
-      try {
-        await IngredienteService.deleteIngrediente(id);
-        cargarIngredientes();
-      } catch (error) {
-        alert("No se pudo eliminar el ingrediente");
-      }
+    if (!window.confirm("¿Está seguro de eliminar este ingrediente?")) return;
+
+    try {
+      await IngredienteService.delete(id);
+
+      toast.success("Ingrediente eliminado correctamente.");
+
+      cargarIngredientes();
+    } catch (error) {
+      console.error(error);
+
+      toast.error(
+        error.response?.data?.result || "No se pudo eliminar el ingrediente.",
+      );
     }
   };
 
   const handleSave = async () => {
+    if (!ingredienteSeleccionado?.Nombre.trim()) {
+      toast("Debe ingresar el nombre del ingrediente.", {
+        icon: "⚠️",
+      });
+      return;
+    }
+
     try {
       if (ingredienteSeleccionado.IdIngrediente) {
-        await IngredienteService.updateIngrediente(
+        await IngredienteService.update(
           ingredienteSeleccionado.IdIngrediente,
           ingredienteSeleccionado,
         );
+
+        toast.success("Ingrediente actualizado correctamente.");
       } else {
-        await IngredienteService.createIngrediente(ingredienteSeleccionado);
+        await IngredienteService.create(ingredienteSeleccionado);
+
+        toast.success("Ingrediente creado correctamente.");
       }
 
-      setOpen(false);
+      handleClose();
       cargarIngredientes();
     } catch (error) {
-      alert("Error al guardar ingrediente");
+      console.error(error);
+
+      toast.error(
+        error.response?.data?.result ||
+          error.response?.data?.message ||
+          "Ocurrió un error al guardar el ingrediente.",
+      );
     }
   };
 
@@ -163,7 +195,7 @@ export default function ListIngredientesAdmin() {
         </Table>
       </TableContainer>
 
-      <Dialog open={open} onClose={() => setOpen(false)} fullWidth>
+      <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
         <DialogTitle>
           {ingredienteSeleccionado?.IdIngrediente
             ? "Editar Ingrediente"
@@ -172,6 +204,7 @@ export default function ListIngredientesAdmin() {
 
         <DialogContent>
           <TextField
+            autoFocus
             fullWidth
             margin="dense"
             label="Nombre del ingrediente"
@@ -186,7 +219,7 @@ export default function ListIngredientesAdmin() {
         </DialogContent>
 
         <DialogActions>
-          <Button onClick={() => setOpen(false)}>Cancelar</Button>
+          <Button onClick={handleClose}>Cancelar</Button>
 
           <Button
             variant="contained"
