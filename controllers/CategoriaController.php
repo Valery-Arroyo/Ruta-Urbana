@@ -5,18 +5,15 @@ class Categoria
     //Método para obtener todas las categorias
     public function index()
     {
-
         try {
 
-            //La clase Response en tu backend es una utilidad que se encarga de 
-            // formatear y devolver las respuestas al cliente (frontend) de manera consistente.
             $response = new Response();
 
-            //Crea una instancia del modelo CategoriaModel,
-            //que se encarga de interactuar con la base de datos
             $categoria = new CategoriaModel();
 
             $result = $categoria->all();
+
+            $response->toJSON($result);
         } catch (Exception $e) {
             handleException($e);
         }
@@ -63,7 +60,7 @@ class Categoria
     }
 
     // Crear una nueva Categoría
-    public function create()
+    public function createCategoria()
     {
         try {
             $response = new Response();
@@ -79,7 +76,7 @@ class Categoria
     }
 
     // Actualizar una Categoría existente
-    public function update($id)
+    public function updateCategoria($id)
     {
         try {
             $response = new Response();
@@ -95,7 +92,7 @@ class Categoria
     }
 
     // Eliminar una Categoría
-    public function delete($id)
+    public function deleteCategoria($id)
     {
         try {
             $response = new Response();

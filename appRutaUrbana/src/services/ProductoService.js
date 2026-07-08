@@ -13,7 +13,7 @@ class ProductoService {
     return axios.get(`${BASE_URL}/${id}`);
   }
 
-  getIngredientes(idProducto) {
+  get(idProducto) {
     return axios.get(`${BASE_URL}/getIngredientes/${idProducto}`);
   }
 

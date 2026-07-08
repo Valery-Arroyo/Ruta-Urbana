@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+
 import {
   Box,
   Typography,
@@ -13,36 +14,49 @@ import {
   DialogContent,
   DialogActions,
   TextField,
+  MenuItem,
 } from "@mui/material";
+
 import AddIcon from "@mui/icons-material/Add";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+
 import { useNavigate } from "react-router-dom";
+
 import ProductoService from "../../services/ProductoService";
+import IngredienteService from "../../services/IngredienteService";
+
 import { useForm, Controller } from "react-hook-form";
+
 import { yupResolver } from "@hookform/resolvers/yup";
+
 import * as yup from "yup";
+
 import toast from "react-hot-toast";
 
-// Esquema de validación con Yup
+// Validación
 const productoSchema = yup.object().shape({
   Nombre: yup.string().required("El nombre es requerido"),
+
   Precio: yup
     .number()
     .typeError("Debe ser un número")
     .positive("Debe ser positivo")
     .required("El precio es requerido"),
+
   Descripcion: yup.string().required("La descripción es requerida"),
+
+  IdCategoria: yup.number().required("La categoría es requerida"),
 });
 
 export default function GestionProductos() {
   const [data, setData] = useState([]);
   const [open, setOpen] = useState(false);
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
-
+  const [ingredientes, setIngredientes] = useState([]);
+  const [categorias, setCategorias] = useState([]);
   const navigate = useNavigate();
-
   const {
     control,
     handleSubmit,
@@ -50,113 +64,134 @@ export default function GestionProductos() {
     formState: { errors },
   } = useForm({
     resolver: yupResolver(productoSchema),
+
     defaultValues: {
       Nombre: "",
       Precio: "",
       Descripcion: "",
+      Imagen: "",
+      Ingredientes: [],
+      IdCategoria: "",
     },
   });
 
   useEffect(() => {
     cargarProductos();
+    cargarIngredientes();
+    cargarCategorias();
   }, []);
 
   const cargarProductos = async () => {
     try {
       const response = await ProductoService.getProductos();
-      console.log("===== PRODUCTOS RECIBIDOS =====");
-      console.log(response.data);
-
-      const productos = response.data || [];
-
-      console.log(
-        "IDs:",
-        productos.map((p) => p.IdProducto),
-      );
-
-      const ids = productos.map((p) => p.IdProducto);
-      const repetidos = ids.filter((id, index) => ids.indexOf(id) !== index);
-
-      if (repetidos.length > 0) {
-        console.warn("IDs repetidos encontrados:");
-        console.warn(repetidos);
-      } else {
-        console.log("No hay IDs repetidos.");
-      }
-
-      // Eliminar duplicados temporalmente
-      const productosUnicos = Array.from(
-        new Map(productos.map((p) => [p.IdProducto, p])).values(),
-      );
-
-      console.log("PRODUCTOS ÚNICOS:");
-      console.table(productosUnicos);
-
-      setData(productosUnicos);
+      setData(response.data || []);
     } catch (error) {
-      console.error("Error al cargar productos", error);
-      toast.error("No fue posible cargar los productos");
+      console.error("Error cargando productos", error);
+
+      toast.error("No fue posible cargar productos");
+    }
+  };
+
+  const cargarIngredientes = async () => {
+    try {
+      const response = await IngredienteService.getIngredientes();
+      setIngredientes(response.data || []);
+    } catch (error) {
+      console.error("Error cargando ingredientes", error);
+    }
+  };
+
+  const cargarCategorias = async () => {
+    try {
+      const response = await ProductoService.getCategorias();
+      setCategorias(response.data || []);
+    } catch (error) {
+      console.error("Error cargando categorías", error);
     }
   };
 
   const handleEdit = (producto) => {
     if (producto) {
       setProductoSeleccionado(producto);
-      reset(producto);
+      reset({
+        Nombre: producto.Nombre,
+        Precio: producto.Precio,
+        Descripcion: producto.Descripcion,
+        Imagen: producto.Imagen || "",
+        IdCategoria: producto.IdCategoria || "",
+
+        Ingredientes: producto.Ingredientes
+          ? producto.Ingredientes.map((i) => i.IdIngrediente)
+          : [],
+      });
     } else {
       setProductoSeleccionado(null);
       reset({
         Nombre: "",
         Precio: "",
         Descripcion: "",
+        Imagen: "",
+        IdCategoria: "",
+        Ingredientes: [],
       });
     }
 
     setOpen(true);
+  };
+  const handleSave = async (formData) => {
+    try {
+      console.log("Datos enviados:", formData);
+
+      if (productoSeleccionado?.IdProducto) {
+        await ProductoService.updateProducto(
+          productoSeleccionado.IdProducto,
+          formData,
+        );
+
+        toast.success("Producto actualizado correctamente");
+      } else {
+        await ProductoService.createProducto(formData);
+
+        toast.success("Producto creado correctamente");
+      }
+
+      setOpen(false);
+
+      setProductoSeleccionado(null);
+
+      reset({
+        Nombre: "",
+        Precio: "",
+        Descripcion: "",
+        Imagen: "",
+        IdCategoria: "",
+        Ingredientes: [],
+      });
+
+      cargarProductos();
+    } catch (error) {
+      console.error("Error guardando producto", error);
+
+      toast.error("Error al guardar producto");
+    }
   };
 
   const handleDelete = async (id) => {
     if (!window.confirm("¿Está seguro de eliminar este producto?")) return;
 
     try {
-      console.log("Eliminar producto:", id);
       await ProductoService.deleteProducto(id);
+
       toast.success("Producto eliminado correctamente");
+
       cargarProductos();
     } catch (error) {
-      console.error("Error al eliminar el producto", error);
-      toast.error("Error al eliminar el producto");
+      console.error("Error eliminando producto", error);
+
+      toast.error("Error al eliminar producto");
     }
   };
 
-  const handleSave = async (formData) => {
-    console.log("Formulario enviado:", formData);
-    try {
-      if (productoSeleccionado?.IdProducto) {
-        console.log("Actualizando producto:", productoSeleccionado.IdProducto);
-        await ProductoService.updateProducto(
-          productoSeleccionado.IdProducto,
-          formData,
-        );
-        toast.success("Producto actualizado correctamente");
-      } else {
-        console.log("Creando producto");
-        await ProductoService.createProducto(formData);
-        toast.success("Producto creado correctamente");
-      }
-      setOpen(false);
-      reset({
-        Nombre: "",
-        Precio: "",
-        Descripcion: "",
-      });
-      setProductoSeleccionado(null);
-      cargarProductos();
-    } catch (error) {
-      console.error("Error al guardar producto", error);
-      toast.error("Error al guardar el producto");
-    }
-  };
   return (
     <Box sx={{ p: 4 }}>
       <Typography
@@ -164,6 +199,7 @@ export default function GestionProductos() {
         align="center"
         sx={{
           fontWeight: "bold",
+
           mb: 3,
         }}
       >
@@ -173,7 +209,9 @@ export default function GestionProductos() {
       <Box
         sx={{
           display: "flex",
+
           justifyContent: "flex-end",
+
           mb: 4,
         }}
       >
@@ -183,6 +221,7 @@ export default function GestionProductos() {
           onClick={() => handleEdit(null)}
           sx={{
             bgcolor: "#FF8C00",
+
             "&:hover": {
               bgcolor: "#E67E00",
             },
@@ -195,13 +234,19 @@ export default function GestionProductos() {
       <Box
         sx={{
           display: "grid",
+
           justifyContent: "center",
+
           gap: 3,
+
           gridTemplateColumns: {
             xs: "1fr",
-            sm: "repeat(2, 320px)",
-            md: "repeat(3, 320px)",
-            lg: "repeat(4, 320px)",
+
+            sm: "repeat(2,320px)",
+
+            md: "repeat(3,320px)",
+
+            lg: "repeat(4,320px)",
           },
         }}
       >
@@ -209,8 +254,8 @@ export default function GestionProductos() {
           <Typography
             sx={{
               gridColumn: "1/-1",
+
               textAlign: "center",
-              fontSize: "1.2rem",
             }}
           >
             No hay productos registrados.
@@ -221,24 +266,24 @@ export default function GestionProductos() {
               key={prod.IdProducto}
               sx={{
                 display: "flex",
-                flexDirection: "column",
-                borderRadius: 4,
-                overflow: "hidden",
-                boxShadow: "0 4px 12px rgba(0,0,0,.12)",
-                transition: ".3s",
 
-                "&:hover": {
-                  transform: "translateY(-6px)",
-                  boxShadow: "0 12px 24px rgba(0,0,0,.18)",
-                },
+                flexDirection: "column",
+
+                borderRadius: 4,
+
+                overflow: "hidden",
+
+                boxShadow: "0 4px 12px rgba(0,0,0,.12)",
               }}
             >
               <CardMedia
                 component="img"
                 height="170"
-                image={`http://localhost:81/apirutaurbana/${
-                  prod.Imagen || prod.ProductoImagen?.[0]?.Imagen || ""
-                }`}
+                image={
+                  prod.Imagenes
+                    ? `http://localhost:81/apirutaurbana/${prod.Imagenes.split(",")[0]}`
+                    : "/no-image.png"
+                }
                 alt={prod.Nombre}
                 sx={{
                   objectFit: "cover",
@@ -248,35 +293,20 @@ export default function GestionProductos() {
               <CardContent
                 sx={{
                   flexGrow: 1,
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "space-between",
-                  py: 2,
-                  px: 2,
                 }}
               >
                 <Typography
                   align="center"
                   sx={{
-                    fontSize: "1.35rem",
-                    fontWeight: 700,
-                    mb: 1,
+                    fontWeight: "bold",
+
+                    fontSize: "1.3rem",
                   }}
                 >
                   {prod.Nombre}
                 </Typography>
 
-                <Typography
-                  align="center"
-                  sx={{
-                    fontSize: "1rem",
-                    color: "text.secondary",
-                    overflow: "hidden",
-                    display: "-webkit-box",
-                    WebkitLineClamp: 3,
-                    WebkitBoxOrient: "vertical",
-                  }}
-                >
+                <Typography align="center" color="text.secondary">
                   {prod.Descripcion}
                 </Typography>
               </CardContent>
@@ -284,19 +314,18 @@ export default function GestionProductos() {
               <CardActions
                 sx={{
                   justifyContent: "center",
-                  gap: 1,
-                  pt: 0,
-                  pb: 2,
                 }}
               >
                 <IconButton
-                  sx={{ color: "#FF8C00" }}
+                  sx={{
+                    color: "#FF8C00",
+                  }}
                   onClick={() => navigate(`/productos/${prod.IdProducto}`)}
                 >
                   <ZoomInIcon />
                 </IconButton>
 
-                <IconButton color="primary" onClick={() => handleEdit(prod)}>
+                <IconButton onClick={() => handleEdit(prod)}>
                   <EditIcon />
                 </IconButton>
 
@@ -311,7 +340,6 @@ export default function GestionProductos() {
           ))
         )}
       </Box>
-
       <Dialog
         open={open}
         onClose={() => setOpen(false)}
@@ -325,14 +353,16 @@ export default function GestionProductos() {
         </DialogTitle>
 
         <DialogContent>
+          {/* Nombre */}
+
           <Controller
             name="Nombre"
             control={control}
             render={({ field }) => (
               <TextField
                 {...field}
-                margin="dense"
                 fullWidth
+                margin="dense"
                 label="Nombre"
                 error={!!errors.Nombre}
                 helperText={errors.Nombre?.message}
@@ -340,14 +370,16 @@ export default function GestionProductos() {
             )}
           />
 
+          {/* Precio */}
+
           <Controller
             name="Precio"
             control={control}
             render={({ field }) => (
               <TextField
                 {...field}
-                margin="dense"
                 fullWidth
+                margin="dense"
                 type="number"
                 label="Precio"
                 error={!!errors.Precio}
@@ -356,19 +388,86 @@ export default function GestionProductos() {
             )}
           />
 
+          {/* Descripción */}
+
           <Controller
             name="Descripcion"
             control={control}
             render={({ field }) => (
               <TextField
                 {...field}
-                margin="dense"
                 fullWidth
+                margin="dense"
                 multiline
                 rows={3}
                 label="Descripción"
                 error={!!errors.Descripcion}
                 helperText={errors.Descripcion?.message}
+              />
+            )}
+          />
+
+          {/* Categoría */}
+
+          <Controller
+            name="IdCategoria"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                select
+                fullWidth
+                margin="dense"
+                label="Categoría"
+                error={!!errors.IdCategoria}
+                helperText={errors.IdCategoria?.message}
+              >
+                {categorias.map((cat) => (
+                  <MenuItem key={cat.IdCategoria} value={cat.IdCategoria}>
+                    {cat.Nombre}
+                  </MenuItem>
+                ))}
+              </TextField>
+            )}
+          />
+
+          {/* Ingredientes */}
+
+          <Controller
+            name="Ingredientes"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                select
+                SelectProps={{
+                  multiple: true,
+                }}
+                fullWidth
+                margin="dense"
+                label="Ingredientes"
+              >
+                {ingredientes.map((ing) => (
+                  <MenuItem key={ing.IdIngrediente} value={ing.IdIngrediente}>
+                    {ing.Nombre}
+                  </MenuItem>
+                ))}
+              </TextField>
+            )}
+          />
+
+          {/* Imagen */}
+
+          <Controller
+            name="Imagen"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                fullWidth
+                margin="dense"
+                label="Imagen"
+                placeholder="ejemplo: hamburguesa.jpg"
               />
             )}
           />
@@ -382,6 +481,7 @@ export default function GestionProductos() {
             onClick={handleSubmit(handleSave)}
             sx={{
               bgcolor: "#FF8C00",
+
               "&:hover": {
                 bgcolor: "#E67E00",
               },

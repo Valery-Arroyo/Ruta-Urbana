@@ -12,21 +12,17 @@ class ProductoModel
     {
         try {
             $sql = "SELECT 
-            p.IdProducto,
-            p.Nombre,
-            p.Descripcion,
-            p.Precio,
-            p.Activo,
-            p.IdCategoria,
-            c.Nombre AS NombreCategoria,
-            pi.IdImagen,
-            pi.Imagen
-            FROM Producto p
-            LEFT JOIN Categoria c
-            ON p.IdCategoria = c.IdCategoria
-            LEFT JOIN ProductoImagen pi
-            ON p.IdProducto = pi.IdProducto
-            AND pi.EsPrincipal = 1";
+    p.IdProducto,
+    p.Nombre,
+    p.Descripcion,
+    p.Precio,
+    p.Activo,
+    p.IdCategoria,
+    GROUP_CONCAT(pi.Imagen) AS Imagenes
+FROM Producto p
+LEFT JOIN ProductoImagen pi 
+ON p.IdProducto = pi.IdProducto
+GROUP BY p.IdProducto";
 
             $productos = $this->enlace->ExecuteSQL($sql);
 
@@ -155,54 +151,88 @@ class ProductoModel
     {
         try {
             $id = intval($id);
+
             $nombre = addslashes($data['Nombre']);
             $descripcion = isset($data['Descripcion']) ? addslashes($data['Descripcion']) : null;
             $precio = floatval($data['Precio']);
             $idCategoria = intval($data['IdCategoria']);
             $activo = isset($data['Activo']) ? intval($data['Activo']) : 1;
 
-            // 1. Actualizar los datos de la tabla Producto
+
+            // 1. Actualizar datos del producto
             $sqlProducto = "UPDATE Producto SET 
-                        Nombre = '$nombre', 
-                        Descripcion = " . ($descripcion ? "'$descripcion'" : "NULL") . ", 
-                        Precio = $precio, 
-                        Activo = $activo, 
-                        IdCategoria = $idCategoria 
+                        Nombre = '$nombre',
+                        Descripcion = " . ($descripcion ? "'$descripcion'" : "NULL") . ",
+                        Precio = $precio,
+                        Activo = $activo,
+                        IdCategoria = $idCategoria
                     WHERE IdProducto = $id";
 
             $resultado = $this->enlace->executeSQL_DML($sqlProducto);
 
-            // 2. Actualizar o Insertar la Imagen Principal
-            if (isset($data['Imagen'])) {
+
+
+            // 2. Actualizar o insertar imagen principal
+            if (isset($data['Imagen']) && !empty($data['Imagen'])) {
+
                 $imagen = addslashes($data['Imagen']);
 
-                // Primero intentamos actualizar si ya existe una imagen registrada como principal
-                $sqlCheck = "UPDATE ProductoImagen SET Imagen = '$imagen' 
-                             WHERE IdProducto = $id AND EsPrincipal = 1";
-                $filasAfectadas = $this->enlace->executeSQL_DML($sqlCheck);
+                // Verificar si ya existe una imagen principal
+                $sqlBuscarImagen = "SELECT IdImagen 
+                                FROM ProductoImagen
+                                WHERE IdProducto = $id 
+                                AND EsPrincipal = 1";
 
-                // Si no se afectó ninguna fila (porque no tenía imagen previa), la insertamos de cero
-                if ($filasAfectadas == 0) {
-                    $sqlInsertImage = "INSERT INTO ProductoImagen (Imagen, EsPrincipal, IdProducto) 
-                                       VALUES ('$imagen', 1, $id)";
-                    $this->enlace->executeSQL_DML($sqlInsertImage);
+                $imagenExiste = $this->enlace->ExecuteSQL($sqlBuscarImagen);
+
+
+                if (!empty($imagenExiste)) {
+
+                    // Actualizar imagen existente
+                    $sqlUpdateImagen = "UPDATE ProductoImagen 
+                                    SET Imagen = '$imagen'
+                                    WHERE IdProducto = $id
+                                    AND EsPrincipal = 1";
+
+                    $this->enlace->executeSQL_DML($sqlUpdateImagen);
+                } else {
+
+                    // Crear imagen si no existe
+                    $sqlInsertImagen = "INSERT INTO ProductoImagen
+                                    (Imagen, EsPrincipal, IdProducto)
+                                    VALUES ('$imagen', 1, $id)";
+
+                    $this->enlace->executeSQL_DML($sqlInsertImagen);
                 }
             }
 
-            // 3. Sincronizar los ingredientes en la tabla intermedia
-            if (isset($data['Ingredientes']) && is_array($data['Ingredientes'])) {
-                // Se eliminan las relaciones pasadas
-                $sqlDelete = "DELETE FROM ProductoIngrediente WHERE IdProducto = $id";
-                $this->enlace->executeSQL_DML($sqlDelete);
 
-                // Se insertan las nuevas seleccionadas
+
+            // 3. Actualizar ingredientes asociados
+            if (isset($data['Ingredientes']) && is_array($data['Ingredientes'])) {
+
+
+                // Eliminar ingredientes anteriores
+                $sqlDeleteIngredientes = "DELETE FROM ProductoIngrediente
+                                      WHERE IdProducto = $id";
+
+                $this->enlace->executeSQL_DML($sqlDeleteIngredientes);
+
+
+
+                // Insertar nuevos ingredientes
                 foreach ($data['Ingredientes'] as $idIngrediente) {
+
                     $idIngrediente = intval($idIngrediente);
-                    $sqlIngrediente = "INSERT INTO ProductoIngrediente (IdProducto, IdIngrediente) 
-                                       VALUES ($id, $idIngrediente)";
+
+                    $sqlIngrediente = "INSERT INTO ProductoIngrediente
+                                   (IdProducto, IdIngrediente)
+                                   VALUES ($id, $idIngrediente)";
+
                     $this->enlace->executeSQL_DML($sqlIngrediente);
                 }
             }
+
 
             return $resultado;
         } catch (Exception $e) {

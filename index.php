@@ -22,6 +22,7 @@ require_once "models/ComboModel.php";
 require_once "models/MenuModel.php";
 require_once "models/PreparacionModel.php";
 require_once "models/IngredienteModel.php";
+require_once "models/CategoriaModel.php";
 
 
 /***--- Agregar todos los controladores*/
@@ -30,6 +31,7 @@ require_once "controllers/ComboController.php";
 require_once "controllers/MenuController.php";
 require_once "controllers/PreparacionController.php";
 require_once "controllers/IngredienteController.php";
+require_once "controllers/CategoriaController.php";
 
 
 //Enrutador
