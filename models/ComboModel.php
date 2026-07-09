@@ -108,7 +108,7 @@ class ComboModel
             // 1. Insertar en la tabla Combo
             $sqlCombo = "INSERT INTO Combo (RutaImagen, Nombre, Descripcion, PrecioEspecial, Activo, IdCategoria) 
                          VALUES (" . ($rutaImagen ? "'$rutaImagen'" : "NULL") . ", '$nombre', " . ($descripcion ? "'$descripcion'" : "NULL") . ", $precioEspecial, $activo, $idCategoria)";
-            
+
             $idNuevoCombo = $this->enlace->executeSQL_DML_last($sqlCombo);
 
             if ($idNuevoCombo) {
@@ -180,11 +180,26 @@ class ComboModel
     public function delete($id)
     {
         try {
-            $idCombo = intval($id);
-            $sql = "UPDATE Combo SET Activo = 0 WHERE IdCombo = $idCombo";
 
-            return $this->enlace->executeSQL_DML($sql);
+            $idCombo = intval($id);
+
+
+            // 1. Eliminar productos asociados al combo
+            $sqlProductos = "DELETE FROM ComboProducto 
+                         WHERE IdCombo = $idCombo";
+
+            $this->enlace->executeSQL_DML($sqlProductos);
+
+
+
+            // 2. Eliminar el combo definitivamente
+            $sqlCombo = "DELETE FROM Combo 
+                     WHERE IdCombo = $idCombo";
+
+
+            return $this->enlace->executeSQL_DML($sqlCombo);
         } catch (Exception $e) {
+
             handleException($e);
         }
     }

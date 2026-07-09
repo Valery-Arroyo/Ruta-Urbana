@@ -23,19 +23,9 @@ class ComboService {
     return axios.post(`${BASE_URL}/create`, data);
   }
 
-  // Actualizar un combo existente
-  updateCombo(id, data) {
-    return axios.put(`${BASE_URL}/update/${id}`, data);
-  }
-
   // Eliminar un combo
-  deleteCombo(id) {
+  delete(id) {
     return axios.delete(`${BASE_URL}/delete/${id}`);
-  }
-
-  //Crear un combo
-  createCombo(data) {
-    return axios.post(`${BASE_URL}/create`, data);
   }
 
   //Actualizar un combo
@@ -43,10 +33,6 @@ class ComboService {
     return axios.put(`${BASE_URL}/update/${id}`, data);
   }
 
-  //Eliminar un combo
-  deleteCombo(id) {
-    return axios.delete(`${BASE_URL}/delete/${id}`);
-  }
 }
 
 export default new ComboService();

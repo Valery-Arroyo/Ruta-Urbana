@@ -88,15 +88,10 @@ export default function GestionProductos() {
 
     defaultValues: {
       Nombre: "",
-
       Precio: "",
-
       Descripcion: "",
-
       Imagen: "",
-
       Ingredientes: [],
-
       IdCategoria: "",
     },
   });
@@ -107,9 +102,7 @@ export default function GestionProductos() {
 
   useEffect(() => {
     cargarProductos();
-
     cargarIngredientes();
-
     cargarCategorias();
   }, []);
 
@@ -151,15 +144,10 @@ export default function GestionProductos() {
 
       reset({
         Nombre: producto.Nombre,
-
         Precio: producto.Precio,
-
         Descripcion: producto.Descripcion,
-
         Imagen: producto.Imagen || "",
-
         IdCategoria: producto.IdCategoria || "",
-
         Ingredientes: producto.Ingredientes
           ? producto.Ingredientes.map((i) => i.IdIngrediente)
           : [],
@@ -169,15 +157,10 @@ export default function GestionProductos() {
 
       reset({
         Nombre: "",
-
         Precio: "",
-
         Descripcion: "",
-
         Imagen: "",
-
         IdCategoria: "",
-
         Ingredientes: [],
       });
     }
@@ -204,15 +187,10 @@ export default function GestionProductos() {
 
       reset({
         Nombre: "",
-
         Precio: "",
-
         Descripcion: "",
-
         Imagen: "",
-
         IdCategoria: "",
-
         Ingredientes: [],
       });
 
