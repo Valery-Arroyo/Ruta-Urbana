@@ -78,7 +78,7 @@ class Producto
     }
 
     // Método para crear un nuevo producto
-    public function createProducto()
+    public function create()
     {
         try {
             $response = new Response();
@@ -95,7 +95,7 @@ class Producto
     }
 
     // Método para actualizar un producto existente
-    public function updateProducto($id)
+    public function update($id)
     {
         try {
             $response = new Response();
@@ -111,7 +111,7 @@ class Producto
     }
 
     // Método para realizar el borrado lógico de un producto
-    public function deleteProducto($id)
+    public function delete($id)
     {
         try {
             $response = new Response();

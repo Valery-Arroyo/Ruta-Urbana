@@ -7,9 +7,7 @@ const BASE_URL = import.meta.env.VITE_BASE_URL + "categoria";
 class CategoriaService {
   /* Función encargada de obtener los combos desde la base de datos */
   getCategorias() {
-    //Esto es meramente de prueba para ver que responde a nivel de consola
-    const BASE_URL = import.meta.env.VITE_BASE_URL + "categoria";
-    return axios.get(BASE_URL);
+    return axios.get(`${BASE_URL}/all`);
   }
 
   /* Función que obtiene un categoria en especial por su ID */

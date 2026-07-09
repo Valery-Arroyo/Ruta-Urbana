@@ -19,10 +19,10 @@ class ProductoModel
     p.Activo,
     p.IdCategoria,
     GROUP_CONCAT(pi.Imagen) AS Imagenes
-FROM Producto p
-LEFT JOIN ProductoImagen pi 
-ON p.IdProducto = pi.IdProducto
-GROUP BY p.IdProducto";
+    FROM Producto p
+    LEFT JOIN ProductoImagen pi 
+    ON p.IdProducto = pi.IdProducto
+    GROUP BY p.IdProducto";
 
             $productos = $this->enlace->ExecuteSQL($sql);
 
@@ -150,12 +150,18 @@ GROUP BY p.IdProducto";
     public function update($id, $data)
     {
         try {
+            // Convertir el ID a entero para mayor seguridad ya que viene de la URL
+            // y normalmente es un string. Esto previene errores.
             $id = intval($id);
-
+            // Proteger los datos de entrada para evitar inyecciones SQL, básicamente 
+            // mantiene los caracteres especiales que puede contener el nombre y la descripción, como comillas simples o dobles.
             $nombre = addslashes($data['Nombre']);
+            // Manejar la descripción que puede ser nula
             $descripcion = isset($data['Descripcion']) ? addslashes($data['Descripcion']) : null;
+            // Convertir el precio a float y la categoría a entero
             $precio = floatval($data['Precio']);
             $idCategoria = intval($data['IdCategoria']);
+            // Convertir el estado activo a entero, por defecto 1 (activo)
             $activo = isset($data['Activo']) ? intval($data['Activo']) : 1;
 
 
@@ -173,6 +179,8 @@ GROUP BY p.IdProducto";
 
 
             // 2. Actualizar o insertar imagen principal
+            // isset sirve para verificar si la clave 'Imagen' existe en el array $data 
+            // y !empty verifica que no esté vacía. Esto asegura que solo se procese la imagen si realmente se ha proporcionado.
             if (isset($data['Imagen']) && !empty($data['Imagen'])) {
 
                 $imagen = addslashes($data['Imagen']);
@@ -218,8 +226,6 @@ GROUP BY p.IdProducto";
 
                 $this->enlace->executeSQL_DML($sqlDeleteIngredientes);
 
-
-
                 // Insertar nuevos ingredientes
                 foreach ($data['Ingredientes'] as $idIngrediente) {
 
@@ -232,23 +238,38 @@ GROUP BY p.IdProducto";
                     $this->enlace->executeSQL_DML($sqlIngrediente);
                 }
             }
-
-
             return $resultado;
         } catch (Exception $e) {
             handleException($e);
         }
     }
 
-    /* Borrado Lógico (Inhabilitar Producto) */
+    // Eliminar un producto 
     public function delete($id)
     {
         try {
+            // Convertir el ID a entero para mayor seguridad
             $id = intval($id);
-            $sql = "UPDATE Producto SET Activo = 0 WHERE IdProducto = $id";
 
-            return $this->enlace->executeSQL_DML($sql);
+            // Primero se eliminan las relaciones en ProductoIngrediente y ProductoImagen
+            $this->enlace->executeSQL_DML(
+                "DELETE FROM ProductoIngrediente 
+             WHERE IdProducto = $id"
+            );
+
+            // Luego se eliminan las imágenes asociadas al producto
+            $this->enlace->executeSQL_DML(
+                "DELETE FROM ProductoImagen 
+             WHERE IdProducto = $id"
+            );
+
+            // Finalmente, se elimina el producto en sí
+            return $this->enlace->executeSQL_DML(
+                "DELETE FROM Producto 
+             WHERE IdProducto = $id"
+            );
         } catch (Exception $e) {
+
             handleException($e);
         }
     }

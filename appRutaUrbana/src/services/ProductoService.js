@@ -21,15 +21,15 @@ class ProductoService {
     return axios.get(`${API_URL}categoria/all`);
   }
 
-  createProducto(data) {
+  create(data) {
     return axios.post(`${BASE_URL}/create`, data);
   }
 
-  updateProducto(id, data) {
+  update(id, data) {
     return axios.put(`${BASE_URL}/update/${id}`, data);
   }
 
-  deleteProducto(id) {
+  delete(id) {
     return axios.delete(`${BASE_URL}/delete/${id}`);
   }
 }

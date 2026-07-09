@@ -3,10 +3,9 @@ class Categoria
 {
 
     //Método para obtener todas las categorias
-    public function index()
+    public function all()
     {
         try {
-
             $response = new Response();
 
             $categoria = new CategoriaModel();

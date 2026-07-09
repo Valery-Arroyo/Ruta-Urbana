@@ -26,6 +26,7 @@ import { useNavigate } from "react-router-dom";
 
 import ProductoService from "../../services/ProductoService";
 import IngredienteService from "../../services/IngredienteService";
+import CategoriaService from "../../services/CategoriaService";
 
 import { useForm, Controller } from "react-hook-form";
 
@@ -35,9 +36,11 @@ import * as yup from "yup";
 
 import toast from "react-hot-toast";
 
-// Validación
 const productoSchema = yup.object().shape({
-  Nombre: yup.string().required("El nombre es requerido"),
+  Nombre: yup
+    .string()
+    .required("El nombre es requerido")
+    .min(3, "Debe tener mínimo 3 caracteres"),
 
   Precio: yup
     .number()
@@ -47,7 +50,14 @@ const productoSchema = yup.object().shape({
 
   Descripcion: yup.string().required("La descripción es requerida"),
 
-  IdCategoria: yup.number().required("La categoría es requerida"),
+  IdCategoria: yup
+    .number()
+    .typeError("Seleccione una categoría")
+    .required("La categoría es requerida"),
+
+  Ingredientes: yup.array().min(1, "Seleccione al menos un ingrediente"),
+
+  Imagen: yup.string().nullable(),
 });
 
 export default function GestionProductos() {
@@ -56,34 +66,57 @@ export default function GestionProductos() {
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
   const [ingredientes, setIngredientes] = useState([]);
   const [categorias, setCategorias] = useState([]);
+  const [ingredienteSeleccionado, setIngredienteSeleccionado] = useState("");
+  const [openDelete, setOpenDelete] = useState(false);
+  const [productoEliminar, setProductoEliminar] = useState(null);
   const navigate = useNavigate();
+
   const {
     control,
+
     handleSubmit,
+
     reset,
+
+    watch,
+
+    setValue,
+
     formState: { errors },
   } = useForm({
     resolver: yupResolver(productoSchema),
 
     defaultValues: {
       Nombre: "",
+
       Precio: "",
+
       Descripcion: "",
+
       Imagen: "",
+
       Ingredientes: [],
+
       IdCategoria: "",
     },
   });
 
+  // Ingredientes guardados en el formulario
+
+  const ingredientesAgregados = watch("Ingredientes");
+
   useEffect(() => {
     cargarProductos();
+
     cargarIngredientes();
+
     cargarCategorias();
   }, []);
 
   const cargarProductos = async () => {
     try {
       const response = await ProductoService.getProductos();
+
       setData(response.data || []);
     } catch (error) {
       console.error("Error cargando productos", error);
@@ -95,6 +128,7 @@ export default function GestionProductos() {
   const cargarIngredientes = async () => {
     try {
       const response = await IngredienteService.getIngredientes();
+
       setIngredientes(response.data || []);
     } catch (error) {
       console.error("Error cargando ingredientes", error);
@@ -103,7 +137,8 @@ export default function GestionProductos() {
 
   const cargarCategorias = async () => {
     try {
-      const response = await ProductoService.getCategorias();
+      const response = await CategoriaService.getCategorias();
+
       setCategorias(response.data || []);
     } catch (error) {
       console.error("Error cargando categorías", error);
@@ -113,11 +148,16 @@ export default function GestionProductos() {
   const handleEdit = (producto) => {
     if (producto) {
       setProductoSeleccionado(producto);
+
       reset({
         Nombre: producto.Nombre,
+
         Precio: producto.Precio,
+
         Descripcion: producto.Descripcion,
+
         Imagen: producto.Imagen || "",
+
         IdCategoria: producto.IdCategoria || "",
 
         Ingredientes: producto.Ingredientes
@@ -126,12 +166,18 @@ export default function GestionProductos() {
       });
     } else {
       setProductoSeleccionado(null);
+
       reset({
         Nombre: "",
+
         Precio: "",
+
         Descripcion: "",
+
         Imagen: "",
+
         IdCategoria: "",
+
         Ingredientes: [],
       });
     }
@@ -143,14 +189,11 @@ export default function GestionProductos() {
       console.log("Datos enviados:", formData);
 
       if (productoSeleccionado?.IdProducto) {
-        await ProductoService.updateProducto(
-          productoSeleccionado.IdProducto,
-          formData,
-        );
+        await ProductoService.update(productoSeleccionado.IdProducto, formData);
 
         toast.success("Producto actualizado correctamente");
       } else {
-        await ProductoService.createProducto(formData);
+        await ProductoService.create(formData);
 
         toast.success("Producto creado correctamente");
       }
@@ -161,10 +204,15 @@ export default function GestionProductos() {
 
       reset({
         Nombre: "",
+
         Precio: "",
+
         Descripcion: "",
+
         Imagen: "",
+
         IdCategoria: "",
+
         Ingredientes: [],
       });
 
@@ -176,13 +224,19 @@ export default function GestionProductos() {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("¿Está seguro de eliminar este producto?")) return;
+  const confirmarEliminar = (producto) => {
+    setProductoEliminar(producto);
+    setOpenDelete(true);
+  };
 
+  const handleDelete = async () => {
     try {
-      await ProductoService.deleteProducto(id);
+      await ProductoService.delete(productoEliminar.IdProducto);
 
       toast.success("Producto eliminado correctamente");
+
+      setOpenDelete(false);
+      setProductoEliminar(null);
 
       cargarProductos();
     } catch (error) {
@@ -309,6 +363,19 @@ export default function GestionProductos() {
                 <Typography align="center" color="text.secondary">
                   {prod.Descripcion}
                 </Typography>
+
+                <Typography
+                  align="center"
+                  sx={{
+                    fontWeight: "bold",
+
+                    color: "#FF8C00",
+
+                    mt: 1,
+                  }}
+                >
+                  ₡{prod.Precio}
+                </Typography>
               </CardContent>
 
               <CardActions
@@ -331,7 +398,7 @@ export default function GestionProductos() {
 
                 <IconButton
                   color="error"
-                  onClick={() => handleDelete(prod.IdProducto)}
+                  onClick={() => confirmarEliminar(prod)}
                 >
                   <DeleteIcon />
                 </IconButton>
@@ -339,7 +406,34 @@ export default function GestionProductos() {
             </Card>
           ))
         )}
+
+        <Dialog open={openDelete} onClose={() => setOpenDelete(false)}>
+          <DialogTitle>Confirmar eliminación</DialogTitle>
+
+          <DialogContent>
+            <Typography>
+              ¿Está seguro que desea eliminar el producto:
+              <b> {productoEliminar?.Nombre}</b>?
+            </Typography>
+          </DialogContent>
+
+          <DialogActions>
+            <Button
+              onClick={() => {
+                setOpenDelete(false);
+                setProductoEliminar(null);
+              }}
+            >
+              Cancelar
+            </Button>
+
+            <Button variant="contained" color="error" onClick={handleDelete}>
+              Eliminar
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Box>
+
       <Dialog
         open={open}
         onClose={() => setOpen(false)}
@@ -382,6 +476,13 @@ export default function GestionProductos() {
                 margin="dense"
                 type="number"
                 label="Precio"
+                slotProps={{
+                  htmlInput: {
+                    min: 0,
+
+                    step: 0.01,
+                  },
+                }}
                 error={!!errors.Precio}
                 helperText={errors.Precio?.message}
               />
@@ -433,28 +534,129 @@ export default function GestionProductos() {
 
           {/* Ingredientes */}
 
-          <Controller
-            name="Ingredientes"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                select
-                SelectProps={{
-                  multiple: true,
-                }}
-                fullWidth
-                margin="dense"
-                label="Ingredientes"
-              >
-                {ingredientes.map((ing) => (
-                  <MenuItem key={ing.IdIngrediente} value={ing.IdIngrediente}>
-                    {ing.Nombre}
-                  </MenuItem>
-                ))}
-              </TextField>
-            )}
-          />
+          <Typography
+            sx={{
+              mt: 2,
+
+              mb: 1,
+
+              fontWeight: "bold",
+            }}
+          >
+            Ingredientes
+          </Typography>
+
+          <Box
+            sx={{
+              display: "flex",
+
+              gap: 1,
+
+              alignItems: "center",
+            }}
+          >
+            <TextField
+              select
+              fullWidth
+              label="Seleccionar ingrediente"
+              value={ingredienteSeleccionado}
+              onChange={(e) => setIngredienteSeleccionado(e.target.value)}
+            >
+              {ingredientes.map((ing) => (
+                <MenuItem key={ing.IdIngrediente} value={ing.IdIngrediente}>
+                  {ing.Nombre}
+                </MenuItem>
+              ))}
+            </TextField>
+
+            <Button
+              variant="contained"
+              sx={{
+                bgcolor: "#FF8C00",
+
+                height: "56px",
+
+                "&:hover": {
+                  bgcolor: "#E67E00",
+                },
+              }}
+              onClick={() => {
+                const actuales = ingredientesAgregados || [];
+
+                const nuevo = Number(ingredienteSeleccionado);
+
+                if (nuevo && !actuales.some((id) => Number(id) === nuevo)) {
+                  setValue(
+                    "Ingredientes",
+
+                    [...actuales, nuevo],
+
+                    {
+                      shouldValidate: true,
+                    },
+                  );
+                }
+
+                setIngredienteSeleccionado("");
+              }}
+            >
+              AGREGAR
+            </Button>
+          </Box>
+
+          {/* Ingredientes agregados */}
+
+          <Box sx={{ mt: 2 }}>
+            {ingredientesAgregados?.map((id) => {
+              const ingrediente = ingredientes.find(
+                (i) => Number(i.IdIngrediente) === Number(id),
+              );
+
+              return (
+                <Box
+                  key={id}
+                  sx={{
+                    display: "flex",
+
+                    justifyContent: "space-between",
+
+                    alignItems: "center",
+
+                    mb: 1,
+
+                    p: 1,
+
+                    border: "1px solid #ddd",
+
+                    borderRadius: 2,
+                  }}
+                >
+                  <Typography>{ingrediente?.Nombre}</Typography>
+
+                  <Button
+                    color="error"
+                    onClick={() => {
+                      const nuevos = ingredientesAgregados.filter(
+                        (x) => Number(x) !== Number(id),
+                      );
+
+                      setValue(
+                        "Ingredientes",
+
+                        nuevos,
+
+                        {
+                          shouldValidate: true,
+                        },
+                      );
+                    }}
+                  >
+                    ELIMINAR
+                  </Button>
+                </Box>
+              );
+            })}
+          </Box>
 
           {/* Imagen */}
 
@@ -466,8 +668,13 @@ export default function GestionProductos() {
                 {...field}
                 fullWidth
                 margin="dense"
-                label="Imagen"
-                placeholder="ejemplo: hamburguesa.jpg"
+                label="Ruta de imagen"
+                placeholder="imagenes/hamburguesa.jpg"
+                helperText={
+                  productoSeleccionado
+                    ? "Deje vacío para conservar la imagen actual"
+                    : "Ingrese la ruta de la imagen"
+                }
               />
             )}
           />
