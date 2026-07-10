@@ -116,13 +116,13 @@ class MenuModel
 
             // Datos principales del menú
             $sql = "SELECT
-                    IdMenu,
-                    Nombre,
-                    HoraInicio,
-                    HoraFin,
-                    EstaActivo
-                FROM Menu
-                WHERE IdMenu = $id";
+                IdMenu,
+                Nombre,
+                HoraInicio,
+                HoraFin,
+                EstaActivo
+            FROM Menu
+            WHERE IdMenu = $id";
             $menu = $this->enlace->ExecuteSQL($sql);
 
             if (!$menu || count($menu) == 0) {
@@ -138,7 +138,7 @@ class MenuModel
                                 DiaSemana
                               FROM MenuDisponibilidad
                               WHERE IdMenu = $id";
-            $menu->Disponibilidad = $this->enlace->ExecuteSQL($sqlDisponibilidad);
+            $menu->Disponibilidad = $this->enlace->ExecuteSQL($sqlDisponibilidad) ?: [];
 
             // Productos completos
             $sqlProductos = "SELECT
@@ -153,7 +153,7 @@ class MenuModel
                          LEFT JOIN Categoria c ON p.IdCategoria = c.IdCategoria
                          LEFT JOIN ProductoImagen pi ON p.IdProducto = pi.IdProducto AND pi.EsPrincipal = 1
                          WHERE mi.IdMenu = $id AND mi.IdProducto IS NOT NULL";
-            $menu->Productos = $this->enlace->ExecuteSQL($sqlProductos);
+            $menu->Productos = $this->enlace->ExecuteSQL($sqlProductos) ?: [];
 
             // Combos completos
             $sqlCombos = "SELECT
@@ -167,13 +167,14 @@ class MenuModel
                       INNER JOIN Combo cb ON mi.IdCombo = cb.IdCombo
                       LEFT JOIN Categoria c ON cb.IdCategoria = c.IdCategoria
                       WHERE mi.IdMenu = $id AND mi.IdCombo IS NOT NULL";
-            $menu->Combos = $this->enlace->ExecuteSQL($sqlCombos);
+            $menu->Combos = $this->enlace->ExecuteSQL($sqlCombos) ?: [];
 
             return $menu;
         } catch (Exception $e) {
             handleException($e);
         }
     }
+
 
 
     /**
@@ -218,20 +219,13 @@ class MenuModel
                             cb.IdCategoria = c.IdCategoria
 
                         )
-
-
-
                     WHERE mi.IdMenu = $id";
-
-
-
             return $this->enlace->ExecuteSQL($sql);
         } catch (Exception $e) {
 
             handleException($e);
         }
     }
-
 
     /**
      * Crear menú
@@ -264,9 +258,6 @@ class MenuModel
             $idMenu =
                 $this->enlace->executeSQL_DML_last($sql);
 
-
-
-
             // Disponibilidad
 
             if (!empty($data["Disponibilidad"])) {
@@ -277,12 +268,10 @@ class MenuModel
 
                         continue;
                     }
-
                     $fechaInicio =
                         !empty($disp["FechaInicio"])
                         ? "'" . $disp["FechaInicio"] . "'"
                         : "NULL";
-
                     $fechaFin =
                         !empty($disp["FechaFin"])
                         ? "'" . $disp["FechaFin"] . "'"
@@ -307,7 +296,6 @@ class MenuModel
             }
 
             // Productos
-
             if (!empty($data["Productos"])) {
 
                 foreach ($data["Productos"] as $producto) {
@@ -359,70 +347,97 @@ class MenuModel
     /**
      * Actualizar menú
      */
+    /**
+     * Actualizar menú
+     */
     public function update($id, $data)
     {
         try {
+
             $idMenu = intval($id);
+
             $nombre = addslashes($data["Nombre"]);
             $horaInicio = addslashes($data["HoraInicio"]);
             $horaFin = addslashes($data["HoraFin"]);
-            $activo =
-                isset($data["EstaActivo"])
 
+            $activo = isset($data["EstaActivo"])
                 ? intval($data["EstaActivo"])
-
                 : 1;
-            $sql = "UPDATE Menu SET
 
-                    Nombre='$nombre',
-                    HoraInicio='$horaInicio',
-                    HoraFin='$horaFin',
-                    EstaActivo=$activo
+            // Actualizar datos del menú
+            $sql = "UPDATE Menu
+                SET
+                    Nombre = '$nombre',
+                    HoraInicio = '$horaInicio',
+                    HoraFin = '$horaFin',
+                    EstaActivo = $activo
+                WHERE IdMenu = $idMenu";
 
-
-                  WHERE IdMenu=$idMenu";
             $this->enlace->executeSQL_DML($sql);
-            // limpiar relaciones
+            if (isset($data["Disponibilidad"])) {
 
-            $this->enlace->executeSQL_DML(
-                "DELETE FROM MenuDisponibilidad
-                 WHERE IdMenu=$idMenu"
-            );
+                $this->enlace->executeSQL_DML(
+                    "DELETE FROM MenuDisponibilidad
+                 WHERE IdMenu = $idMenu"
+                );
 
-            $this->enlace->executeSQL_DML(
-                "DELETE FROM MenuItem
-                 WHERE IdMenu=$idMenu"
-            );
+                if (!empty($data["Disponibilidad"])) {
 
-            // reutilizar creación de relaciones
-            if (!empty($data["Disponibilidad"])) {
+                    foreach ($data["Disponibilidad"] as $disp) {
 
-                foreach ($data["Disponibilidad"] as $disp) {
-                    if (empty($disp["DiaSemana"])) continue;
-                    $dia = "'" . $disp["DiaSemana"] . "'";
-                    $sql = "INSERT INTO MenuDisponibilidad
+                        if (empty($disp["DiaSemana"])) {
+                            continue;
+                        }
+
+                        $fechaInicio = !empty($disp["FechaInicio"])
+                            ? "'" . addslashes($disp["FechaInicio"]) . "'"
+                            : "NULL";
+
+                        $fechaFin = !empty($disp["FechaFin"])
+                            ? "'" . addslashes($disp["FechaFin"]) . "'"
+                            : "NULL";
+
+                        $dia = "'" . addslashes($disp["DiaSemana"]) . "'";
+
+                        $sql = "INSERT INTO MenuDisponibilidad
                             (
                                 IdMenu,
+                                FechaInicio,
+                                FechaFin,
                                 DiaSemana
                             )
                             VALUES
                             (
                                 $idMenu,
+                                $fechaInicio,
+                                $fechaFin,
                                 $dia
                             )";
 
-
-                    $this->enlace->executeSQL_DML($sql);
+                        $this->enlace->executeSQL_DML($sql);
+                    }
                 }
             }
 
-            if (!empty($data["Productos"])) {
+            if (isset($data["Productos"]) || isset($data["Combos"])) {
 
-                foreach ($data["Productos"] as $producto) {
+                $this->enlace->executeSQL_DML(
+                    "DELETE FROM MenuItem
+                 WHERE IdMenu = $idMenu"
+                );
 
-                    $idProducto = intval($producto["IdProducto"]);
-                    $sql = "INSERT INTO MenuItem
+                // Productos
+                if (!empty($data["Productos"])) {
 
+                    foreach ($data["Productos"] as $producto) {
+
+                        if (!isset($producto["IdProducto"])) {
+                            continue;
+                        }
+
+                        $idProducto = intval($producto["IdProducto"]);
+
+                        $sql = "INSERT INTO MenuItem
                             (
                                 IdMenu,
                                 IdProducto,
@@ -434,17 +449,23 @@ class MenuModel
                                 $idProducto,
                                 NULL
                             )";
-                    $this->enlace->executeSQL_DML($sql);
+
+                        $this->enlace->executeSQL_DML($sql);
+                    }
                 }
-            }
 
-            if (!empty($data["Combos"])) {
+                // Combos
+                if (!empty($data["Combos"])) {
 
-                foreach ($data["Combos"] as $combo) {
+                    foreach ($data["Combos"] as $combo) {
 
-                    $idCombo = intval($combo["IdCombo"]);
-                    $sql = "INSERT INTO MenuItem
+                        if (!isset($combo["IdCombo"])) {
+                            continue;
+                        }
 
+                        $idCombo = intval($combo["IdCombo"]);
+
+                        $sql = "INSERT INTO MenuItem
                             (
                                 IdMenu,
                                 IdProducto,
@@ -457,8 +478,8 @@ class MenuModel
                                 $idCombo
                             )";
 
-
-                    $this->enlace->executeSQL_DML($sql);
+                        $this->enlace->executeSQL_DML($sql);
+                    }
                 }
             }
 

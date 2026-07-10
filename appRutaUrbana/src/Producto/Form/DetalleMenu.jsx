@@ -48,21 +48,16 @@ export default function DetalleMenu() {
     );
   }
 
-  // Productos + Combos
-  const safeItems = Array.isArray(detalle.Productos)
-    ? [...detalle.Productos, ...(detalle.Combos || [])]
-    : [];
+  // ✅ Productos + Combos (null → [])
+  const safeItems = [...(detalle.Productos || []), ...(detalle.Combos || [])];
 
-  // Agrupar por categoría
+  // ✅ Agrupar por categoría
   const itemsPorCategoria = safeItems.reduce((acc, item) => {
     const categoria = item.Categoria || "Sin categoría";
-
     if (!acc[categoria]) {
       acc[categoria] = [];
     }
-
     acc[categoria].push(item);
-
     return acc;
   }, {});
 
@@ -75,7 +70,6 @@ export default function DetalleMenu() {
       }}
     >
       {/* HEADER */}
-
       <Typography
         variant="h3"
         sx={{
@@ -128,7 +122,6 @@ export default function DetalleMenu() {
           fontWeight: "bold",
           textTransform: "none",
           fontSize: "1rem",
-
           "&:hover": {
             borderColor: "#E67E00",
             backgroundColor: "#FFF3E0",
@@ -139,7 +132,6 @@ export default function DetalleMenu() {
       </Button>
 
       {/* CATEGORÍAS */}
-
       {Object.entries(itemsPorCategoria).map(([categoria, productos]) => (
         <Box key={categoria} sx={{ mb: 5 }}>
           <Typography
@@ -164,9 +156,7 @@ export default function DetalleMenu() {
                   sm: 6,
                   md: 4,
                 }}
-                sx={{
-                  display: "flex",
-                }}
+                sx={{ display: "flex" }}
               >
                 <Card
                   sx={{
@@ -176,7 +166,6 @@ export default function DetalleMenu() {
                     borderRadius: 4,
                     boxShadow: "0 10px 20px rgba(0,0,0,.12)",
                     transition: "0.3s",
-
                     "&:hover": {
                       transform: "translateY(-6px)",
                       boxShadow: "0 16px 28px rgba(0,0,0,.18)",
@@ -231,7 +220,6 @@ export default function DetalleMenu() {
                     </Typography>
 
                     {/* PRECIO */}
-
                     <Box
                       sx={{
                         display: "flex",

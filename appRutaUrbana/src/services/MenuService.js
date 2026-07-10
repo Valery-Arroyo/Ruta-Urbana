@@ -18,13 +18,6 @@ class MenuService {
   }
 
   /**
-   * Obtener el detalle del menú
-   */
-  get(id) {
-    return axios.get(`${BASE_URL}/${id}`);
-  }
-
-  /**
    * Menús disponibles
    */
   disponible() {

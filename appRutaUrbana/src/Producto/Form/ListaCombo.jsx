@@ -61,34 +61,19 @@ const comboSchema = yup.object().shape({
 
 export default function ListCombosAdmin() {
   const navigate = useNavigate();
-
   const [data, setData] = useState([]);
-
   const [productos, setProductos] = useState([]);
-
   const [categorias, setCategorias] = useState([]);
-
   const [open, setOpen] = useState(false);
-
   const [comboSeleccionado, setComboSeleccionado] = useState(null);
-
   const [productoSeleccionado, setProductoSeleccionado] = useState("");
-
   const [cantidadProducto, setCantidadProducto] = useState(1);
-
-  // ELIMINAR COMBO
-
   const [openDelete, setOpenDelete] = useState(false);
-
   const [comboEliminar, setComboEliminar] = useState(null);
-
   const {
     handleSubmit,
-
     reset,
-
     watch,
-
     setValue,
 
     formState: { errors },
@@ -97,17 +82,11 @@ export default function ListCombosAdmin() {
 
     defaultValues: {
       Nombre: "",
-
       Descripcion: "",
-
       PrecioEspecial: "",
-
       RutaImagen: "",
-
       IdCategoria: "",
-
       Activo: 1,
-
       Productos: [],
     },
   });
@@ -188,15 +167,10 @@ export default function ListCombosAdmin() {
         Nombre: combo.NombreCombo,
 
         Descripcion: combo.Descripcion,
-
         PrecioEspecial: combo.PrecioEspecial,
-
         RutaImagen: combo.RutaImagen || "",
-
         IdCategoria: combo.IdCategoria,
-
         Activo: combo.Activo ?? 1,
-
         Productos:
           combo.Productos?.map((p) => ({
             IdProducto: p.IdProducto,
@@ -209,17 +183,11 @@ export default function ListCombosAdmin() {
 
       reset({
         Nombre: "",
-
         Descripcion: "",
-
         PrecioEspecial: "",
-
         RutaImagen: "",
-
         IdCategoria: "",
-
         Activo: 1,
-
         Productos: [],
       });
     }
