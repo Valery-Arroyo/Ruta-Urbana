@@ -266,18 +266,12 @@ export default function GestionProductos() {
       <Box
         sx={{
           display: "grid",
-
           justifyContent: "center",
-
           gap: 3,
-
           gridTemplateColumns: {
             xs: "1fr",
-
             sm: "repeat(2,320px)",
-
             md: "repeat(3,320px)",
-
             lg: "repeat(4,320px)",
           },
         }}
