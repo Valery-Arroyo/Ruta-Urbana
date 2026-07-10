@@ -25,7 +25,8 @@ export default function DetalleMenu() {
   useEffect(() => {
     MenuService.get(id)
       .then((response) => {
-        console.log(response.data);
+        console.log("PRODUCTOS:", response.data.Productos);
+        console.log("COMBOS:", response.data.Combos);
         setDetalle(response.data);
       })
       .catch((error) => {
@@ -48,10 +49,9 @@ export default function DetalleMenu() {
     );
   }
 
-  // ✅ Productos + Combos (null → [])
   const safeItems = [...(detalle.Productos || []), ...(detalle.Combos || [])];
 
-  // ✅ Agrupar por categoría
+  // Agrupar por categoría
   const itemsPorCategoria = safeItems.reduce((acc, item) => {
     const categoria = item.Categoria || "Sin categoría";
     if (!acc[categoria]) {

@@ -64,7 +64,7 @@ const menuSchema = yup.object({
 
   EstaActivo: yup.number().required(),
   DiasDisponibles: yup.array().of(yup.string()),
-  Items: yup.array().min(1, "Debe agregar al menos un producto o combo"),
+  Items: yup.array(),
 });
 
 export default function ListMenusAdmin() {
@@ -118,6 +118,10 @@ export default function ListMenusAdmin() {
     cargarProductos();
     cargarCombos();
   }, []);
+
+  useEffect(() => {
+    setValue("Items", itemsSeleccionados, { shouldValidate: true });
+  }, [itemsSeleccionados, setValue]);
 
   const cargarMenus = async () => {
     try {
@@ -263,7 +267,7 @@ export default function ListMenusAdmin() {
     setItemsSeleccionados(copia);
   };
 
-  const handleEdit = (menu) => {
+  const handleEdit = async (menu) => {
     if (menu) {
       setMenuSeleccionado(menu);
 
@@ -278,26 +282,36 @@ export default function ListMenusAdmin() {
               .filter(Boolean)
           : [],
 
-        Items: menu.Items || [],
+        Items: [],
       });
 
-      const items = menu.Items || [];
+      setItemsSeleccionados([]);
 
-      setItemsSeleccionados(
-        items.map((item) => ({
+      try {
+        const response = await MenuService.get(menu.IdMenu);
+        const detalle = response.data || {};
+
+        const productosDetalle = (detalle.Productos || []).map((item) => ({
           IdProducto: item.IdProducto ?? null,
-          IdCombo: item.IdCombo ?? null,
-          Nombre:
-            item.Nombre ||
-            item.NombreProducto ||
-            item.NombreCombo ||
-            "Sin nombre",
-
-          Tipo: item.IdCombo ? "Combo" : "Producto",
-
+          IdCombo: null,
+          Nombre: item.Nombre || "Sin nombre",
+          Tipo: "Producto",
           Cantidad: item.Cantidad || 1,
-        })),
-      );
+        }));
+
+        const combosDetalle = (detalle.Combos || []).map((item) => ({
+          IdProducto: null,
+          IdCombo: item.IdCombo ?? null,
+          Nombre: item.Nombre || "Sin nombre",
+          Tipo: "Combo",
+          Cantidad: item.Cantidad || 1,
+        }));
+
+        setItemsSeleccionados([...productosDetalle, ...combosDetalle]);
+      } catch (error) {
+        console.error("Error cargando detalle del menú", error);
+        toast.error("No se pudieron cargar los productos/combos del menú");
+      }
     } else {
       setMenuSeleccionado(null);
       setItemsSeleccionados([]);
@@ -320,7 +334,7 @@ export default function ListMenusAdmin() {
 
   const handleSave = async (formData) => {
     try {
-      if (itemsSeleccionados.length === 0) {
+      if (!menuSeleccionado && itemsSeleccionados.length === 0) {
         toast.error("Debe agregar productos o combos");
 
         return;
@@ -340,6 +354,20 @@ export default function ListMenusAdmin() {
           IdCombo: item.IdCombo ?? null,
           Cantidad: item.Cantidad || 1,
         })),
+
+        Productos: itemsSeleccionados
+          .filter((item) => item.IdProducto != null)
+          .map((item) => ({
+            IdProducto: item.IdProducto,
+            Cantidad: item.Cantidad || 1,
+          })),
+
+        Combos: itemsSeleccionados
+          .filter((item) => item.IdCombo != null)
+          .map((item) => ({
+            IdCombo: item.IdCombo,
+            Cantidad: item.Cantidad || 1,
+          })),
       };
 
       console.log("DATOS MENU", dataEnviar);
