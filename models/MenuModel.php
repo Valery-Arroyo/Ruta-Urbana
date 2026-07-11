@@ -18,13 +18,18 @@ class MenuModel
     public function all()
     {
         try {
+<<<<<<< Updated upstream
 
             $sql = "SELECT
+=======
+            $sql = "SELECT 
+>>>>>>> Stashed changes
                         m.IdMenu,
                         m.Nombre,
                         m.EstaActivo,
                         m.HoraInicio,
                         m.HoraFin,
+<<<<<<< Updated upstream
                         GROUP_CONCAT(
                             DISTINCT md.DiaSemana
                             SEPARATOR ', '
@@ -45,6 +50,16 @@ class MenuModel
                     ORDER BY
                         m.IdMenu DESC";
 
+=======
+                        GROUP_CONCAT(DISTINCT md.DiaSemana ORDER BY md.DiaSemana SEPARATOR ', ') AS DiasDisponibles,
+                        MAX(md.FechaInicio) AS FechaMax
+                    FROM Menu m
+                    LEFT JOIN MenuDisponibilidad md ON m.IdMenu = md.IdMenu
+                    GROUP BY m.IdMenu, m.Nombre, m.EstaActivo, m.HoraInicio, m.HoraFin
+                    ORDER BY 
+                        m.EstaActivo DESC, 
+                        COALESCE(MAX(md.FechaInicio), '1900-01-01') DESC";
+>>>>>>> Stashed changes
 
             return $this->enlace->ExecuteSQL($sql);
         } catch (Exception $e) {
@@ -240,6 +255,7 @@ class MenuModel
                 ? intval($data["EstaActivo"])
                 : 1;
 
+<<<<<<< Updated upstream
             $sql = "INSERT INTO Menu
                     (
                         Nombre,
@@ -254,6 +270,13 @@ class MenuModel
                         '$horaFin',
                         $activo
                     )";
+=======
+            // 1. Insertar el Menú principal
+            $sqlMenu = "INSERT INTO Menu (Nombre, HoraInicio, HoraFin, EstaActivo) 
+                        VALUES ('$nombre', '$horaInicio', '$horaFin', $estaActivo)";
+
+            $idNuevoMenu = $this->enlace->executeSQL_DML_last($sqlMenu);
+>>>>>>> Stashed changes
 
             $idMenu =
                 $this->enlace->executeSQL_DML_last($sql);
@@ -356,9 +379,21 @@ class MenuModel
 
             $idMenu = intval($id);
 
+<<<<<<< Updated upstream
             $nombre = addslashes($data["Nombre"]);
             $horaInicio = addslashes($data["HoraInicio"]);
             $horaFin = addslashes($data["HoraFin"]);
+=======
+            // 1. Actualizar los datos del Menú principal
+            $sqlMenu = "UPDATE Menu SET 
+                            Nombre = '$nombre', 
+                            HoraInicio = '$horaInicio', 
+                            HoraFin = '$horaFin', 
+                            EstaActivo = $estaActivo 
+                        WHERE IdMenu = $idMenu";
+
+            $resultado = $this->enlace->executeSQL_DML($sqlMenu);
+>>>>>>> Stashed changes
 
             $activo = isset($data["EstaActivo"])
                 ? intval($data["EstaActivo"])
@@ -490,6 +525,7 @@ class MenuModel
         }
     }
 
+<<<<<<< Updated upstream
     /**
      * Eliminación lógica
      */
@@ -507,6 +543,20 @@ class MenuModel
 
                   WHERE IdMenu=$id";
 
+=======
+    //Eliminar un Menú
+    public function delete($id)
+    {
+        try {
+            $idMenu = intval($id);
+
+            // 1. Borrar dependencias primero para evitar el error de Foreign Key
+            $this->enlace->executeSQL_DML("DELETE FROM MenuDisponibilidad WHERE IdMenu = $idMenu");
+            $this->enlace->executeSQL_DML("DELETE FROM MenuItem WHERE IdMenu = $idMenu");
+
+            // 2. Ahora sí, borrar el menú
+            $sql = "DELETE FROM Menu WHERE IdMenu = $idMenu";
+>>>>>>> Stashed changes
 
             return $this->enlace->executeSQL_DML($sql);
         } catch (Exception $e) {

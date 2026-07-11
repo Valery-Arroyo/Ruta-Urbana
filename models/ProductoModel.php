@@ -7,11 +7,11 @@ class ProductoModel
         $this->enlace = new MySqlConnect();
     }
 
-    /*Listar */
     public function all()
     {
         try {
             $sql = "SELECT 
+<<<<<<< Updated upstream
     p.IdProducto,
     p.Nombre,
     p.Descripcion,
@@ -23,12 +23,25 @@ class ProductoModel
     LEFT JOIN ProductoImagen pi 
     ON p.IdProducto = pi.IdProducto
     GROUP BY p.IdProducto";
+=======
+                        p.IdProducto,
+                        p.Nombre,
+                        p.Descripcion,
+                        p.Precio,
+                        p.Activo,
+                        p.IdCategoria,
+                        c.Nombre AS NombreCategoria,
+                        pi.Imagen
+                    FROM Producto p
+                    LEFT JOIN Categoria c ON p.IdCategoria = c.IdCategoria
+                    LEFT JOIN ProductoImagen pi ON p.IdProducto = pi.IdProducto AND pi.EsPrincipal = 1
+                    GROUP BY p.IdProducto"; 
+>>>>>>> Stashed changes
 
             $productos = $this->enlace->ExecuteSQL($sql);
 
             foreach ($productos as &$producto) {
-                $producto->Ingredientes =
-                    $this->getIngredientesByProducto($producto->IdProducto);
+                $producto->Ingredientes = $this->getIngredientesByProducto($producto->IdProducto);
             }
 
             return $productos;
@@ -37,7 +50,6 @@ class ProductoModel
         }
     }
 
-    /*Obtener */
     public function get($id)
     {
         try {
@@ -63,18 +75,15 @@ class ProductoModel
                 $resultado[0]->Ingredientes = $this->getIngredientesByProducto($id);
             }
 
-
             return $resultado;
         } catch (Exception $e) {
             handleException($e);
         }
     }
 
-    /*Obtener los productos de una categoria */
     public function getProductoCategoria($IdCategoria)
     {
         try {
-            //Consulta SQL
             $sql = "SELECT * FROM Producto WHERE IdCategoria = $IdCategoria";
             $resultado = $this->enlace->ExecuteSQL($sql);
             return $resultado;
@@ -83,7 +92,6 @@ class ProductoModel
         }
     }
 
-    /* Obtener ingredientes de un producto específico */
     public function getIngredientesByProducto($idProducto)
     {
         try {
@@ -101,26 +109,21 @@ class ProductoModel
         }
     }
 
-    /* Crear Producto */
     public function create($data)
     {
         try {
-            /* Acá obtenemos todas las variables para poder meterlas en el nuevo producto */
             $nombre = addslashes($data['Nombre']);
             $descripcion = isset($data['Descripcion']) ? addslashes($data['Descripcion']) : null;
             $precio = floatval($data['Precio']);
             $idCategoria = intval($data['IdCategoria']);
             $activo = isset($data['Activo']) ? intval($data['Activo']) : 1;
 
-            /* Insertar el producto usando el método para obtener el ID generado */
             $sqlProducto = "INSERT INTO Producto (Nombre, Descripcion, Precio, Activo, IdCategoria) 
                             VALUES ('$nombre', " . ($descripcion ? "'$descripcion'" : "NULL") . ", $precio, $activo, $idCategoria)";
 
-            /* Ejecuta la consulta y define la variable */
             $idNuevoProducto = $this->enlace->executeSQL_DML_last($sqlProducto);
 
             if ($idNuevoProducto) {
-                /* Insertar la imagen en ProductoImagen vinculada al ID recién creado */
                 if (!empty($data['Imagen'])) {
                     $imagen = addslashes($data['Imagen']);
                     $sqlImagen = "INSERT INTO ProductoImagen (Imagen, EsPrincipal, IdProducto) 
@@ -128,7 +131,6 @@ class ProductoModel
                     $this->enlace->executeSQL_DML($sqlImagen);
                 }
 
-                /* Insertar la asociación en ProductoIngrediente */
                 if (!empty($data['Ingredientes']) && is_array($data['Ingredientes'])) {
                     foreach ($data['Ingredientes'] as $idIngrediente) {
                         $idIngrediente = intval($idIngrediente);
@@ -139,20 +141,19 @@ class ProductoModel
                 }
             }
 
-            /* Devolvemos el producto nuevo totalmente completo */
             return $idNuevoProducto;
         } catch (Exception $e) {
             handleException($e);
         }
     }
 
-    /* Actualizar Producto */
     public function update($id, $data)
     {
         try {
             // Convertir el ID a entero para mayor seguridad ya que viene de la URL
             // y normalmente es un string. Esto previene errores.
             $id = intval($id);
+<<<<<<< Updated upstream
             // Proteger los datos de entrada para evitar inyecciones SQL, básicamente 
             // mantiene los caracteres especiales que puede contener el nombre y la descripción, como comillas simples o dobles.
             $nombre = addslashes($data['Nombre']);
@@ -166,6 +167,14 @@ class ProductoModel
 
 
             // 1. Actualizar datos del producto
+=======
+            $nombre = addslashes($data['Nombre'] ?? '');
+            $descripcion = isset($data['Descripcion']) ? addslashes($data['Descripcion']) : null;
+            $precio = floatval($data['Precio'] ?? 0);
+            $idCategoria = intval($data['IdCategoria'] ?? 0);
+            $activo = isset($data['Activo']) ? intval($data['Activo']) : 1;
+
+>>>>>>> Stashed changes
             $sqlProducto = "UPDATE Producto SET 
                         Nombre = '$nombre',
                         Descripcion = " . ($descripcion ? "'$descripcion'" : "NULL") . ",
@@ -176,6 +185,7 @@ class ProductoModel
 
             $resultado = $this->enlace->executeSQL_DML($sqlProducto);
 
+<<<<<<< Updated upstream
 
 
             // 2. Actualizar o insertar imagen principal
@@ -227,6 +237,25 @@ class ProductoModel
                 $this->enlace->executeSQL_DML($sqlDeleteIngredientes);
 
                 // Insertar nuevos ingredientes
+=======
+            if (isset($data['Imagen'])) {
+                $imagen = addslashes($data['Imagen']);
+                $sqlCheck = "UPDATE ProductoImagen SET Imagen = '$imagen' 
+                             WHERE IdProducto = $id AND EsPrincipal = 1";
+                $filasAfectadas = $this->enlace->executeSQL_DML($sqlCheck);
+
+                if ($filasAfectadas == 0) {
+                    $sqlInsertImage = "INSERT INTO ProductoImagen (Imagen, EsPrincipal, IdProducto) 
+                                       VALUES ('$imagen', 1, $id)";
+                    $this->enlace->executeSQL_DML($sqlInsertImage);
+                }
+            }
+
+            if (isset($data['Ingredientes']) && is_array($data['Ingredientes'])) {
+                $sqlDelete = "DELETE FROM ProductoIngrediente WHERE IdProducto = $id";
+                $this->enlace->executeSQL_DML($sqlDelete);
+
+>>>>>>> Stashed changes
                 foreach ($data['Ingredientes'] as $idIngrediente) {
 
                     $idIngrediente = intval($idIngrediente);
@@ -244,12 +273,17 @@ class ProductoModel
         }
     }
 
+<<<<<<< Updated upstream
     // Eliminar un producto 
+=======
+    /* Borrado Físico de la Base de Datos */
+>>>>>>> Stashed changes
     public function delete($id)
     {
         try {
             // Convertir el ID a entero para mayor seguridad
             $id = intval($id);
+<<<<<<< Updated upstream
 
             // Primero se eliminan las relaciones en ProductoIngrediente y ProductoImagen
             $this->enlace->executeSQL_DML(
@@ -271,6 +305,21 @@ class ProductoModel
         } catch (Exception $e) {
 
             handleException($e);
+=======
+            
+            // 1. Primero eliminamos las relaciones en tablas secundarias (Ingredientes e Imágenes)
+            // Esto es necesario para evitar errores de integridad referencial (Foreign Key)
+            $this->enlace->executeSQL_DML("DELETE FROM ProductoIngrediente WHERE IdProducto = $id");
+            $this->enlace->executeSQL_DML("DELETE FROM ProductoImagen WHERE IdProducto = $id");
+            
+            // 2. Finalmente eliminamos el producto principal
+            $sql = "DELETE FROM Producto WHERE IdProducto = $id";
+            $this->enlace->executeSQL_DML($sql);
+            
+            return true;
+        } catch (Exception $e) {
+            return false;
+>>>>>>> Stashed changes
         }
     }
 }
