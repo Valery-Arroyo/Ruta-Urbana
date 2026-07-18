@@ -6,6 +6,8 @@ import { Card, CardContent, CardActions, IconButton, Typography, Grid, Box, Chip
 import { Edit as EditIcon, Delete as DeleteIcon, ZoomIn as ZoomInIcon, Add as AddIcon, RemoveCircle as RemoveIcon } from "@mui/icons-material";
 import PreparacionService from "../../services/PreparacionService";
 import EstacionService from "../../services/EstacionService";
+import ProductoService from "../../services/ProductoService";
+import ComboService from "../../services/ComboService";
 
 const orangeIcon = { color: "#FF8C00" };
 
@@ -19,12 +21,26 @@ const pasoVacio = () => ({
 export default function ListPreparacionPublic() {
   const navigate = useNavigate();
   const [data, setData] = useState([]);
+  const [estaciones, setEstaciones] = useState([]);
+  const [productos, setProductos] = useState([]);
+  const [combos, setCombos] = useState([]);
+
+  // --- Estado edición de proceso existente ---
   const [open, setOpen] = useState(false);
   const [procesoEdit, setProcesoEdit] = useState(null);
   const [pasosForm, setPasosForm] = useState([]);
   const [pasosEliminados, setPasosEliminados] = useState([]);
   const [guardando, setGuardando] = useState(false);
-  const [estaciones, setEstaciones] = useState([]);
+
+  // --- Estado creación de proceso nuevo ---
+  const [openCreate, setOpenCreate] = useState(false);
+  const [tipoNuevo, setTipoNuevo] = useState('producto'); // 'producto' | 'combo'
+  const [idSeleccionado, setIdSeleccionado] = useState('');
+  const [pasosNuevo, setPasosNuevo] = useState([]);
+  const [guardandoNuevo, setGuardandoNuevo] = useState(false);
+
+  // --- Estado eliminación de proceso completo ---
+  const [eliminando, setEliminando] = useState(null); // guarda la key del item en proceso de borrado
 
   const cargarDatos = async () => {
     try {
@@ -57,10 +73,37 @@ export default function ListPreparacionPublic() {
     } catch (e) { toast.error("Error al cargar estaciones"); }
   };
 
+  const cargarProductos = async () => {
+    try {
+      const response = await ProductoService.getProductos();
+      setProductos(response.data);
+    } catch (e) { toast.error("Error al cargar productos"); }
+  };
+
+  const cargarCombos = async () => {
+    try {
+      const response = await ComboService.getCombos();
+      setCombos(response.data);
+    } catch (e) { toast.error("Error al cargar combos"); }
+  };
+
   useEffect(() => {
     cargarDatos();
     cargarEstaciones();
+    cargarProductos();
+    cargarCombos();
   }, []);
+
+  // --- Helpers genéricos de manejo de pasos (reusados por edición y creación) ---
+  const modificarPaso = (setter, index, campo, valor) => {
+    setter(prev => prev.map((p, i) => (i === index ? { ...p, [campo]: valor } : p)));
+  };
+
+  const agregarPaso = (setter) => {
+    setter(prev => [...prev, pasoVacio()]);
+  };
+
+  // ================= EDICIÓN DE PROCESO EXISTENTE =================
 
   const abrirEdicion = (item) => {
     setProcesoEdit(item);
@@ -68,10 +111,6 @@ export default function ListPreparacionPublic() {
     // Copia profunda: nunca mutamos directamente los objetos de "data"
     setPasosForm(item.pasos.map(p => ({ ...p })));
     setOpen(true);
-  };
-
-  const handleCambiarPaso = (index, campo, valor) => {
-    setPasosForm(prev => prev.map((p, i) => (i === index ? { ...p, [campo]: valor } : p)));
   };
 
   const handleRemoverPaso = (index) => {
@@ -83,12 +122,7 @@ export default function ListPreparacionPublic() {
     setPasosForm(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleAgregarPaso = () => {
-    setPasosForm(prev => [...prev, pasoVacio()]);
-  };
-
   const handleSave = async () => {
-    // Validación mínima
     const invalido = pasosForm.some(p => !p.IdEstacion || !p.OrdenPaso || !p.TiempoEstimadoMinutos);
     if (invalido) {
       toast.error("Completa Orden, Estación y Minutos en todos los pasos");
@@ -130,30 +164,135 @@ export default function ListPreparacionPublic() {
     }
   };
 
+  // ================= CREACIÓN DE PROCESO NUEVO =================
+
+  // Solo se ofrecen productos/combos que TODAVÍA no tienen proceso
+  const idsProductosConProceso = new Set(data.filter(d => d.esProducto).map(d => Number(d.IdProducto)));
+  const idsCombosConProceso = new Set(data.filter(d => !d.esProducto).map(d => Number(d.IdCombo)));
+
+  const productosDisponibles = productos.filter(p => !idsProductosConProceso.has(Number(p.IdProducto)));
+  const combosDisponibles = combos.filter(c => !idsCombosConProceso.has(Number(c.IdCombo)));
+
+  const abrirCreacion = () => {
+    setTipoNuevo('producto');
+    setIdSeleccionado('');
+    setPasosNuevo([]);
+    setOpenCreate(true);
+  };
+
+  const handleRemoverPasoNuevo = (index) => {
+    setPasosNuevo(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleCrearProceso = async () => {
+    if (!idSeleccionado) {
+      toast.error(tipoNuevo === 'producto' ? "Selecciona un producto" : "Selecciona un combo");
+      return;
+    }
+    if (pasosNuevo.length === 0) {
+      toast.error("Agrega al menos un paso");
+      return;
+    }
+    const invalido = pasosNuevo.some(p => !p.IdEstacion || !p.OrdenPaso || !p.TiempoEstimadoMinutos);
+    if (invalido) {
+      toast.error("Completa Orden, Estación y Minutos en todos los pasos");
+      return;
+    }
+
+    setGuardandoNuevo(true);
+    try {
+      await Promise.all(pasosNuevo.map(p => {
+        const payload = {
+          OrdenPaso: Number(p.OrdenPaso),
+          TiempoEstimadoMinutos: Number(p.TiempoEstimadoMinutos),
+          IdEstacion: Number(p.IdEstacion),
+          IdProducto: tipoNuevo === 'producto' ? Number(idSeleccionado) : null,
+          IdCombo: tipoNuevo === 'combo' ? Number(idSeleccionado) : null
+        };
+        return PreparacionService.createPreparacion(payload);
+      }));
+
+      toast.success("Proceso creado correctamente");
+      setOpenCreate(false);
+      setPasosNuevo([]);
+      setIdSeleccionado('');
+      await cargarDatos();
+    } catch (e) {
+      toast.error("Error al crear el proceso");
+    } finally {
+      setGuardandoNuevo(false);
+    }
+  };
+
+  // ================= ELIMINACIÓN DE PROCESO COMPLETO =================
+
+  const handleEliminarProceso = async (item) => {
+    const confirmado = window.confirm(
+      `¿Eliminar todo el proceso de "${item.Nombre}"? Esto borrará sus ${item.pasos.length} paso(s).`
+    );
+    if (!confirmado) return;
+
+    const key = item.IdProducto ? `prod-${item.IdProducto}` : `combo-${item.IdCombo}`;
+    setEliminando(key);
+    try {
+      await Promise.all(
+        item.pasos
+          .filter(p => p.IdProceso)
+          .map(p => PreparacionService.deletePreparacion(p.IdProceso))
+      );
+      toast.success("Proceso eliminado correctamente");
+      await cargarDatos();
+    } catch (e) {
+      toast.error("Error al eliminar el proceso");
+    } finally {
+      setEliminando(null);
+    }
+  };
+
   return (
     <Box sx={{ p: 3, display: "flex", justifyContent: "center" }}>
       <Toaster />
       <Box sx={{ width: "100%", maxWidth: "1200px" }}>
-        <Typography variant="h3" sx={{ mb: 4, fontWeight: "bold", color: "#FF8C00", textAlign: "center" }}>Procesos</Typography>
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 4 }}>
+          <Typography variant="h3" sx={{ fontWeight: "bold", color: "#FF8C00" }}>Procesos</Typography>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            sx={{ bgcolor: "#FF8C00" }}
+            onClick={abrirCreacion}
+          >
+            Crear Proceso
+          </Button>
+        </Box>
         <Grid container spacing={2}>
-          {data.map((item, index) => (
-            <Grid item key={index} xs={12} sm={6} md={3}>
-              <Card sx={{ p: 1.5, borderRadius: 3 }}>
-                <CardContent sx={{ p: 0 }}>
-                  <Typography sx={{ fontWeight: "bold" }}>{item.Nombre}</Typography>
-                  <Chip label={`Pasos: ${item.pasos.length}`} size="small" color={item.esProducto ? "primary" : "success"} sx={{ mt: 1 }} />
-                </CardContent>
-                <CardActions sx={{ justifyContent: "flex-end" }}>
-                  <IconButton onClick={() => abrirEdicion(item)} sx={orangeIcon}><EditIcon /></IconButton>
-                  <IconButton sx={orangeIcon}><DeleteIcon /></IconButton>
-                  <IconButton onClick={() => navigate(item.IdProducto ? `/preparacion/${item.IdProducto}` : `/preparacion/combo/${item.IdCombo}`)} sx={orangeIcon}><ZoomInIcon /></IconButton>
-                </CardActions>
-              </Card>
-            </Grid>
-          ))}
+          {data.map((item, index) => {
+            const key = item.IdProducto ? `prod-${item.IdProducto}` : `combo-${item.IdCombo}`;
+            return (
+              <Grid item key={index} xs={12} sm={6} md={3}>
+                <Card sx={{ p: 1.5, borderRadius: 3 }}>
+                  <CardContent sx={{ p: 0 }}>
+                    <Typography sx={{ fontWeight: "bold" }}>{item.Nombre}</Typography>
+                    <Chip label={`Pasos: ${item.pasos.length}`} size="small" color={item.esProducto ? "primary" : "success"} sx={{ mt: 1 }} />
+                  </CardContent>
+                  <CardActions sx={{ justifyContent: "flex-end" }}>
+                    <IconButton onClick={() => abrirEdicion(item)} sx={orangeIcon}><EditIcon /></IconButton>
+                    <IconButton
+                      onClick={() => handleEliminarProceso(item)}
+                      disabled={eliminando === key}
+                      sx={orangeIcon}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                    <IconButton onClick={() => navigate(item.IdProducto ? `/preparacion/${item.IdProducto}` : `/preparacion/combo/${item.IdCombo}`)} sx={orangeIcon}><ZoomInIcon /></IconButton>
+                  </CardActions>
+                </Card>
+              </Grid>
+            );
+          })}
         </Grid>
       </Box>
 
+      {/* Dialog de EDICIÓN */}
       <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="sm">
         <DialogTitle>Editar: {procesoEdit?.Nombre}</DialogTitle>
         <DialogContent>
@@ -164,7 +303,7 @@ export default function ListPreparacionPublic() {
                 size="small"
                 sx={{ width: 60 }}
                 value={paso.OrdenPaso}
-                onChange={(e) => handleCambiarPaso(index, "OrdenPaso", e.target.value)}
+                onChange={(e) => modificarPaso(setPasosForm, index, "OrdenPaso", e.target.value)}
               />
               <TextField
                 select
@@ -172,7 +311,7 @@ export default function ListPreparacionPublic() {
                 size="small"
                 fullWidth
                 value={paso.IdEstacion || ''}
-                onChange={(e) => handleCambiarPaso(index, "IdEstacion", Number(e.target.value))}
+                onChange={(e) => modificarPaso(setPasosForm, index, "IdEstacion", Number(e.target.value))}
               >
                 {estaciones.map(est => (
                   <MenuItem key={est.IdEstacion} value={est.IdEstacion}>
@@ -185,17 +324,96 @@ export default function ListPreparacionPublic() {
                 size="small"
                 sx={{ width: 60 }}
                 value={paso.TiempoEstimadoMinutos}
-                onChange={(e) => handleCambiarPaso(index, "TiempoEstimadoMinutos", e.target.value)}
+                onChange={(e) => modificarPaso(setPasosForm, index, "TiempoEstimadoMinutos", e.target.value)}
               />
               <IconButton color="error" onClick={() => handleRemoverPaso(index)}><RemoveIcon /></IconButton>
             </Box>
           ))}
-          <Button startIcon={<AddIcon />} onClick={handleAgregarPaso}>Agregar Paso</Button>
+          <Button startIcon={<AddIcon />} onClick={() => agregarPaso(setPasosForm)}>Agregar Paso</Button>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpen(false)}>Cancelar</Button>
           <Button onClick={handleSave} variant="contained" sx={{ bgcolor: "#FF8C00" }} disabled={guardando}>
             {guardando ? "Guardando..." : "Guardar"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Dialog de CREACIÓN */}
+      <Dialog open={openCreate} onClose={() => setOpenCreate(false)} fullWidth maxWidth="sm">
+        <DialogTitle>Crear nuevo proceso</DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: "flex", gap: 1, mb: 2, mt: 1 }}>
+            <TextField
+              select
+              label="Tipo"
+              size="small"
+              sx={{ width: 140 }}
+              value={tipoNuevo}
+              onChange={(e) => { setTipoNuevo(e.target.value); setIdSeleccionado(''); }}
+            >
+              <MenuItem value="producto">Producto</MenuItem>
+              <MenuItem value="combo">Combo</MenuItem>
+            </TextField>
+
+            <TextField
+              select
+              label={tipoNuevo === 'producto' ? "Producto" : "Combo"}
+              size="small"
+              fullWidth
+              value={idSeleccionado}
+              onChange={(e) => setIdSeleccionado(e.target.value)}
+            >
+              {(tipoNuevo === 'producto' ? productosDisponibles : combosDisponibles).map(item => {
+                const id = tipoNuevo === 'producto' ? item.IdProducto : item.IdCombo;
+                return (
+                  <MenuItem key={id} value={id}>
+                    {item.Nombre}
+                  </MenuItem>
+                );
+              })}
+            </TextField>
+          </Box>
+
+          {pasosNuevo.map((paso, index) => (
+            <Box key={`nuevo-${index}`} sx={{ display: "flex", gap: 1, alignItems: "center", mb: 2 }}>
+              <TextField
+                label="Ord"
+                size="small"
+                sx={{ width: 60 }}
+                value={paso.OrdenPaso}
+                onChange={(e) => modificarPaso(setPasosNuevo, index, "OrdenPaso", e.target.value)}
+              />
+              <TextField
+                select
+                label="Estación"
+                size="small"
+                fullWidth
+                value={paso.IdEstacion || ''}
+                onChange={(e) => modificarPaso(setPasosNuevo, index, "IdEstacion", Number(e.target.value))}
+              >
+                {estaciones.map(est => (
+                  <MenuItem key={est.IdEstacion} value={est.IdEstacion}>
+                    {est.Nombre}
+                  </MenuItem>
+                ))}
+              </TextField>
+              <TextField
+                label="Min"
+                size="small"
+                sx={{ width: 60 }}
+                value={paso.TiempoEstimadoMinutos}
+                onChange={(e) => modificarPaso(setPasosNuevo, index, "TiempoEstimadoMinutos", e.target.value)}
+              />
+              <IconButton color="error" onClick={() => handleRemoverPasoNuevo(index)}><RemoveIcon /></IconButton>
+            </Box>
+          ))}
+          <Button startIcon={<AddIcon />} onClick={() => agregarPaso(setPasosNuevo)}>Agregar Paso</Button>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenCreate(false)}>Cancelar</Button>
+          <Button onClick={handleCrearProceso} variant="contained" sx={{ bgcolor: "#FF8C00" }} disabled={guardandoNuevo}>
+            {guardandoNuevo ? "Creando..." : "Crear"}
           </Button>
         </DialogActions>
       </Dialog>
