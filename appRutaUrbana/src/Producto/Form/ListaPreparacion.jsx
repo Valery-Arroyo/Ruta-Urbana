@@ -45,9 +45,9 @@ export default function ListPreparacionPublic() {
           acc[key] = { Nombre: item.NombreProducto || item.NombreCombo, IdProducto: idProd, IdCombo: idCombo, esProducto: !!idProd, pasos: [] };
         }
         acc[key].pasos.push({ 
-            IdProceso: item.IdProceso, IdEstacion: Number(item.IdEstacion) || 0, 
-            OrdenPaso: Number(item.OrdenPaso), NombreEstacion: item.NombreEstacion, 
-            TiempoEstimadoMinutos: Number(item.TiempoEstimadoMinutos) 
+          IdProceso: item.IdProceso, IdEstacion: Number(item.IdEstacion) || 0, 
+          OrdenPaso: Number(item.OrdenPaso), NombreEstacion: item.NombreEstacion, 
+          TiempoEstimadoMinutos: Number(item.TiempoEstimadoMinutos) 
         });
         return acc;
       }, {});
@@ -59,14 +59,28 @@ export default function ListPreparacionPublic() {
 
   const handleSave = async (dataForm) => {
     try {
-      // Enviamos el objeto p tal cual, asegurando números
-      await Promise.all(dataForm.pasos.map(p => PreparacionService.updatePreparacion(p.IdProceso, {
-          ...p,
-          IdEstacion: Number(p.IdEstacion) || 0
-      })));
+      await Promise.all(dataForm.pasos.map(p => {
+        const pasoOriginal = procesoEdit?.pasos.find(orig => orig.IdProceso === p.IdProceso);
+        
+        const payload = {
+          IdProceso: p.IdProceso,
+          OrdenPaso: Number(p.OrdenPaso),
+          NombreEstacion: p.NombreEstacion,
+          TiempoEstimadoMinutos: Number(p.TiempoEstimadoMinutos),
+          IdEstacion: Number(p.IdEstacion) || Number(pasoOriginal?.IdEstacion) || 1,
+          IdProducto: procesoEdit?.IdProducto || null,
+          IdCombo: procesoEdit?.IdCombo || null
+        };
+
+        if (payload.IdProceso) {
+          return PreparacionService.updatePreparacion(payload.IdProceso, payload);
+        } else {
+          return PreparacionService.createPreparacion(payload);
+        }
+      }));
       toast.success("Guardado correctamente");
       setOpen(false);
-      cargarDatos();
+      await cargarDatos();
     } catch (e) { toast.error("Error al guardar en BD"); }
   };
 
