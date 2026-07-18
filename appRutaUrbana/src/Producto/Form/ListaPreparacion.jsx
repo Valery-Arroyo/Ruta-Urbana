@@ -1,9 +1,6 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useForm, Controller, useFieldArray } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
 import toast, { Toaster } from "react-hot-toast";
 import { Card, CardContent, CardActions, IconButton, Typography, Grid, Box, Chip, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from "@mui/material";
 import { Edit as EditIcon, Delete as DeleteIcon, ZoomIn as ZoomInIcon, Add as AddIcon, RemoveCircle as RemoveIcon } from "@mui/icons-material";
@@ -11,14 +8,12 @@ import PreparacionService from "../../services/PreparacionService";
 
 const orangeIcon = { color: "#FF8C00" };
 
-const procesoSchema = yup.object().shape({
-  pasos: yup.array().of(yup.object().shape({
-    IdProceso: yup.number().nullable(),
-    IdEstacion: yup.number().required(),
-    OrdenPaso: yup.number().required(),
-    NombreEstacion: yup.string().required(),
-    TiempoEstimadoMinutos: yup.number().required(),
-  })),
+const pasoVacio = () => ({
+  IdProceso: null,
+  IdEstacion: 0,
+  OrdenPaso: 0,
+  NombreEstacion: '',
+  TiempoEstimadoMinutos: 0,
 });
 
 export default function ListPreparacionPublic() {
@@ -26,13 +21,9 @@ export default function ListPreparacionPublic() {
   const [data, setData] = useState([]);
   const [open, setOpen] = useState(false);
   const [procesoEdit, setProcesoEdit] = useState(null);
-
-  const { control, handleSubmit, reset } = useForm({
-    resolver: yupResolver(procesoSchema),
-    defaultValues: { pasos: [] }
-  });
-
-  const { fields, append, remove } = useFieldArray({ control, name: "pasos" });
+  const [pasosForm, setPasosForm] = useState([]);
+  const [pasosEliminados, setPasosEliminados] = useState([]);
+  const [guardando, setGuardando] = useState(false);
 
   const cargarDatos = async () => {
     try {
@@ -40,14 +31,18 @@ export default function ListPreparacionPublic() {
       const agrupado = response.data.reduce((acc, item) => {
         const idProd = item.IdProducto || item.idProducto || item.idproducto;
         const idCombo = item.IdCombo || item.idCombo || item.idcombo;
+        const idProceso = item.IdProceso || item.idProceso || item.idproceso;
+
         const key = idProd ? `prod-${idProd}` : `combo-${idCombo}`;
         if (!acc[key]) {
           acc[key] = { Nombre: item.NombreProducto || item.NombreCombo, IdProducto: idProd, IdCombo: idCombo, esProducto: !!idProd, pasos: [] };
         }
-        acc[key].pasos.push({ 
-          IdProceso: item.IdProceso, IdEstacion: Number(item.IdEstacion) || 0, 
-          OrdenPaso: Number(item.OrdenPaso), NombreEstacion: item.NombreEstacion, 
-          TiempoEstimadoMinutos: Number(item.TiempoEstimadoMinutos) 
+        acc[key].pasos.push({
+          IdProceso: idProceso ? Number(idProceso) : null,
+          IdEstacion: Number(item.IdEstacion || item.idEstacion || 0),
+          OrdenPaso: Number(item.OrdenPaso || item.ordenPaso || 0),
+          NombreEstacion: item.NombreEstacion || item.nombreEstacion,
+          TiempoEstimadoMinutos: Number(item.TiempoEstimadoMinutos || item.tiempoEstimadoMinutos || 0)
         });
         return acc;
       }, {});
@@ -57,31 +52,73 @@ export default function ListPreparacionPublic() {
 
   useEffect(() => { cargarDatos(); }, []);
 
-  const handleSave = async (dataForm) => {
+  const abrirEdicion = (item) => {
+    setProcesoEdit(item);
+    setPasosEliminados([]);
+    // Copia profunda: nunca mutamos directamente los objetos de "data"
+    setPasosForm(item.pasos.map(p => ({ ...p })));
+    setOpen(true);
+  };
+
+  const handleCambiarPaso = (index, campo, valor) => {
+    setPasosForm(prev => prev.map((p, i) => (i === index ? { ...p, [campo]: valor } : p)));
+  };
+
+  const handleRemoverPaso = (index) => {
+    const paso = pasosForm[index];
+    // Solo lo mandamos a borrar si YA existía en la BD (tiene IdProceso)
+    if (paso?.IdProceso) {
+      setPasosEliminados(prev => [...prev, paso.IdProceso]);
+    }
+    setPasosForm(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleAgregarPaso = () => {
+    setPasosForm(prev => [...prev, pasoVacio()]);
+  };
+
+  const handleSave = async () => {
+    // Validación mínima
+    const invalido = pasosForm.some(p => !p.NombreEstacion || !p.OrdenPaso || !p.TiempoEstimadoMinutos);
+    if (invalido) {
+      toast.error("Completa Orden, Estación y Minutos en todos los pasos");
+      return;
+    }
+
+    setGuardando(true);
     try {
-      await Promise.all(dataForm.pasos.map(p => {
-        const pasoOriginal = procesoEdit?.pasos.find(orig => orig.IdProceso === p.IdProceso);
-        
+      if (pasosEliminados.length > 0) {
+        await Promise.all(pasosEliminados.map(id =>
+          PreparacionService.deletePreparacion(id)
+        ));
+      }
+
+      await Promise.all(pasosForm.map(p => {
         const payload = {
-          IdProceso: p.IdProceso,
+          IdProceso: p.IdProceso || null,
           OrdenPaso: Number(p.OrdenPaso),
           NombreEstacion: p.NombreEstacion,
           TiempoEstimadoMinutos: Number(p.TiempoEstimadoMinutos),
-          IdEstacion: Number(p.IdEstacion) || Number(pasoOriginal?.IdEstacion) || 1,
+          IdEstacion: Number(p.IdEstacion) || 1,
           IdProducto: procesoEdit?.IdProducto || null,
           IdCombo: procesoEdit?.IdCombo || null
         };
 
-        if (payload.IdProceso) {
-          return PreparacionService.updatePreparacion(payload.IdProceso, payload);
-        } else {
-          return PreparacionService.createPreparacion(payload);
-        }
+        return payload.IdProceso
+          ? PreparacionService.updatePreparacion(payload.IdProceso, payload)
+          : PreparacionService.createPreparacion(payload);
       }));
+
       toast.success("Guardado correctamente");
       setOpen(false);
+      setPasosEliminados([]);
+      setPasosForm([]);
       await cargarDatos();
-    } catch (e) { toast.error("Error al guardar en BD"); }
+    } catch (e) {
+      toast.error("Error al guardar en BD");
+    } finally {
+      setGuardando(false);
+    }
   };
 
   return (
@@ -98,7 +135,7 @@ export default function ListPreparacionPublic() {
                   <Chip label={`Pasos: ${item.pasos.length}`} size="small" color={item.esProducto ? "primary" : "success"} sx={{ mt: 1 }} />
                 </CardContent>
                 <CardActions sx={{ justifyContent: "flex-end" }}>
-                  <IconButton onClick={() => { setProcesoEdit(item); reset({ pasos: item.pasos }); setOpen(true); }} sx={orangeIcon}><EditIcon /></IconButton>
+                  <IconButton onClick={() => abrirEdicion(item)} sx={orangeIcon}><EditIcon /></IconButton>
                   <IconButton sx={orangeIcon}><DeleteIcon /></IconButton>
                   <IconButton onClick={() => navigate(item.IdProducto ? `/preparacion/${item.IdProducto}` : `/preparacion/combo/${item.IdCombo}`)} sx={orangeIcon}><ZoomInIcon /></IconButton>
                 </CardActions>
@@ -111,19 +148,39 @@ export default function ListPreparacionPublic() {
       <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="sm">
         <DialogTitle>Editar: {procesoEdit?.Nombre}</DialogTitle>
         <DialogContent>
-          {fields.map((field, index) => (
-            <Box key={field.id} sx={{ display: "flex", gap: 1, alignItems: "center", mb: 2, mt: 1 }}>
-              <Controller name={`pasos.${index}.OrdenPaso`} control={control} render={({ field }) => <TextField {...field} label="Ord" size="small" sx={{ width: 60 }} />} />
-              <Controller name={`pasos.${index}.NombreEstacion`} control={control} render={({ field }) => <TextField {...field} label="Estación" size="small" fullWidth />} />
-              <Controller name={`pasos.${index}.TiempoEstimadoMinutos`} control={control} render={({ field }) => <TextField {...field} label="Min" size="small" sx={{ width: 60 }} />} />
-              <IconButton color="error" onClick={() => remove(index)}><RemoveIcon /></IconButton>
+          {pasosForm.map((paso, index) => (
+            <Box key={paso.IdProceso ?? `nuevo-${index}`} sx={{ display: "flex", gap: 1, alignItems: "center", mb: 2, mt: 1 }}>
+              <TextField
+                label="Ord"
+                size="small"
+                sx={{ width: 60 }}
+                value={paso.OrdenPaso}
+                onChange={(e) => handleCambiarPaso(index, "OrdenPaso", e.target.value)}
+              />
+              <TextField
+                label="Estación"
+                size="small"
+                fullWidth
+                value={paso.NombreEstacion}
+                onChange={(e) => handleCambiarPaso(index, "NombreEstacion", e.target.value)}
+              />
+              <TextField
+                label="Min"
+                size="small"
+                sx={{ width: 60 }}
+                value={paso.TiempoEstimadoMinutos}
+                onChange={(e) => handleCambiarPaso(index, "TiempoEstimadoMinutos", e.target.value)}
+              />
+              <IconButton color="error" onClick={() => handleRemoverPaso(index)}><RemoveIcon /></IconButton>
             </Box>
           ))}
-          <Button startIcon={<AddIcon />} onClick={() => append({ OrdenPaso: 0, NombreEstacion: '', TiempoEstimadoMinutos: 0, IdEstacion: 0 })}>Agregar Paso</Button>
+          <Button startIcon={<AddIcon />} onClick={handleAgregarPaso}>Agregar Paso</Button>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpen(false)}>Cancelar</Button>
-          <Button onClick={handleSubmit(handleSave)} variant="contained" sx={{ bgcolor: "#FF8C00" }}>Guardar</Button>
+          <Button onClick={handleSave} variant="contained" sx={{ bgcolor: "#FF8C00" }} disabled={guardando}>
+            {guardando ? "Guardando..." : "Guardar"}
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>
