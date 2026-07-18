@@ -12,13 +12,14 @@ class PreparacionModel
     public function all()
     {
         try {
-            // INCLUSIÓN DE pp.IdProducto Y pp.IdCombo EN EL SELECT
             $sql = "SELECT 
+                        pp.IdProceso,
                         pp.IdProducto,
                         pp.IdCombo,
                         p.Nombre AS NombreProducto,
                         c.Nombre AS NombreCombo,
                         pp.OrdenPaso,
+                        pp.IdEstacion,
                         e.Nombre AS NombreEstacion,
                         pp.TiempoEstimadoMinutos
                     FROM ProcesoPreparacion pp
@@ -40,9 +41,11 @@ class PreparacionModel
             $idProducto = intval($idProducto);
 
             $sql = "SELECT 
+                        pp.IdProceso,
                         pp.IdProducto,
                         p.Nombre AS NombreProducto,
                         pp.OrdenPaso,
+                        pp.IdEstacion,
                         e.Nombre AS NombreEstacion,
                         pp.TiempoEstimadoMinutos
                     FROM ProcesoPreparacion pp
@@ -64,9 +67,11 @@ class PreparacionModel
             $idCombo = intval($idCombo);
 
             $sql = "SELECT 
+                        pp.IdProceso,
                         pp.IdCombo,
                         c.Nombre AS NombreCombo,
                         pp.OrdenPaso,
+                        pp.IdEstacion,
                         e.Nombre AS NombreEstacion,
                         pp.TiempoEstimadoMinutos
                     FROM ProcesoPreparacion pp
