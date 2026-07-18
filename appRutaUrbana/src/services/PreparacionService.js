@@ -4,6 +4,14 @@ const BASE_URL = import.meta.env.VITE_BASE_URL + "preparacion";
 class PreparacionService {
   getPreparaciones() { return axios.get(BASE_URL); }
 
+  getProcesoPreparacion(idProducto) {
+    return axios.get(`${BASE_URL}/getProcesoPreparacion/${idProducto}`);
+  }
+
+  getProcesoCombo(idCombo) {
+    return axios.get(`${BASE_URL}/getProcesoCombo/${idCombo}`);
+  }
+
   // Se envía el objeto directamente (JSON), no como URLSearchParams
   async updatePreparacion(id, data) {
     return await axios.put(`${BASE_URL}/update/${id}`, data);

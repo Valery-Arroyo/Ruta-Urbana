@@ -2,17 +2,17 @@ import * as React from "react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
-import { Card, CardContent, CardActions, IconButton, Typography, Grid, Box, Chip, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from "@mui/material";
+import { Card, CardContent, CardActions, IconButton, Typography, Grid, Box, Chip, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem } from "@mui/material";
 import { Edit as EditIcon, Delete as DeleteIcon, ZoomIn as ZoomInIcon, Add as AddIcon, RemoveCircle as RemoveIcon } from "@mui/icons-material";
 import PreparacionService from "../../services/PreparacionService";
+import EstacionService from "../../services/EstacionService";
 
 const orangeIcon = { color: "#FF8C00" };
 
 const pasoVacio = () => ({
   IdProceso: null,
-  IdEstacion: 0,
+  IdEstacion: '',
   OrdenPaso: 0,
-  NombreEstacion: '',
   TiempoEstimadoMinutos: 0,
 });
 
@@ -24,6 +24,7 @@ export default function ListPreparacionPublic() {
   const [pasosForm, setPasosForm] = useState([]);
   const [pasosEliminados, setPasosEliminados] = useState([]);
   const [guardando, setGuardando] = useState(false);
+  const [estaciones, setEstaciones] = useState([]);
 
   const cargarDatos = async () => {
     try {
@@ -41,7 +42,6 @@ export default function ListPreparacionPublic() {
           IdProceso: idProceso ? Number(idProceso) : null,
           IdEstacion: Number(item.IdEstacion || item.idEstacion || 0),
           OrdenPaso: Number(item.OrdenPaso || item.ordenPaso || 0),
-          NombreEstacion: item.NombreEstacion || item.nombreEstacion,
           TiempoEstimadoMinutos: Number(item.TiempoEstimadoMinutos || item.tiempoEstimadoMinutos || 0)
         });
         return acc;
@@ -50,7 +50,17 @@ export default function ListPreparacionPublic() {
     } catch (e) { toast.error("Error al cargar"); }
   };
 
-  useEffect(() => { cargarDatos(); }, []);
+  const cargarEstaciones = async () => {
+    try {
+      const response = await EstacionService.getEstaciones();
+      setEstaciones(response.data);
+    } catch (e) { toast.error("Error al cargar estaciones"); }
+  };
+
+  useEffect(() => {
+    cargarDatos();
+    cargarEstaciones();
+  }, []);
 
   const abrirEdicion = (item) => {
     setProcesoEdit(item);
@@ -79,7 +89,7 @@ export default function ListPreparacionPublic() {
 
   const handleSave = async () => {
     // Validación mínima
-    const invalido = pasosForm.some(p => !p.NombreEstacion || !p.OrdenPaso || !p.TiempoEstimadoMinutos);
+    const invalido = pasosForm.some(p => !p.IdEstacion || !p.OrdenPaso || !p.TiempoEstimadoMinutos);
     if (invalido) {
       toast.error("Completa Orden, Estación y Minutos en todos los pasos");
       return;
@@ -97,9 +107,8 @@ export default function ListPreparacionPublic() {
         const payload = {
           IdProceso: p.IdProceso || null,
           OrdenPaso: Number(p.OrdenPaso),
-          NombreEstacion: p.NombreEstacion,
           TiempoEstimadoMinutos: Number(p.TiempoEstimadoMinutos),
-          IdEstacion: Number(p.IdEstacion) || 1,
+          IdEstacion: Number(p.IdEstacion),
           IdProducto: procesoEdit?.IdProducto || null,
           IdCombo: procesoEdit?.IdCombo || null
         };
@@ -158,12 +167,19 @@ export default function ListPreparacionPublic() {
                 onChange={(e) => handleCambiarPaso(index, "OrdenPaso", e.target.value)}
               />
               <TextField
+                select
                 label="Estación"
                 size="small"
                 fullWidth
-                value={paso.NombreEstacion}
-                onChange={(e) => handleCambiarPaso(index, "NombreEstacion", e.target.value)}
-              />
+                value={paso.IdEstacion || ''}
+                onChange={(e) => handleCambiarPaso(index, "IdEstacion", Number(e.target.value))}
+              >
+                {estaciones.map(est => (
+                  <MenuItem key={est.IdEstacion} value={est.IdEstacion}>
+                    {est.Nombre}
+                  </MenuItem>
+                ))}
+              </TextField>
               <TextField
                 label="Min"
                 size="small"
