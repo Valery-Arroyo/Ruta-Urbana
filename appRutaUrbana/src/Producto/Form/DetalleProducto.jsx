@@ -197,7 +197,11 @@ export default function DetalleProducto() {
               fontSize: "1.7rem",
             }}
           >
-            ₡{Number(producto.Precio).toLocaleString("es-CR")}
+            ₡
+            {Number(producto.Precio).toLocaleString("es-CR", {
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0,
+            })}
           </Typography>
         </Box>
       </Card>

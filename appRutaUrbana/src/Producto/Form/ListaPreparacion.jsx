@@ -92,19 +92,15 @@ export default function ListPreparacionPublic() {
     setter(prev => [...prev, pasoVacio()]);
   };
 
-  // ================= EDICIÓN DE PROCESO EXISTENTE =================
-
   const abrirEdicion = (item) => {
     setProcesoEdit(item);
     setPasosEliminados([]);
-    // Copia profunda: nunca mutamos directamente los objetos de "data"
     setPasosForm(item.pasos.map(p => ({ ...p })));
     setOpen(true);
   };
 
   const handleRemoverPaso = (index) => {
     const paso = pasosForm[index];
-    // Solo lo mandamos a borrar si YA existía en la BD (tiene IdProceso)
     if (paso?.IdProceso) {
       setPasosEliminados(prev => [...prev, paso.IdProceso]);
     }
@@ -153,9 +149,6 @@ export default function ListPreparacionPublic() {
     }
   };
 
-  // ================= CREACIÓN DE PROCESO NUEVO =================
-
-  // Solo se ofrecen productos que TODAVÍA no tienen proceso
   const idsProductosConProceso = new Set(data.filter(d => d.esProducto).map(d => Number(d.IdProducto)));
   const productosDisponibles = productos.filter(p => !idsProductosConProceso.has(Number(p.IdProducto)));
 
@@ -209,8 +202,6 @@ export default function ListPreparacionPublic() {
     }
   };
 
-  // ================= ELIMINACIÓN DE PROCESO COMPLETO =================
-
   const handleEliminarProceso = async (item) => {
     const confirmado = window.confirm(
       `¿Eliminar todo el proceso de "${item.Nombre}"? Esto borrará sus ${item.pasos.length} paso(s).`
@@ -239,7 +230,7 @@ export default function ListPreparacionPublic() {
       <Toaster />
       <Box sx={{ width: "100%", maxWidth: "1200px" }}>
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 4 }}>
-          <Typography variant="h3" sx={{ fontWeight: "bold", color: "#FF8C00" }}>Procesos</Typography>
+          <Typography variant="h3" sx={{ fontWeight: "bold", color: "black" }}>Procesos</Typography>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
@@ -277,7 +268,6 @@ export default function ListPreparacionPublic() {
         </Grid>
       </Box>
 
-      {/* Dialog de EDICIÓN */}
       <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="sm">
         <DialogTitle>Editar: {procesoEdit?.Nombre}</DialogTitle>
         <DialogContent>
@@ -324,7 +314,6 @@ export default function ListPreparacionPublic() {
         </DialogActions>
       </Dialog>
 
-      {/* Dialog de CREACIÓN */}
       <Dialog open={openCreate} onClose={() => setOpenCreate(false)} fullWidth maxWidth="sm">
         <DialogTitle>Crear nuevo proceso</DialogTitle>
         <DialogContent>

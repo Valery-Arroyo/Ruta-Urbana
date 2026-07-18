@@ -95,16 +95,13 @@ export default function ListCombosAdmin() {
 
   useEffect(() => {
     cargarCombos();
-
     cargarProductos();
-
     cargarCategorias();
   }, []);
 
   const cargarCombos = async () => {
     try {
       const response = await ComboService.getCombos();
-
       const agrupados = response.data.reduce((acc, item) => {
         let combo = acc.find((c) => c.IdCombo === item.IdCombo);
 
@@ -121,9 +118,7 @@ export default function ListCombosAdmin() {
         if (item.IdProducto) {
           combo.Productos.push({
             IdProducto: item.IdProducto,
-
             Nombre: item.NombreProducto,
-
             Cantidad: item.Cantidad,
           });
         }
@@ -209,20 +204,14 @@ export default function ListCombosAdmin() {
         toast.success("Combo actualizado correctamente");
       } else {
         await ComboService.createCombo(data);
-
         toast.success("Combo creado correctamente");
       }
-
       setOpen(false);
-
       setComboSeleccionado(null);
-
       reset();
-
       cargarCombos();
     } catch (error) {
       console.error(error);
-
       toast.error("Error guardando combo");
     }
   };
@@ -232,15 +221,11 @@ export default function ListCombosAdmin() {
       await ComboService.delete(comboEliminar.IdCombo);
 
       toast.success("Combo eliminado correctamente");
-
       setOpenDelete(false);
-
       setComboEliminar(null);
-
       cargarCombos();
     } catch (error) {
       console.error(error);
-
       toast.error("Error eliminando combo");
     }
   };
@@ -337,7 +322,6 @@ export default function ListCombosAdmin() {
                   align="center"
                   sx={{
                     fontWeight: "bold",
-
                     fontSize: "1.3rem",
                   }}
                 >
@@ -352,13 +336,15 @@ export default function ListCombosAdmin() {
                   align="center"
                   sx={{
                     mt: 1,
-
                     fontWeight: "bold",
-
                     color: "#FF8C00",
                   }}
                 >
-                  ₡{combo.PrecioEspecial}
+                  ₡
+                  {Number(combo.PrecioEspecial).toLocaleString("es-CR", {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0,
+                  })}
                 </Typography>
               </CardContent>
 
@@ -589,18 +575,13 @@ export default function ListCombosAdmin() {
                   ...productosAgregados,
                   {
                     IdProducto: Number(productoSeleccionado),
-
                     Cantidad: Number(cantidadProducto) || 1,
                   },
                 ];
 
-                setValue(
-                  "Productos",
-                  nuevosProductos,
-                  {
-                    shouldValidate: true,
-                  },
-                );
+                setValue("Productos", nuevosProductos, {
+                  shouldValidate: true,
+                });
                 setProductoSeleccionado("");
                 setCantidadProducto(1);
               }}
@@ -644,14 +625,9 @@ export default function ListCombosAdmin() {
                       (p) => p.IdProducto !== prod.IdProducto,
                     );
 
-                    setValue(
-                      "Productos",
-                      nuevosProductos,
-
-                      {
-                        shouldValidate: true,
-                      },
-                    );
+                    setValue("Productos", nuevosProductos, {
+                      shouldValidate: true,
+                    });
                   }}
                 >
                   <DeleteIcon />

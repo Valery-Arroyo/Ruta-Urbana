@@ -292,7 +292,6 @@ export default function GestionProductos() {
           display: "grid",
           justifyContent: "center",
           gap: 3,
-
           gridTemplateColumns: {
             xs: "1fr",
             sm: "repeat(2,320px)",
@@ -305,7 +304,6 @@ export default function GestionProductos() {
           <Typography
             sx={{
               gridColumn: "1/-1",
-
               textAlign: "center",
             }}
           >
@@ -317,13 +315,9 @@ export default function GestionProductos() {
               key={prod.IdProducto}
               sx={{
                 display: "flex",
-
                 flexDirection: "column",
-
                 borderRadius: 4,
-
                 overflow: "hidden",
-
                 boxShadow: "0 4px 12px rgba(0,0,0,.12)",
               }}
             >
@@ -373,13 +367,14 @@ export default function GestionProductos() {
                   align="center"
                   sx={{
                     fontWeight: "bold",
-
                     color: "#FF8C00",
-
                     mt: 1,
                   }}
                 >
-                  ₡{prod.Precio}
+                  ₡{Number(prod.Precio).toLocaleString("es-CR", {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0,
+                  })}
                 </Typography>
               </CardContent>
 
@@ -532,9 +527,7 @@ export default function GestionProductos() {
           <Typography
             sx={{
               mt: 2,
-
               mb: 1,
-
               fontWeight: "bold",
             }}
           >
@@ -544,9 +537,7 @@ export default function GestionProductos() {
           <Box
             sx={{
               display: "flex",
-
               gap: 1,
-
               alignItems: "center",
             }}
           >
@@ -577,9 +568,7 @@ export default function GestionProductos() {
               variant="contained"
               sx={{
                 bgcolor: "#FF8C00",
-
                 height: "56px",
-
                 "&:hover": {
                   bgcolor: "#E67E00",
                 },
@@ -589,16 +578,16 @@ export default function GestionProductos() {
                   setErrorIngrediente("Debe seleccionar un ingrediente");
                   return;
                 }
-
                 const actuales = ingredientesAgregados || [];
                 const nuevo = Number(ingredienteSeleccionado);
-
-                if (!actuales.some((id) => Number(id) === nuevo)) {
-                  setValue("Ingredientes", [...actuales, nuevo], {
-                    shouldValidate: true,
-                  });
+                if (actuales.some((id) => Number(id) === nuevo)) {
+                  toast.error("Ese ingrediente ya fue agregado");
+                  return;
                 }
 
+                setValue("Ingredientes", [...actuales, nuevo], {
+                  shouldValidate: true,
+                });
                 setIngredienteSeleccionado("");
                 setErrorIngrediente("");
               }}
@@ -606,8 +595,6 @@ export default function GestionProductos() {
               AGREGAR
             </Button>
           </Box>
-
-          {/* Ingredientes agregados */}
 
           <Box sx={{ mt: 2 }}>
             {ingredientesAgregados?.map((id) => {
@@ -620,17 +607,11 @@ export default function GestionProductos() {
                   key={id}
                   sx={{
                     display: "flex",
-
                     justifyContent: "space-between",
-
                     alignItems: "center",
-
                     mb: 1,
-
                     p: 1,
-
                     border: "1px solid #ddd",
-
                     borderRadius: 2,
                   }}
                 >
@@ -643,15 +624,9 @@ export default function GestionProductos() {
                         (x) => Number(x) !== Number(id),
                       );
 
-                      setValue(
-                        "Ingredientes",
-
-                        nuevos,
-
-                        {
-                          shouldValidate: true,
-                        },
-                      );
+                      setValue("Ingredientes", nuevos, {
+                        shouldValidate: true,
+                      });
                     }}
                   >
                     ELIMINAR
@@ -660,8 +635,6 @@ export default function GestionProductos() {
               );
             })}
           </Box>
-
-          {/* Imagen */}
 
           <Controller
             name="Imagen"
