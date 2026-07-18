@@ -7,7 +7,6 @@ import { Edit as EditIcon, Delete as DeleteIcon, ZoomIn as ZoomInIcon, Add as Ad
 import PreparacionService from "../../services/PreparacionService";
 import EstacionService from "../../services/EstacionService";
 import ProductoService from "../../services/ProductoService";
-import ComboService from "../../services/ComboService";
 
 const orangeIcon = { color: "#FF8C00" };
 
@@ -23,7 +22,6 @@ export default function ListPreparacionPublic() {
   const [data, setData] = useState([]);
   const [estaciones, setEstaciones] = useState([]);
   const [productos, setProductos] = useState([]);
-  const [combos, setCombos] = useState([]);
 
   // --- Estado edición de proceso existente ---
   const [open, setOpen] = useState(false);
@@ -34,7 +32,6 @@ export default function ListPreparacionPublic() {
 
   // --- Estado creación de proceso nuevo ---
   const [openCreate, setOpenCreate] = useState(false);
-  const [tipoNuevo, setTipoNuevo] = useState('producto'); // 'producto' | 'combo'
   const [idSeleccionado, setIdSeleccionado] = useState('');
   const [pasosNuevo, setPasosNuevo] = useState([]);
   const [guardandoNuevo, setGuardandoNuevo] = useState(false);
@@ -80,18 +77,10 @@ export default function ListPreparacionPublic() {
     } catch (e) { toast.error("Error al cargar productos"); }
   };
 
-  const cargarCombos = async () => {
-    try {
-      const response = await ComboService.getCombos();
-      setCombos(response.data);
-    } catch (e) { toast.error("Error al cargar combos"); }
-  };
-
   useEffect(() => {
     cargarDatos();
     cargarEstaciones();
     cargarProductos();
-    cargarCombos();
   }, []);
 
   // --- Helpers genéricos de manejo de pasos (reusados por edición y creación) ---
@@ -166,15 +155,11 @@ export default function ListPreparacionPublic() {
 
   // ================= CREACIÓN DE PROCESO NUEVO =================
 
-  // Solo se ofrecen productos/combos que TODAVÍA no tienen proceso
+  // Solo se ofrecen productos que TODAVÍA no tienen proceso
   const idsProductosConProceso = new Set(data.filter(d => d.esProducto).map(d => Number(d.IdProducto)));
-  const idsCombosConProceso = new Set(data.filter(d => !d.esProducto).map(d => Number(d.IdCombo)));
-
   const productosDisponibles = productos.filter(p => !idsProductosConProceso.has(Number(p.IdProducto)));
-  const combosDisponibles = combos.filter(c => !idsCombosConProceso.has(Number(c.IdCombo)));
 
   const abrirCreacion = () => {
-    setTipoNuevo('producto');
     setIdSeleccionado('');
     setPasosNuevo([]);
     setOpenCreate(true);
@@ -186,7 +171,7 @@ export default function ListPreparacionPublic() {
 
   const handleCrearProceso = async () => {
     if (!idSeleccionado) {
-      toast.error(tipoNuevo === 'producto' ? "Selecciona un producto" : "Selecciona un combo");
+      toast.error("Selecciona un producto");
       return;
     }
     if (pasosNuevo.length === 0) {
@@ -206,8 +191,8 @@ export default function ListPreparacionPublic() {
           OrdenPaso: Number(p.OrdenPaso),
           TiempoEstimadoMinutos: Number(p.TiempoEstimadoMinutos),
           IdEstacion: Number(p.IdEstacion),
-          IdProducto: tipoNuevo === 'producto' ? Number(idSeleccionado) : null,
-          IdCombo: tipoNuevo === 'combo' ? Number(idSeleccionado) : null
+          IdProducto: Number(idSeleccionado),
+          IdCombo: null
         };
         return PreparacionService.createPreparacion(payload);
       }));
@@ -343,37 +328,21 @@ export default function ListPreparacionPublic() {
       <Dialog open={openCreate} onClose={() => setOpenCreate(false)} fullWidth maxWidth="sm">
         <DialogTitle>Crear nuevo proceso</DialogTitle>
         <DialogContent>
-          <Box sx={{ display: "flex", gap: 1, mb: 2, mt: 1 }}>
-            <TextField
-              select
-              label="Tipo"
-              size="small"
-              sx={{ width: 140 }}
-              value={tipoNuevo}
-              onChange={(e) => { setTipoNuevo(e.target.value); setIdSeleccionado(''); }}
-            >
-              <MenuItem value="producto">Producto</MenuItem>
-              <MenuItem value="combo">Combo</MenuItem>
-            </TextField>
-
-            <TextField
-              select
-              label={tipoNuevo === 'producto' ? "Producto" : "Combo"}
-              size="small"
-              fullWidth
-              value={idSeleccionado}
-              onChange={(e) => setIdSeleccionado(e.target.value)}
-            >
-              {(tipoNuevo === 'producto' ? productosDisponibles : combosDisponibles).map(item => {
-                const id = tipoNuevo === 'producto' ? item.IdProducto : item.IdCombo;
-                return (
-                  <MenuItem key={id} value={id}>
-                    {item.Nombre}
-                  </MenuItem>
-                );
-              })}
-            </TextField>
-          </Box>
+          <TextField
+            select
+            label="Producto"
+            size="small"
+            fullWidth
+            sx={{ mb: 2, mt: 1 }}
+            value={idSeleccionado}
+            onChange={(e) => setIdSeleccionado(e.target.value)}
+          >
+            {productosDisponibles.map(item => (
+              <MenuItem key={item.IdProducto} value={item.IdProducto}>
+                {item.Nombre}
+              </MenuItem>
+            ))}
+          </TextField>
 
           {pasosNuevo.map((paso, index) => (
             <Box key={`nuevo-${index}`} sx={{ display: "flex", gap: 1, alignItems: "center", mb: 2 }}>
