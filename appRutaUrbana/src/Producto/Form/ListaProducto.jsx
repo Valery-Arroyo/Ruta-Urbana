@@ -16,24 +16,17 @@ import {
   TextField,
   MenuItem,
 } from "@mui/material";
-
 import AddIcon from "@mui/icons-material/Add";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-
 import { useNavigate } from "react-router-dom";
-
 import ProductoService from "../../services/ProductoService";
 import IngredienteService from "../../services/IngredienteService";
 import CategoriaService from "../../services/CategoriaService";
-
 import { useForm, Controller } from "react-hook-form";
-
 import { yupResolver } from "@hookform/resolvers/yup";
-
 import * as yup from "yup";
-
 import toast from "react-hot-toast";
 
 const productoSchema = yup.object().shape({
@@ -69,17 +62,13 @@ export default function GestionProductos() {
   const [ingredienteSeleccionado, setIngredienteSeleccionado] = useState("");
   const [openDelete, setOpenDelete] = useState(false);
   const [productoEliminar, setProductoEliminar] = useState(null);
+  const [errorIngrediente, setErrorIngrediente] = useState("");
   const navigate = useNavigate();
-
   const {
     control,
-
     handleSubmit,
-
     reset,
-
     watch,
-
     setValue,
 
     formState: { errors },
@@ -97,7 +86,6 @@ export default function GestionProductos() {
   });
 
   // Ingredientes guardados en el formulario
-
   const ingredientesAgregados = watch("Ingredientes");
 
   useEffect(() => {
@@ -138,6 +126,37 @@ export default function GestionProductos() {
     }
   };
 
+  /*
+   * Obtiene correctamente la URL de la imagen.
+   * Acepta las propiedades Imagen e Imagenes.
+   */
+  const obtenerImagenProducto = (producto) => {
+    const imagenGuardada = producto.Imagenes || producto.Imagen;
+
+    if (!imagenGuardada) {
+      return "/no-image.png";
+    }
+
+    const primeraImagen = String(imagenGuardada)
+      .split(",")[0]
+      .trim()
+      .replace(/\\/g, "/")
+      .replace(/^\/+/, "");
+
+    if (!primeraImagen) {
+      return "/no-image.png";
+    }
+
+    if (
+      primeraImagen.startsWith("http://") ||
+      primeraImagen.startsWith("https://")
+    ) {
+      return primeraImagen;
+    }
+
+    return `http://localhost:81/apirutaurbana/${primeraImagen}`;
+  };
+
   const handleEdit = (producto) => {
     if (producto) {
       setProductoSeleccionado(producto);
@@ -146,8 +165,15 @@ export default function GestionProductos() {
         Nombre: producto.Nombre,
         Precio: producto.Precio,
         Descripcion: producto.Descripcion,
-        Imagen: producto.Imagen || "",
+
+        Imagen:
+          producto.Imagen ||
+          (producto.Imagenes
+            ? String(producto.Imagenes).split(",")[0].trim()
+            : ""),
+
         IdCategoria: producto.IdCategoria || "",
+
         Ingredientes: producto.Ingredientes
           ? producto.Ingredientes.map((i) => i.IdIngrediente)
           : [],
@@ -167,6 +193,7 @@ export default function GestionProductos() {
 
     setOpen(true);
   };
+
   const handleSave = async (formData) => {
     try {
       console.log("Datos enviados:", formData);
@@ -182,9 +209,7 @@ export default function GestionProductos() {
       }
 
       setOpen(false);
-
       setProductoSeleccionado(null);
-
       reset({
         Nombre: "",
         Precio: "",
@@ -197,7 +222,6 @@ export default function GestionProductos() {
       cargarProductos();
     } catch (error) {
       console.error("Error guardando producto", error);
-
       toast.error("Error al guardar producto");
     }
   };
@@ -268,6 +292,7 @@ export default function GestionProductos() {
           display: "grid",
           justifyContent: "center",
           gap: 3,
+
           gridTemplateColumns: {
             xs: "1fr",
             sm: "repeat(2,320px)",
@@ -305,14 +330,22 @@ export default function GestionProductos() {
               <CardMedia
                 component="img"
                 height="170"
-                image={
-                  prod.Imagenes
-                    ? `http://localhost:81/apirutaurbana/${prod.Imagenes.split(",")[0]}`
-                    : "/no-image.png"
-                }
+                image={obtenerImagenProducto(prod)}
                 alt={prod.Nombre}
+                onError={(event) => {
+                  console.error(
+                    "No se pudo cargar la imagen:",
+                    event.currentTarget.src,
+                  );
+
+                  console.log("Producto relacionado:", prod);
+
+                  event.currentTarget.onerror = null;
+                  event.currentTarget.src = "/no-image.png";
+                }}
                 sx={{
                   objectFit: "cover",
+                  width: "100%",
                 }}
               />
 
@@ -419,8 +452,6 @@ export default function GestionProductos() {
         </DialogTitle>
 
         <DialogContent>
-          {/* Nombre */}
-
           <Controller
             name="Nombre"
             control={control}
@@ -435,8 +466,6 @@ export default function GestionProductos() {
               />
             )}
           />
-
-          {/* Precio */}
 
           <Controller
             name="Precio"
@@ -461,8 +490,6 @@ export default function GestionProductos() {
             )}
           />
 
-          {/* Descripción */}
-
           <Controller
             name="Descripcion"
             control={control}
@@ -479,8 +506,6 @@ export default function GestionProductos() {
               />
             )}
           />
-
-          {/* Categoría */}
 
           <Controller
             name="IdCategoria"
@@ -503,8 +528,6 @@ export default function GestionProductos() {
               </TextField>
             )}
           />
-
-          {/* Ingredientes */}
 
           <Typography
             sx={{
@@ -532,8 +555,17 @@ export default function GestionProductos() {
               fullWidth
               label="Seleccionar ingrediente"
               value={ingredienteSeleccionado}
-              onChange={(e) => setIngredienteSeleccionado(e.target.value)}
+              onChange={(e) => {
+                setIngredienteSeleccionado(e.target.value);
+                setErrorIngrediente("");
+              }}
+              error={!!errorIngrediente}
+              helperText={errorIngrediente}
             >
+              <MenuItem value="">
+                <em>Seleccione un ingrediente</em>
+              </MenuItem>
+
               {ingredientes.map((ing) => (
                 <MenuItem key={ing.IdIngrediente} value={ing.IdIngrediente}>
                   {ing.Nombre}
@@ -553,23 +585,22 @@ export default function GestionProductos() {
                 },
               }}
               onClick={() => {
-                const actuales = ingredientesAgregados || [];
+                if (!ingredienteSeleccionado) {
+                  setErrorIngrediente("Debe seleccionar un ingrediente");
+                  return;
+                }
 
+                const actuales = ingredientesAgregados || [];
                 const nuevo = Number(ingredienteSeleccionado);
 
-                if (nuevo && !actuales.some((id) => Number(id) === nuevo)) {
-                  setValue(
-                    "Ingredientes",
-
-                    [...actuales, nuevo],
-
-                    {
-                      shouldValidate: true,
-                    },
-                  );
+                if (!actuales.some((id) => Number(id) === nuevo)) {
+                  setValue("Ingredientes", [...actuales, nuevo], {
+                    shouldValidate: true,
+                  });
                 }
 
                 setIngredienteSeleccionado("");
+                setErrorIngrediente("");
               }}
             >
               AGREGAR
