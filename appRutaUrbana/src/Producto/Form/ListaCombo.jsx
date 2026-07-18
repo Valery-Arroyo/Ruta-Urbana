@@ -283,11 +283,8 @@ export default function ListCombosAdmin() {
       <Box
         sx={{
           display: "grid",
-
           justifyContent: "center",
-
           gap: 3,
-
           gridTemplateColumns: {
             xs: "1fr",
             sm: "repeat(2,320px)",
@@ -311,13 +308,9 @@ export default function ListCombosAdmin() {
               key={combo.IdCombo}
               sx={{
                 display: "flex",
-
                 flexDirection: "column",
-
                 borderRadius: 4,
-
                 overflow: "hidden",
-
                 boxShadow: "0 4px 12px rgba(0,0,0,.12)",
               }}
             >
@@ -402,8 +395,6 @@ export default function ListCombosAdmin() {
           ))
         )}
       </Box>
-
-      {/* DIALOG ÚNICO PARA ELIMINAR COMBO */}
 
       <Dialog
         open={openDelete}
@@ -529,31 +520,10 @@ export default function ListCombosAdmin() {
             ))}
           </TextField>
 
-          <TextField
-            select
-            fullWidth
-            margin="dense"
-            label="Estado"
-            value={watch("Activo")}
-            onChange={(e) =>
-              setValue(
-                "Activo",
-
-                Number(e.target.value),
-              )
-            }
-          >
-            <MenuItem value={1}>Activo</MenuItem>
-
-            <MenuItem value={0}>Inactivo</MenuItem>
-          </TextField>
-
           <Typography
             sx={{
               mt: 2,
-
               mb: 1,
-
               fontWeight: "bold",
             }}
           >
@@ -563,9 +533,7 @@ export default function ListCombosAdmin() {
           <Box
             sx={{
               display: "flex",
-
               gap: 1,
-
               alignItems: "center",
             }}
           >
@@ -597,9 +565,7 @@ export default function ListCombosAdmin() {
               variant="contained"
               sx={{
                 bgcolor: "#FF8C00",
-
                 height: "56px",
-
                 "&:hover": {
                   bgcolor: "#E67E00",
                 },
@@ -614,16 +580,13 @@ export default function ListCombosAdmin() {
                 const existe = productosAgregados.some(
                   (p) => Number(p.IdProducto) === Number(productoSeleccionado),
                 );
-
                 if (existe) {
                   toast.error("El producto ya está agregado");
-
                   return;
                 }
 
                 const nuevosProductos = [
                   ...productosAgregados,
-
                   {
                     IdProducto: Number(productoSeleccionado),
 
@@ -633,16 +596,12 @@ export default function ListCombosAdmin() {
 
                 setValue(
                   "Productos",
-
                   nuevosProductos,
-
                   {
                     shouldValidate: true,
                   },
                 );
-
                 setProductoSeleccionado("");
-
                 setCantidadProducto(1);
               }}
             >
@@ -660,17 +619,11 @@ export default function ListCombosAdmin() {
                 key={prod.IdProducto}
                 sx={{
                   display: "flex",
-
                   justifyContent: "space-between",
-
                   alignItems: "center",
-
                   mb: 1,
-
                   p: 1,
-
                   border: "1px solid #ddd",
-
                   borderRadius: 2,
                 }}
               >
@@ -680,9 +633,7 @@ export default function ListCombosAdmin() {
                       (p) => Number(p.IdProducto) === Number(prod.IdProducto),
                     )?.Nombre
                   }
-
                   {" x "}
-
                   {prod.Cantidad}
                 </Typography>
 
@@ -695,7 +646,6 @@ export default function ListCombosAdmin() {
 
                     setValue(
                       "Productos",
-
                       nuevosProductos,
 
                       {

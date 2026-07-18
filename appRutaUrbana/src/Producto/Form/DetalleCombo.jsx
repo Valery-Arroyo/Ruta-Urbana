@@ -16,7 +16,6 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 export default function DetalleCombo() {
   const { id } = useParams();
   const navigate = useNavigate();
-
   const [combo, setCombo] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -98,12 +97,12 @@ export default function DetalleCombo() {
           onClick={() => navigate(-1)}
           sx={{
             mb: 2,
-            color: "#FF8C00",
-            borderColor: "#FF8C00",
+            color: "black",
+            borderColor: "black",
             fontWeight: "bold",
             textTransform: "none",
             "&:hover": {
-              borderColor: "#E67E00",
+              borderColor: "black",
               backgroundColor: "#FFF3E0",
             },
           }}

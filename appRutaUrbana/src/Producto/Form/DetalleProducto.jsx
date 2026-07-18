@@ -81,12 +81,12 @@ export default function DetalleProducto() {
           sx={{
             mb: 2,
             alignSelf: "flex-start",
-            color: "#FF8C00",
-            borderColor: "#FF8C00",
+            color: "black",
+            borderColor: "black",
             fontWeight: "bold",
             textTransform: "none",
             "&:hover": {
-              borderColor: "#E67E00",
+              borderColor: "black",
               backgroundColor: "#FFF3E0",
             },
           }}
