@@ -1,5 +1,6 @@
 // eslint-disable-next-line no-unused-vars
 import * as React from "react";
+
 import {
   AppBar,
   Toolbar,
@@ -17,6 +18,8 @@ import MenuBookOutlinedIcon from "@mui/icons-material/MenuBookOutlined";
 import AssignmentOutlinedIcon from "@mui/icons-material/AssignmentOutlined";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import PersonIcon from "@mui/icons-material/Person";
+import EggAltOutlinedIcon from "@mui/icons-material/EggAltOutlined";
+import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 
 const menu = [
   {
@@ -44,10 +47,15 @@ const menu = [
     ruta: "/preparacion",
     icono: <SettingsOutlinedIcon />,
   },
-    {
-    nombre: "Ingrediente",
+  {
+    nombre: "Ingredientes",
     ruta: "/ingrediente",
-    icono: <SettingsOutlinedIcon />,
+    icono: <EggAltOutlinedIcon />,
+  },
+  {
+    nombre: "Home",
+    ruta: "/home",
+    icono: <HomeOutlinedIcon />,
   },
 ];
 
@@ -57,18 +65,23 @@ export default function Header() {
       position="static"
       elevation={8}
       sx={{
+        width: "100%",
+        m: 0,
         background: "linear-gradient(90deg,#111,#181818)",
         borderBottom: "4px solid #ff7a00",
       }}
     >
       <Toolbar
+        disableGutters
         sx={{
+          minHeight: "88px !important",
           height: 88,
+          width: "100%",
+          px: 3,
           display: "flex",
+          bgcolor: "transparent",
         }}
       >
-        {/* Logo */}
-
         <Box
           sx={{
             display: "flex",
@@ -97,8 +110,6 @@ export default function Header() {
             RUTA URBANA
           </Typography>
         </Box>
-
-        {/* Menú */}
 
         <Box
           sx={{
@@ -175,8 +186,6 @@ export default function Header() {
             </React.Fragment>
           ))}
         </Box>
-
-        {/* Login */}
 
         <Button
           component={Link}

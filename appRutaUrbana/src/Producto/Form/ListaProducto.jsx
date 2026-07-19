@@ -32,8 +32,10 @@ import toast from "react-hot-toast";
 const productoSchema = yup.object().shape({
   Nombre: yup
     .string()
+    .transform((value) => value?.trim())
     .required("El nombre es requerido")
-    .min(3, "Debe tener mínimo 3 caracteres"),
+    .min(3, "Debe tener mínimo 3 caracteres")
+    .max(100, "Debe tener máximo 100 caracteres"),
 
   Precio: yup
     .number()
@@ -48,7 +50,11 @@ const productoSchema = yup.object().shape({
     .typeError("Seleccione una categoría")
     .required("La categoría es requerida"),
 
-  Ingredientes: yup.array().min(1, "Seleccione al menos un ingrediente"),
+  Ingredientes: yup
+    .array()
+    .of(yup.number())
+    .min(1, "Debe agregar al menos un ingrediente")
+    .required("Debe agregar al menos un ingrediente"),
 
   Imagen: yup.string().nullable(),
 });
@@ -79,9 +85,10 @@ export default function GestionProductos() {
       Nombre: "",
       Precio: "",
       Descripcion: "",
-      Imagen: "",
-      Ingredientes: [],
       IdCategoria: "",
+      Ingredientes: [],
+      Imagen: "",
+      Activo: 1,
     },
   });
 
@@ -196,8 +203,6 @@ export default function GestionProductos() {
 
   const handleSave = async (formData) => {
     try {
-      console.log("Datos enviados:", formData);
-
       if (productoSeleccionado?.IdProducto) {
         await ProductoService.update(productoSeleccionado.IdProducto, formData);
 
@@ -210,6 +215,7 @@ export default function GestionProductos() {
 
       setOpen(false);
       setProductoSeleccionado(null);
+
       reset({
         Nombre: "",
         Precio: "",
@@ -222,7 +228,14 @@ export default function GestionProductos() {
       cargarProductos();
     } catch (error) {
       console.error("Error guardando producto", error);
-      toast.error("Error al guardar producto");
+      console.error("Respuesta del backend:", error.response?.data);
+
+      const mensaje =
+        error.response?.data?.message ||
+        error.response?.data?.result ||
+        "Error al guardar producto";
+
+      toast.error(mensaje);
     }
   };
 
@@ -371,7 +384,8 @@ export default function GestionProductos() {
                     mt: 1,
                   }}
                 >
-                  ₡{Number(prod.Precio).toLocaleString("es-CR", {
+                  ₡
+                  {Number(prod.Precio).toLocaleString("es-CR", {
                     minimumFractionDigits: 0,
                     maximumFractionDigits: 0,
                   })}
@@ -578,8 +592,10 @@ export default function GestionProductos() {
                   setErrorIngrediente("Debe seleccionar un ingrediente");
                   return;
                 }
+
                 const actuales = ingredientesAgregados || [];
                 const nuevo = Number(ingredienteSeleccionado);
+
                 if (actuales.some((id) => Number(id) === nuevo)) {
                   toast.error("Ese ingrediente ya fue agregado");
                   return;
@@ -588,6 +604,7 @@ export default function GestionProductos() {
                 setValue("Ingredientes", [...actuales, nuevo], {
                   shouldValidate: true,
                 });
+
                 setIngredienteSeleccionado("");
                 setErrorIngrediente("");
               }}
@@ -596,6 +613,18 @@ export default function GestionProductos() {
             </Button>
           </Box>
 
+          {errors.Ingredientes && (
+            <Typography
+              color="error"
+              variant="caption"
+              sx={{
+                display: "block",
+                mt: 1,
+              }}
+            >
+              {errors.Ingredientes.message}
+            </Typography>
+          )}
           <Box sx={{ mt: 2 }}>
             {ingredientesAgregados?.map((id) => {
               const ingrediente = ingredientes.find(

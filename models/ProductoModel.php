@@ -90,10 +90,33 @@ class ProductoModel
         }
     }
 
+    public function existeNombre($nombre, $idExcluir = null)
+    {
+        $nombre = addslashes(trim($nombre));
+
+        $sql = "SELECT IdProducto
+            FROM Producto
+            WHERE LOWER(TRIM(Nombre)) = LOWER('$nombre')";
+
+        if ($idExcluir !== null) {
+            $idExcluir = intval($idExcluir);
+
+            $sql .= " AND IdProducto <> $idExcluir";
+        }
+
+        $resultado = $this->enlace->ExecuteSQL($sql);
+
+        return !empty($resultado);
+    }
+
     public function create($data)
     {
         try {
             $nombre = addslashes($data['Nombre']);
+            $nombre = trim($data["Nombre"]);
+            if ($this->existeNombre($nombre)) {
+                throw new Exception("Ya existe un producto con ese nombre");
+            }
             $descripcion = isset($data['Descripcion']) ? addslashes($data['Descripcion']) : null;
             $precio = floatval($data['Precio']);
             $idCategoria = intval($data['IdCategoria']);
@@ -132,46 +155,157 @@ class ProductoModel
     {
         try {
             $id = intval($id);
-            $nombre = addslashes($data['Nombre'] ?? '');
-            $descripcion = isset($data['Descripcion']) ? addslashes($data['Descripcion']) : null;
+
+            $nombre = trim($data["Nombre"]);
+
+            if ($this->existeNombre($nombre, $id)) {
+                throw new Exception(
+                    "Ya existe otro producto con ese nombre"
+                );
+            }
+
+            $nombre = addslashes($nombre);
+
+            $descripcion = isset($data['Descripcion'])
+                ? addslashes($data['Descripcion'])
+                : null;
+
             $precio = floatval($data['Precio'] ?? 0);
             $idCategoria = intval($data['IdCategoria'] ?? 0);
-            $activo = isset($data['Activo']) ? intval($data['Activo']) : 1;
+            $activo = isset($data['Activo'])
+                ? intval($data['Activo'])
+                : 1;
 
             $sqlProducto = "UPDATE Producto SET 
-                                Nombre = '$nombre',
-                                Descripcion = " . ($descripcion ? "'$descripcion'" : "NULL") . ",
-                                Precio = $precio,
-                                Activo = $activo,
-                                IdCategoria = $idCategoria
-                            WHERE IdProducto = $id";
+                            Nombre = '$nombre',
+                            Descripcion = " .
+                ($descripcion ? "'$descripcion'" : "NULL") . ",
+                            Precio = $precio,
+                            Activo = $activo,
+                            IdCategoria = $idCategoria
+                        WHERE IdProducto = $id";
 
-            $resultado = $this->enlace->executeSQL_DML($sqlProducto);
+            $resultado =
+                $this->enlace->executeSQL_DML($sqlProducto);
 
+            /*
+         * Actualizar imagen principal
+         */
             if (isset($data['Imagen'])) {
-                $imagen = addslashes($data['Imagen']);
-                $sqlCheck = "UPDATE ProductoImagen SET Imagen = '$imagen' 
-                             WHERE IdProducto = $id AND EsPrincipal = 1";
-                $filasAfectadas = $this->enlace->executeSQL_DML($sqlCheck);
+                $imagen = trim($data['Imagen']);
 
-                if ($filasAfectadas == 0) {
-                    $sqlInsertImage = "INSERT INTO ProductoImagen (Imagen, EsPrincipal, IdProducto) 
-                                       VALUES ('$imagen', 1, $id)";
-                    $this->enlace->executeSQL_DML($sqlInsertImage);
+                if ($imagen !== '') {
+                    $imagen = addslashes($imagen);
+
+                    /*
+                 * Eliminar imágenes principales duplicadas,
+                 * conservando la de menor IdImagen.
+                 */
+                    $sqlEliminarDuplicadas =
+                        "DELETE pi1
+                     FROM ProductoImagen pi1
+                     INNER JOIN ProductoImagen pi2
+                         ON pi1.IdProducto = pi2.IdProducto
+                        AND pi1.EsPrincipal = 1
+                        AND pi2.EsPrincipal = 1
+                        AND pi1.IdImagen > pi2.IdImagen
+                     WHERE pi1.IdProducto = $id";
+
+                    $this->enlace->executeSQL_DML(
+                        $sqlEliminarDuplicadas
+                    );
+
+                    /*
+                 * Buscar si ya existe una imagen principal.
+                 */
+                    $sqlExisteImagen =
+                        "SELECT IdImagen
+                     FROM ProductoImagen
+                     WHERE IdProducto = $id
+                       AND EsPrincipal = 1
+                     LIMIT 1";
+
+                    $imagenExistente =
+                        $this->enlace->ExecuteSQL(
+                            $sqlExisteImagen
+                        );
+
+                    if (!empty($imagenExistente)) {
+                        /*
+                     * Actualizar la imagen principal existente.
+                     */
+                        $idImagen = intval(
+                            $imagenExistente[0]->IdImagen
+                        );
+
+                        $sqlActualizarImagen =
+                            "UPDATE ProductoImagen
+                         SET Imagen = '$imagen'
+                         WHERE IdImagen = $idImagen";
+
+                        $this->enlace->executeSQL_DML(
+                            $sqlActualizarImagen
+                        );
+                    } else {
+                        /*
+                     * Insertar una imagen principal solo si
+                     * todavía no existe ninguna.
+                     */
+                        $sqlInsertarImagen =
+                            "INSERT INTO ProductoImagen (
+                            Imagen,
+                            EsPrincipal,
+                            IdProducto
+                         )
+                         VALUES (
+                            '$imagen',
+                            1,
+                            $id
+                         )";
+
+                        $this->enlace->executeSQL_DML(
+                            $sqlInsertarImagen
+                        );
+                    }
                 }
             }
 
-            if (isset($data['Ingredientes']) && is_array($data['Ingredientes'])) {
-                $sqlDelete = "DELETE FROM ProductoIngrediente WHERE IdProducto = $id";
-                $this->enlace->executeSQL_DML($sqlDelete);
+            /*
+         * Actualizar ingredientes
+         */
+            if (
+                isset($data['Ingredientes']) &&
+                is_array($data['Ingredientes'])
+            ) {
+                $sqlDelete =
+                    "DELETE FROM ProductoIngrediente
+                 WHERE IdProducto = $id";
 
-                foreach ($data['Ingredientes'] as $idIngrediente) {
+                $this->enlace->executeSQL_DML(
+                    $sqlDelete
+                );
+
+                foreach (
+                    $data['Ingredientes'] as $idIngrediente
+                ) {
                     $idIngrediente = intval($idIngrediente);
-                    $sqlIngrediente = "INSERT INTO ProductoIngrediente (IdProducto, IdIngrediente) 
-                                       VALUES ($id, $idIngrediente)";
-                    $this->enlace->executeSQL_DML($sqlIngrediente);
+
+                    $sqlIngrediente =
+                        "INSERT INTO ProductoIngrediente (
+                        IdProducto,
+                        IdIngrediente
+                     )
+                     VALUES (
+                        $id,
+                        $idIngrediente
+                     )";
+
+                    $this->enlace->executeSQL_DML(
+                        $sqlIngrediente
+                    );
                 }
             }
+
             return $resultado;
         } catch (Exception $e) {
             handleException($e);
@@ -183,13 +317,13 @@ class ProductoModel
     {
         try {
             $id = intval($id);
-            
+
             $this->enlace->executeSQL_DML("DELETE FROM ProductoIngrediente WHERE IdProducto = $id");
             $this->enlace->executeSQL_DML("DELETE FROM ProductoImagen WHERE IdProducto = $id");
-            
+
             $sql = "DELETE FROM Producto WHERE IdProducto = $id";
             $this->enlace->executeSQL_DML($sql);
-            
+
             return true;
         } catch (Exception $e) {
             return false;

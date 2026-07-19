@@ -241,18 +241,21 @@ class MenuModel
                 : 1;
 
             $sqlMenu = "UPDATE Menu SET
-                            Nombre = '$nombre',
-                            HoraInicio = '$horaInicio',
-                            HoraFin = '$horaFin',
-                            EstaActivo = $estaActivo
-                        WHERE IdMenu = $idMenu";
+                        Nombre = '$nombre',
+                        HoraInicio = '$horaInicio',
+                        HoraFin = '$horaFin',
+                        EstaActivo = $estaActivo
+                    WHERE IdMenu = $idMenu";
 
             $this->enlace->executeSQL_DML($sqlMenu);
 
+            /*
+         * Actualizar disponibilidad
+         */
             if (isset($data["Disponibilidad"])) {
                 $this->enlace->executeSQL_DML(
                     "DELETE FROM MenuDisponibilidad
-         WHERE IdMenu = $idMenu"
+                 WHERE IdMenu = $idMenu"
                 );
 
                 if (!empty($data["Disponibilidad"])) {
@@ -272,21 +275,37 @@ class MenuModel
                         $diaSemana = addslashes($disp["DiaSemana"]);
 
                         $sql = "INSERT INTO MenuDisponibilidad (
-                        IdMenu,
-                        FechaInicio,
-                        FechaFin,
-                        DiaSemana
-                    )
-                    VALUES (
-                        $idMenu,
-                        $fechaInicio,
-                        $fechaFin,
-                        '$diaSemana'
-                    )";
+                                IdMenu,
+                                FechaInicio,
+                                FechaFin,
+                                DiaSemana
+                            )
+                            VALUES (
+                                $idMenu,
+                                $fechaInicio,
+                                $fechaFin,
+                                '$diaSemana'
+                            )";
 
                         $this->enlace->executeSQL_DML($sql);
                     }
                 }
+            }
+
+            /*
+         * Actualizar productos y combos
+         */
+            if (
+                isset($data["Items"]) ||
+                isset($data["Productos"]) ||
+                isset($data["Combos"])
+            ) {
+                $this->enlace->executeSQL_DML(
+                    "DELETE FROM MenuItem
+                 WHERE IdMenu = $idMenu"
+                );
+
+                $this->insertarItems($idMenu, $data);
             }
 
             return true;
@@ -369,43 +388,77 @@ class MenuModel
     private function insertarItems($idMenu, $data)
     {
         /*
-     * Usa Items si React lo envía.
-     */
+         * Usa Items si React lo envía.
+         */
         if (!empty($data["Items"])) {
+            $productosInsertados = [];
+            $combosInsertados = [];
+
             foreach ($data["Items"] as $item) {
                 $idProducto = !empty($item["IdProducto"])
                     ? intval($item["IdProducto"])
-                    : "NULL";
+                    : null;
 
                 $idCombo = !empty($item["IdCombo"])
                     ? intval($item["IdCombo"])
-                    : "NULL";
+                    : null;
 
-                if ($idProducto === "NULL" && $idCombo === "NULL") {
+                if ($idProducto === null && $idCombo === null) {
                     continue;
                 }
 
-                $sql = "INSERT INTO MenuItem (
-                        IdMenu,
-                        IdProducto,
-                        IdCombo
-                    )
-                    VALUES (
-                        $idMenu,
-                        $idProducto,
-                        $idCombo
-                    )";
+                if ($idProducto !== null) {
+                    if (in_array($idProducto, $productosInsertados, true)) {
+                        continue;
+                    }
 
-                $this->enlace->executeSQL_DML($sql);
+                    $productosInsertados[] = $idProducto;
+
+                    $sql = "INSERT INTO MenuItem (
+                                IdMenu,
+                                IdProducto,
+                                IdCombo
+                            )
+                            VALUES (
+                                $idMenu,
+                                $idProducto,
+                                NULL
+                            )";
+
+                    $this->enlace->executeSQL_DML($sql);
+                }
+
+                if ($idCombo !== null) {
+                    if (in_array($idCombo, $combosInsertados, true)) {
+                        continue;
+                    }
+
+                    $combosInsertados[] = $idCombo;
+
+                    $sql = "INSERT INTO MenuItem (
+                                IdMenu,
+                                IdProducto,
+                                IdCombo
+                            )
+                            VALUES (
+                                $idMenu,
+                                NULL,
+                                $idCombo
+                            )";
+
+                    $this->enlace->executeSQL_DML($sql);
+                }
             }
 
             return;
         }
 
         /*
-     * Compatibilidad con Productos separados.
-     */
+         * Compatibilidad con Productos separados.
+         */
         if (!empty($data["Productos"])) {
+            $productosInsertados = [];
+
             foreach ($data["Productos"] as $producto) {
                 if (empty($producto["IdProducto"])) {
                     continue;
@@ -413,25 +466,33 @@ class MenuModel
 
                 $idProducto = intval($producto["IdProducto"]);
 
+                if (in_array($idProducto, $productosInsertados, true)) {
+                    continue;
+                }
+
+                $productosInsertados[] = $idProducto;
+
                 $sql = "INSERT INTO MenuItem (
-                        IdMenu,
-                        IdProducto,
-                        IdCombo
-                    )
-                    VALUES (
-                        $idMenu,
-                        $idProducto,
-                        NULL
-                    )";
+                            IdMenu,
+                            IdProducto,
+                            IdCombo
+                        )
+                        VALUES (
+                            $idMenu,
+                            $idProducto,
+                            NULL
+                        )";
 
                 $this->enlace->executeSQL_DML($sql);
             }
         }
 
         /*
-     * Compatibilidad con Combos separados.
-     */
+         * Compatibilidad con Combos separados.
+         */
         if (!empty($data["Combos"])) {
+            $combosInsertados = [];
+
             foreach ($data["Combos"] as $combo) {
                 if (empty($combo["IdCombo"])) {
                     continue;
@@ -439,16 +500,22 @@ class MenuModel
 
                 $idCombo = intval($combo["IdCombo"]);
 
+                if (in_array($idCombo, $combosInsertados, true)) {
+                    continue;
+                }
+
+                $combosInsertados[] = $idCombo;
+
                 $sql = "INSERT INTO MenuItem (
-                        IdMenu,
-                        IdProducto,
-                        IdCombo
-                    )
-                    VALUES (
-                        $idMenu,
-                        NULL,
-                        $idCombo
-                    )";
+                            IdMenu,
+                            IdProducto,
+                            IdCombo
+                        )
+                        VALUES (
+                            $idMenu,
+                            NULL,
+                            $idCombo
+                        )";
 
                 $this->enlace->executeSQL_DML($sql);
             }

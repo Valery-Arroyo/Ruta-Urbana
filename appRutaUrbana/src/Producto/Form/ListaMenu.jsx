@@ -320,7 +320,7 @@ export default function ListMenusAdmin() {
     if (!producto) return;
 
     const existe = itemsSeleccionados.some(
-      (item) => item.IdProducto === producto.IdProducto,
+      (item) => Number(item.IdProducto) === Number(producto.IdProducto),
     );
 
     if (existe) {
@@ -346,7 +346,7 @@ export default function ListMenusAdmin() {
     if (!combo) return;
 
     const existe = itemsSeleccionados.some(
-      (item) => item.IdCombo === combo.IdCombo,
+      (item) => Number(item.IdCombo) === Number(combo.IdCombo),
     );
 
     if (existe) {
@@ -368,8 +368,20 @@ export default function ListMenusAdmin() {
     ]);
   };
 
-  const eliminarItem = (index) => {
-    setItemsSeleccionados(itemsSeleccionados.filter((_, i) => i !== index));
+  const eliminarItem = (itemEliminar) => {
+    setItemsSeleccionados((itemsActuales) =>
+      itemsActuales.filter((item) => {
+        if (itemEliminar.IdProducto != null) {
+          return Number(item.IdProducto) !== Number(itemEliminar.IdProducto);
+        }
+
+        if (itemEliminar.IdCombo != null) {
+          return Number(item.IdCombo) !== Number(itemEliminar.IdCombo);
+        }
+
+        return true;
+      }),
+    );
   };
 
   const cambiarCantidad = (index, cantidad) => {
@@ -465,7 +477,18 @@ export default function ListMenusAdmin() {
           Cantidad: Number(item.Cantidad ?? item.cantidad ?? 1),
         }));
 
-        const itemsCargados = [...productosDetalle, ...combosDetalle];
+        const itemsCargados = Array.from(
+          new Map(
+            [...productosDetalle, ...combosDetalle].map((item) => {
+              const clave =
+                item.IdProducto != null
+                  ? `producto-${Number(item.IdProducto)}`
+                  : `combo-${Number(item.IdCombo)}`;
+
+              return [clave, item];
+            }),
+          ).values(),
+        );
 
         setItemsSeleccionados(itemsCargados);
         setValue("Items", itemsCargados, {
@@ -1284,7 +1307,7 @@ export default function ListMenusAdmin() {
                   }
                 />
 
-                <Button color="error" onClick={() => eliminarItem(index)}>
+                <Button color="error" onClick={() => eliminarItem(item)}>
                   Eliminar
                 </Button>
               </Box>

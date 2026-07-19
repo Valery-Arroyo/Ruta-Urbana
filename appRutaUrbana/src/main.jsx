@@ -52,7 +52,7 @@ const rutas = createBrowserRouter([
         path: "/preparacion",
         element: <ListaPreparacion />,
       },
-       {
+      {
         path: "/preparacion/:id",
         element: <DetallePreparacion />,
       },
@@ -60,9 +60,13 @@ const rutas = createBrowserRouter([
         path: "/tabla",
         element: <TablaProducto />,
       },
-            {
+      {
         path: "/ingrediente",
         element: <Ingrediente />,
+      },
+      {
+        path: "/home",
+        element: <Home />,
       },
       {
         path: "*",
