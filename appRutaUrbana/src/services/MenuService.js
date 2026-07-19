@@ -14,7 +14,7 @@ class MenuService {
    * Obtener un menú por Id (detalle completo)
    */
   get(id) {
-    return axios.get(`${BASE_URL}/${id}`);
+    return axios.get(`${BASE_URL}/get/${id}`);
   }
 
   /**

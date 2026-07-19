@@ -13,12 +13,12 @@ class Menu
 
     /**
      * GET /menu
-     * Listar todos los menús
      */
     public function index()
     {
         try {
             $result = $this->menuModel->all();
+
             $this->response->toJSON($result);
         } catch (Exception $e) {
             handleException($e);
@@ -26,8 +26,7 @@ class Menu
     }
 
     /**
-     * GET /menu/{id}
-     * Obtener un menú completo
+     * GET /menu/get/{id}
      */
     public function get($id)
     {
@@ -36,10 +35,12 @@ class Menu
 
             if (!$result) {
                 http_response_code(404);
+
                 $this->response->toJSON([
                     "success" => false,
-                    "message" => "Menú no encontrado"
+                    "message" => "Menú no encontrado",
                 ]);
+
                 return;
             }
 
@@ -55,14 +56,16 @@ class Menu
     public function create()
     {
         try {
-
-            $data = json_decode(file_get_contents("php://input"), true);
+            $data = json_decode(
+                file_get_contents("php://input"),
+                true
+            );
 
             $id = $this->menuModel->create($data);
 
             $this->response->toJSON([
                 "success" => true,
-                "id" => $id
+                "id" => $id,
             ]);
         } catch (Exception $e) {
             handleException($e);
@@ -75,14 +78,16 @@ class Menu
     public function update($id)
     {
         try {
-
-            $data = json_decode(file_get_contents("php://input"), true);
+            $data = json_decode(
+                file_get_contents("php://input"),
+                true
+            );
 
             $result = $this->menuModel->update($id, $data);
 
             $this->response->toJSON([
                 "success" => true,
-                "result" => $result
+                "result" => $result,
             ]);
         } catch (Exception $e) {
             handleException($e);
@@ -95,12 +100,11 @@ class Menu
     public function delete($id)
     {
         try {
-
             $result = $this->menuModel->delete($id);
 
             $this->response->toJSON([
                 "success" => true,
-                "result" => $result
+                "result" => $result,
             ]);
         } catch (Exception $e) {
             handleException($e);
@@ -109,17 +113,18 @@ class Menu
 
     /**
      * GET /menu/disponible
-     * Devuelve únicamente los menús activos.
      */
     public function disponible()
     {
         try {
-
             $menus = $this->menuModel->all();
 
-            $menus = array_filter($menus, function ($m) {
-                return $m->EstaActivo == 1;
-            });
+            $menus = array_filter(
+                $menus,
+                function ($menu) {
+                    return $menu->EstaActivo == 1;
+                }
+            );
 
             $this->response->toJSON(array_values($menus));
         } catch (Exception $e) {

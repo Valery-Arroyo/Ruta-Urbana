@@ -25,6 +25,7 @@ import {
   Chip,
   Autocomplete,
   Divider,
+  MenuItem,
 } from "@mui/material";
 
 import EditIcon from "@mui/icons-material/Edit";
@@ -38,6 +39,68 @@ import toast from "react-hot-toast";
 
 const HORA_REGEX = /^([01]\d|2[0-3]):([0-5]\d)(:([0-5]\d))?$/;
 
+const formatearHoraNormal = (hora) => {
+  if (!hora) return "";
+
+  const [horaTexto, minutosTexto = "00"] = String(hora).split(":");
+  const horaNumero = Number(horaTexto);
+
+  if (Number.isNaN(horaNumero)) return hora;
+
+  const periodo = horaNumero >= 12 ? "p. m." : "a. m.";
+  const horaNormal = horaNumero % 12 || 12;
+
+  return `${horaNormal}:${minutosTexto} ${periodo}`;
+};
+
+const convertirHora24A12 = (hora) => {
+  if (!hora) {
+    return {
+      hora: "",
+      minutos: "00",
+      periodo: "a. m.",
+    };
+  }
+
+  const [horaTexto, minutosTexto = "00"] = String(hora).split(":");
+  const horaNumero = Number(horaTexto);
+
+  return {
+    hora: String(horaNumero % 12 || 12),
+    minutos: minutosTexto,
+    periodo: horaNumero >= 12 ? "p. m." : "a. m.",
+  };
+};
+
+const convertirHora12A24 = (hora, minutos, periodo) => {
+  if (!hora || minutos === "" || !periodo) return "";
+
+  let horaNumero = Number(hora);
+
+  if (periodo === "a. m." && horaNumero === 12) {
+    horaNumero = 0;
+  }
+
+  if (periodo === "p. m." && horaNumero !== 12) {
+    horaNumero += 12;
+  }
+
+  return `${String(horaNumero).padStart(2, "0")}:${String(minutos).padStart(
+    2,
+    "0",
+  )}:00`;
+};
+
+const obtenerFechaMenu = (menu, campo) => {
+  const valorDirecto = menu?.[campo];
+
+  if (valorDirecto) {
+    return String(valorDirecto).substring(0, 10);
+  }
+
+  return "";
+};
+
 const menuSchema = yup.object({
   Nombre: yup
     .string()
@@ -48,12 +111,12 @@ const menuSchema = yup.object({
   HoraInicio: yup
     .string()
     .required("La hora inicial es requerida")
-    .matches(HORA_REGEX, "Formato inválido HH:MM:SS"),
+    .matches(HORA_REGEX, "Formato de hora inválido"),
 
   HoraFin: yup
     .string()
     .required("La hora final es requerida")
-    .matches(HORA_REGEX, "Formato inválido HH:MM:SS")
+    .matches(HORA_REGEX, "Formato de hora inválido")
     .test("horaMayor", "La hora final debe ser mayor", function (value) {
       const { HoraInicio } = this.parent;
 
@@ -61,6 +124,35 @@ const menuSchema = yup.object({
 
       return value > HoraInicio;
     }),
+
+  FechaInicio: yup.string().nullable(),
+
+  FechaFin: yup
+    .string()
+    .nullable()
+    .test(
+      "fechaFinMayor",
+      "La fecha final debe ser igual o posterior a la fecha inicial",
+      function (value) {
+        const { FechaInicio } = this.parent;
+
+        if (!FechaInicio && !value) return true;
+
+        if (FechaInicio && !value) {
+          return this.createError({
+            message: "Debe seleccionar la fecha final",
+          });
+        }
+
+        if (!FechaInicio && value) {
+          return this.createError({
+            message: "Debe seleccionar la fecha inicial",
+          });
+        }
+
+        return value >= FechaInicio;
+      },
+    ),
 
   EstaActivo: yup.number().required(),
   DiasDisponibles: yup.array().of(yup.string()),
@@ -79,6 +171,15 @@ export default function ListMenusAdmin() {
   const [menuEliminar, setMenuEliminar] = useState(null);
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
   const [comboSeleccionado, setComboSeleccionado] = useState(null);
+
+  const [horaInicio12, setHoraInicio12] = useState("");
+  const [minutosInicio, setMinutosInicio] = useState("00");
+  const [periodoInicio, setPeriodoInicio] = useState("a. m.");
+
+  const [horaFin12, setHoraFin12] = useState("");
+  const [minutosFin, setMinutosFin] = useState("00");
+  const [periodoFin, setPeriodoFin] = useState("p. m.");
+
   const navigate = useNavigate();
   const diasSemana = [
     "Lunes",
@@ -89,6 +190,12 @@ export default function ListMenusAdmin() {
     "Sábado",
     "Domingo",
   ];
+
+  const horasNormales = Array.from({ length: 12 }, (_, index) =>
+    String(index + 1),
+  );
+
+  const opcionesMinutos = ["00", "15", "30", "45"];
 
   const {
     control,
@@ -105,6 +212,8 @@ export default function ListMenusAdmin() {
       Nombre: "",
       HoraInicio: "",
       HoraFin: "",
+      FechaInicio: "",
+      FechaFin: "",
       EstaActivo: 1,
       DiasDisponibles: [],
       Items: [],
@@ -112,6 +221,7 @@ export default function ListMenusAdmin() {
   });
 
   const diasSeleccionados = watch("DiasDisponibles");
+  const fechaInicioSeleccionada = watch("FechaInicio");
 
   useEffect(() => {
     cargarMenus();
@@ -169,6 +279,13 @@ export default function ListMenusAdmin() {
 
     if (String(menu.EstaActivo) !== "1") return false;
     if (!menu.HoraInicio || !menu.HoraFin) return false;
+
+    const fechaActual = ahora.toISOString().substring(0, 10);
+    const fechaInicioMenu = obtenerFechaMenu(menu, "FechaInicio");
+    const fechaFinMenu = obtenerFechaMenu(menu, "FechaFin");
+
+    if (fechaInicioMenu && fechaActual < fechaInicioMenu) return false;
+    if (fechaFinMenu && fechaActual > fechaFinMenu) return false;
     const [hIni, mIni, sIni] = menu.HoraInicio.split(":").map(Number);
     const [hFin, mFin, sFin] = menu.HoraFin.split(":").map(Number);
     const inicio = new Date(ahora);
@@ -271,10 +388,23 @@ export default function ListMenusAdmin() {
     if (menu) {
       setMenuSeleccionado(menu);
 
+      const horaInicioConvertida = convertirHora24A12(menu.HoraInicio);
+      const horaFinConvertida = convertirHora24A12(menu.HoraFin);
+
+      setHoraInicio12(horaInicioConvertida.hora);
+      setMinutosInicio(horaInicioConvertida.minutos);
+      setPeriodoInicio(horaInicioConvertida.periodo);
+
+      setHoraFin12(horaFinConvertida.hora);
+      setMinutosFin(horaFinConvertida.minutos);
+      setPeriodoFin(horaFinConvertida.periodo);
+
       reset({
         Nombre: menu.Nombre || "",
         HoraInicio: menu.HoraInicio || "",
         HoraFin: menu.HoraFin || "",
+        FechaInicio: obtenerFechaMenu(menu, "FechaInicio"),
+        FechaFin: obtenerFechaMenu(menu, "FechaFin"),
         EstaActivo: Number(menu.EstaActivo ?? 1),
         DiasDisponibles: menu.DiasDisponibles
           ? menu.DiasDisponibles.split(",")
@@ -289,37 +419,91 @@ export default function ListMenusAdmin() {
 
       try {
         const response = await MenuService.get(menu.IdMenu);
-        const detalle = response.data || {};
 
-        const productosDetalle = (detalle.Productos || []).map((item) => ({
-          IdProducto: item.IdProducto ?? null,
+        console.log("DETALLE COMPLETO DEL MENÚ:", response.data);
+
+        const respuesta = response.data;
+
+        const detalle = Array.isArray(respuesta)
+          ? respuesta[0] || {}
+          : respuesta?.data || respuesta || {};
+
+        const productosRespuesta = Array.isArray(detalle.Productos)
+          ? detalle.Productos
+          : Array.isArray(detalle.productos)
+            ? detalle.productos
+            : [];
+
+        const combosRespuesta = Array.isArray(detalle.Combos)
+          ? detalle.Combos
+          : Array.isArray(detalle.combos)
+            ? detalle.combos
+            : [];
+
+        const productosDetalle = productosRespuesta.map((item) => ({
+          IdProducto:
+            item.IdProducto ?? item.idProducto ?? item.idproducto ?? null,
           IdCombo: null,
-          Nombre: item.Nombre || "Sin nombre",
+          Nombre:
+            item.Nombre ??
+            item.NombreProducto ??
+            item.nombre ??
+            "Producto sin nombre",
           Tipo: "Producto",
-          Cantidad: item.Cantidad || 1,
+          Cantidad: Number(item.Cantidad ?? item.cantidad ?? 1),
         }));
 
-        const combosDetalle = (detalle.Combos || []).map((item) => ({
+        const combosDetalle = combosRespuesta.map((item) => ({
           IdProducto: null,
-          IdCombo: item.IdCombo ?? null,
-          Nombre: item.Nombre || "Sin nombre",
+          IdCombo: item.IdCombo ?? item.idCombo ?? item.idcombo ?? null,
+          Nombre:
+            item.Nombre ??
+            item.NombreCombo ??
+            item.nombre ??
+            "Combo sin nombre",
           Tipo: "Combo",
-          Cantidad: item.Cantidad || 1,
+          Cantidad: Number(item.Cantidad ?? item.cantidad ?? 1),
         }));
 
-        setItemsSeleccionados([...productosDetalle, ...combosDetalle]);
+        const itemsCargados = [...productosDetalle, ...combosDetalle];
+
+        setItemsSeleccionados(itemsCargados);
+        setValue("Items", itemsCargados, {
+          shouldValidate: true,
+        });
       } catch (error) {
         console.error("Error cargando detalle del menú", error);
-        toast.error("No se pudieron cargar los productos/combos del menú");
+        console.error("Respuesta del backend:", error.response?.data);
+        console.error("Estado HTTP:", error.response?.status);
+
+        setItemsSeleccionados([]);
+        setValue("Items", [], {
+          shouldValidate: true,
+        });
+
+        toast.error(
+          error.response?.data?.message ||
+            "No se pudieron cargar los productos/combos del menú",
+        );
       }
     } else {
       setMenuSeleccionado(null);
       setItemsSeleccionados([]);
 
+      setHoraInicio12("");
+      setMinutosInicio("00");
+      setPeriodoInicio("a. m.");
+
+      setHoraFin12("");
+      setMinutosFin("00");
+      setPeriodoFin("p. m.");
+
       reset({
         Nombre: "",
         HoraInicio: "",
         HoraFin: "",
+        FechaInicio: "",
+        FechaFin: "",
         EstaActivo: 1,
         DiasDisponibles: [],
         Items: [],
@@ -328,7 +512,6 @@ export default function ListMenusAdmin() {
 
     setProductoSeleccionado(null);
     setComboSeleccionado(null);
-
     setOpen(true);
   };
 
@@ -344,9 +527,13 @@ export default function ListMenusAdmin() {
         Nombre: formData.Nombre,
         HoraInicio: formData.HoraInicio,
         HoraFin: formData.HoraFin,
+        FechaInicio: formData.FechaInicio,
+        FechaFin: formData.FechaFin,
         EstaActivo: formData.EstaActivo,
         Disponibilidad: (formData.DiasDisponibles || []).map((dia) => ({
           DiaSemana: dia,
+          FechaInicio: formData.FechaInicio,
+          FechaFin: formData.FechaFin,
         })),
 
         Items: itemsSeleccionados.map((item) => ({
@@ -392,10 +579,20 @@ export default function ListMenusAdmin() {
       setProductoSeleccionado(null);
       setComboSeleccionado(null);
 
+      setHoraInicio12("");
+      setMinutosInicio("00");
+      setPeriodoInicio("a. m.");
+
+      setHoraFin12("");
+      setMinutosFin("00");
+      setPeriodoFin("p. m.");
+
       reset({
         Nombre: "",
         HoraInicio: "",
         HoraFin: "",
+        FechaInicio: "",
+        FechaFin: "",
         EstaActivo: 1,
         DiasDisponibles: [],
         Items: [],
@@ -443,17 +640,12 @@ export default function ListMenusAdmin() {
   const handleDelete = async () => {
     try {
       await MenuService.delete(menuEliminar.IdMenu);
-
       toast.success("Menú eliminado correctamente");
-
       setOpenDelete(false);
-
       setMenuEliminar(null);
-
       cargarMenus();
     } catch (error) {
       console.error("Error eliminando menú", error);
-
       toast.error("No se pudo eliminar el menú");
     }
   };
@@ -561,11 +753,8 @@ export default function ListMenusAdmin() {
                   </Typography>
 
                   <Typography align="center" color="text.secondary">
-                    {menu.HoraInicio}-{menu.HoraFin}
-                  </Typography>
-
-                  <Typography align="center" sx={{ mt: 1 }}>
-                    {menu.DiasDisponibles || "Todos los días"}
+                    {formatearHoraNormal(menu.HoraInicio)} -{" "}
+                    {formatearHoraNormal(menu.HoraFin)}
                   </Typography>
 
                   <Typography
@@ -656,37 +845,255 @@ export default function ListMenusAdmin() {
             )}
           />
 
-          <Controller
-            name="HoraInicio"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                fullWidth
-                margin="dense"
-                label="Hora Inicio"
-                placeholder="11:00:00"
-                error={!!errors.HoraInicio}
-                helperText={errors.HoraInicio?.message}
-              />
-            )}
-          />
+          <Typography sx={{ fontWeight: "bold", mt: 2, mb: 1 }}>
+            Horario del menú
+          </Typography>
 
-          <Controller
-            name="HoraFin"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                fullWidth
-                margin="dense"
-                label="Hora Fin"
-                placeholder="15:00:00"
-                error={!!errors.HoraFin}
-                helperText={errors.HoraFin?.message}
-              />
-            )}
-          />
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: {
+                xs: "1fr",
+                md: "repeat(2, 1fr)",
+              },
+              gap: 2,
+            }}
+          >
+            <Box>
+              <Typography sx={{ mb: 1 }}>Hora de inicio</Typography>
+
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr 1fr",
+                  gap: 1,
+                }}
+              >
+                <TextField
+                  select
+                  label="Hora"
+                  value={horaInicio12}
+                  onChange={(e) => {
+                    const nuevaHora = e.target.value;
+                    setHoraInicio12(nuevaHora);
+
+                    setValue(
+                      "HoraInicio",
+                      convertirHora12A24(
+                        nuevaHora,
+                        minutosInicio,
+                        periodoInicio,
+                      ),
+                      { shouldValidate: true },
+                    );
+                  }}
+                  error={!!errors.HoraInicio}
+                >
+                  {horasNormales.map((hora) => (
+                    <MenuItem key={`inicio-hora-${hora}`} value={hora}>
+                      {hora}
+                    </MenuItem>
+                  ))}
+                </TextField>
+
+                <TextField
+                  select
+                  label="Minutos"
+                  value={minutosInicio}
+                  onChange={(e) => {
+                    const nuevosMinutos = e.target.value;
+                    setMinutosInicio(nuevosMinutos);
+
+                    setValue(
+                      "HoraInicio",
+                      convertirHora12A24(
+                        horaInicio12,
+                        nuevosMinutos,
+                        periodoInicio,
+                      ),
+                      { shouldValidate: true },
+                    );
+                  }}
+                >
+                  {opcionesMinutos.map((minuto) => (
+                    <MenuItem key={`inicio-minuto-${minuto}`} value={minuto}>
+                      {minuto}
+                    </MenuItem>
+                  ))}
+                </TextField>
+
+                <TextField
+                  select
+                  label="Periodo"
+                  value={periodoInicio}
+                  onChange={(e) => {
+                    const nuevoPeriodo = e.target.value;
+                    setPeriodoInicio(nuevoPeriodo);
+
+                    setValue(
+                      "HoraInicio",
+                      convertirHora12A24(
+                        horaInicio12,
+                        minutosInicio,
+                        nuevoPeriodo,
+                      ),
+                      { shouldValidate: true },
+                    );
+                  }}
+                >
+                  <MenuItem value="a. m.">a. m.</MenuItem>
+                  <MenuItem value="p. m.">p. m.</MenuItem>
+                </TextField>
+              </Box>
+
+              {errors.HoraInicio && (
+                <Typography color="error" variant="caption">
+                  {errors.HoraInicio.message}
+                </Typography>
+              )}
+            </Box>
+
+            <Box>
+              <Typography sx={{ mb: 1 }}>Hora de finalización</Typography>
+
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr 1fr",
+                  gap: 1,
+                }}
+              >
+                <TextField
+                  select
+                  label="Hora"
+                  value={horaFin12}
+                  onChange={(e) => {
+                    const nuevaHora = e.target.value;
+                    setHoraFin12(nuevaHora);
+
+                    setValue(
+                      "HoraFin",
+                      convertirHora12A24(nuevaHora, minutosFin, periodoFin),
+                      { shouldValidate: true },
+                    );
+                  }}
+                  error={!!errors.HoraFin}
+                >
+                  {horasNormales.map((hora) => (
+                    <MenuItem key={`fin-hora-${hora}`} value={hora}>
+                      {hora}
+                    </MenuItem>
+                  ))}
+                </TextField>
+
+                <TextField
+                  select
+                  label="Minutos"
+                  value={minutosFin}
+                  onChange={(e) => {
+                    const nuevosMinutos = e.target.value;
+                    setMinutosFin(nuevosMinutos);
+
+                    setValue(
+                      "HoraFin",
+                      convertirHora12A24(horaFin12, nuevosMinutos, periodoFin),
+                      { shouldValidate: true },
+                    );
+                  }}
+                >
+                  {opcionesMinutos.map((minuto) => (
+                    <MenuItem key={`fin-minuto-${minuto}`} value={minuto}>
+                      {minuto}
+                    </MenuItem>
+                  ))}
+                </TextField>
+
+                <TextField
+                  select
+                  label="Periodo"
+                  value={periodoFin}
+                  onChange={(e) => {
+                    const nuevoPeriodo = e.target.value;
+                    setPeriodoFin(nuevoPeriodo);
+
+                    setValue(
+                      "HoraFin",
+                      convertirHora12A24(horaFin12, minutosFin, nuevoPeriodo),
+                      { shouldValidate: true },
+                    );
+                  }}
+                >
+                  <MenuItem value="a. m.">a. m.</MenuItem>
+                  <MenuItem value="p. m.">p. m.</MenuItem>
+                </TextField>
+              </Box>
+
+              {errors.HoraFin && (
+                <Typography color="error" variant="caption">
+                  {errors.HoraFin.message}
+                </Typography>
+              )}
+            </Box>
+          </Box>
+
+          <Typography sx={{ fontWeight: "bold", mt: 3, mb: 1 }}>
+            Vigencia del menú
+          </Typography>
+
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: {
+                xs: "1fr",
+                sm: "repeat(2, 1fr)",
+              },
+              gap: 2,
+              mt: 2,
+            }}
+          >
+            <Controller
+              name="FechaInicio"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  fullWidth
+                  type="date"
+                  label="Fecha de inicio"
+                  slotProps={{
+                    inputLabel: {
+                      shrink: true,
+                    },
+                  }}
+                  error={!!errors.FechaInicio}
+                  helperText={errors.FechaInicio?.message}
+                />
+              )}
+            />
+
+            <Controller
+              name="FechaFin"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  fullWidth
+                  type="date"
+                  label="Fecha de finalización"
+                  slotProps={{
+                    inputLabel: {
+                      shrink: true,
+                    },
+                    htmlInput: {
+                      min: fechaInicioSeleccionada || undefined,
+                    },
+                  }}
+                  error={!!errors.FechaFin}
+                  helperText={errors.FechaFin?.message}
+                />
+              )}
+            />
+          </Box>
 
           <Controller
             name="EstaActivo"
@@ -705,7 +1112,6 @@ export default function ListMenusAdmin() {
           />
 
           <Divider sx={{ my: 3 }} />
-
           <Typography
             sx={{
               fontWeight: "bold",
@@ -767,8 +1173,6 @@ export default function ListMenusAdmin() {
               AGREGAR
             </Button>
           </Box>
-
-          {/* COMBOS */}
 
           <Typography
             sx={{
@@ -858,7 +1262,6 @@ export default function ListMenusAdmin() {
               <Box
                 sx={{
                   display: "flex",
-
                   gap: 2,
                 }}
               >
@@ -895,7 +1298,6 @@ export default function ListMenusAdmin() {
           <Box
             sx={{
               display: "flex",
-
               flexWrap: "wrap",
             }}
           >

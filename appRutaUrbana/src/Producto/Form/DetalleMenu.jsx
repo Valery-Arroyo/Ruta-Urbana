@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+
 import MenuService from "../../services/MenuService";
 
 import {
@@ -20,21 +21,82 @@ const API_URL = import.meta.env.VITE_BASE_URL;
 export default function DetalleMenu() {
   const { id } = useParams();
   const navigate = useNavigate();
+
   const [detalle, setDetalle] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     MenuService.get(id)
       .then((response) => {
+        console.log("DETALLE DEL MENÚ:", response.data);
         console.log("PRODUCTOS:", response.data.Productos);
         console.log("COMBOS:", response.data.Combos);
+
         setDetalle(response.data);
       })
       .catch((error) => {
         console.error("Error cargando detalle:", error);
+        console.error("Respuesta del backend:", error.response?.data);
+      })
+      .finally(() => {
+        setLoading(false);
       });
   }, [id]);
 
-  if (!detalle) {
+  const formatearHora = (hora) => {
+    if (!hora) return "No definida";
+
+    const [horaTexto, minutos = "00"] = String(hora).split(":");
+
+    let horaNumero = Number(horaTexto);
+
+    if (Number.isNaN(horaNumero)) {
+      return hora;
+    }
+
+    const periodo = horaNumero >= 12 ? "p. m." : "a. m.";
+
+    horaNumero = horaNumero % 12 || 12;
+
+    return `${horaNumero}:${minutos} ${periodo}`;
+  };
+
+  const formatearPrecio = (precio) => {
+    const precioNumero = Number(precio);
+
+    if (Number.isNaN(precioNumero)) {
+      return "0";
+    }
+
+    return precioNumero.toLocaleString("es-CR", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    });
+  };
+
+  const obtenerUrlImagen = (item) => {
+    const imagen =
+      item.ImagenProducto || item.ImagenCombo || item.Imagen || item.RutaImagen;
+
+    if (!imagen) {
+      return "/no-image.png";
+    }
+
+    const rutaLimpia = String(imagen)
+      .trim()
+      .replace(/\\/g, "/")
+      .replace(/^\/+/, "");
+
+    if (rutaLimpia.startsWith("http://") || rutaLimpia.startsWith("https://")) {
+      return rutaLimpia;
+    }
+
+    const baseLimpia = String(API_URL).endsWith("/") ? API_URL : `${API_URL}/`;
+
+    return `${baseLimpia}${rutaLimpia}`;
+  };
+
+  if (loading) {
     return (
       <Box
         sx={{
@@ -44,20 +106,59 @@ export default function DetalleMenu() {
           alignItems: "center",
         }}
       >
-        <CircularProgress size={55} sx={{ color: "#FF8C00" }} />
+        <CircularProgress
+          size={55}
+          sx={{
+            color: "#FF8C00",
+          }}
+        />
       </Box>
     );
   }
 
-  const safeItems = [...(detalle.Productos || []), ...(detalle.Combos || [])];
+  if (!detalle) {
+    return (
+      <Box
+        sx={{
+          minHeight: "100vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          flexDirection: "column",
+          gap: 2,
+        }}
+      >
+        <Typography variant="h5">No fue posible cargar el menú.</Typography>
 
-  // Agrupar por categoría
+        <Button
+          variant="outlined"
+          startIcon={<ArrowBackIcon />}
+          onClick={() => navigate("/menu")}
+        >
+          Volver al listado
+        </Button>
+      </Box>
+    );
+  }
+
+  const productos = Array.isArray(detalle.Productos) ? detalle.Productos : [];
+
+  const combos = Array.isArray(detalle.Combos) ? detalle.Combos : [];
+
+  const safeItems = [...productos, ...combos];
+
+  /*
+   * Agrupar productos y combos por categoría.
+   */
   const itemsPorCategoria = safeItems.reduce((acc, item) => {
-    const categoria = item.Categoria || "Sin categoría";
+    const categoria = item.Categoria || item.NombreCategoria || "Sin categoría";
+
     if (!acc[categoria]) {
       acc[categoria] = [];
     }
+
     acc[categoria].push(item);
+
     return acc;
   }, {});
 
@@ -69,7 +170,8 @@ export default function DetalleMenu() {
         bgcolor: "#fafafa",
       }}
     >
-      {/* HEADER */}
+      {/* ENCABEZADO */}
+
       <Typography
         variant="h3"
         sx={{
@@ -85,20 +187,39 @@ export default function DetalleMenu() {
       <Typography
         variant="body1"
         color="text.secondary"
-        sx={{ fontSize: "1.05rem" }}
+        sx={{
+          fontSize: "1.05rem",
+        }}
       >
-        Estado: {detalle.EstaActivo === "1" ? "Activo" : "Inactivo"}
+        Estado: {String(detalle.EstaActivo) === "1" ? "Activo" : "Inactivo"}
       </Typography>
 
       <Typography
         variant="body1"
         color="text.secondary"
-        sx={{ fontSize: "1.05rem" }}
+        sx={{
+          fontSize: "1.05rem",
+        }}
       >
         Día(s):{" "}
-        {detalle.Disponibilidad?.map((d) => d.DiaSemana).join(", ") ||
-          "No definido"}
+        {detalle.DiasDisponibles?.trim()
+          ? detalle.DiasDisponibles
+          : "No definido"}
       </Typography>
+
+      {(detalle.FechaInicio || detalle.FechaFin) && (
+        <Typography
+          variant="body1"
+          color="text.secondary"
+          sx={{
+            fontSize: "1.05rem",
+          }}
+        >
+          Vigencia: {detalle.FechaInicio || "Sin fecha inicial"}
+          {" - "}
+          {detalle.FechaFin || "Sin fecha final"}
+        </Typography>
+      )}
 
       <Typography
         variant="body1"
@@ -108,7 +229,9 @@ export default function DetalleMenu() {
           mb: 2,
         }}
       >
-        Horario: {detalle.HoraInicio} - {detalle.HoraFin}
+        Horario: {formatearHora(detalle.HoraInicio)}
+        {" - "}
+        {formatearHora(detalle.HoraFin)}
       </Typography>
 
       <Button
@@ -122,6 +245,7 @@ export default function DetalleMenu() {
           fontWeight: "bold",
           textTransform: "none",
           fontSize: "1rem",
+
           "&:hover": {
             borderColor: "#E67E00",
             backgroundColor: "#FFF3E0",
@@ -131,9 +255,30 @@ export default function DetalleMenu() {
         Volver al listado
       </Button>
 
-      {/* CATEGORÍAS */}
-      {Object.entries(itemsPorCategoria).map(([categoria, productos]) => (
-        <Box key={categoria} sx={{ mb: 5 }}>
+      {/* MENÚ SIN ELEMENTOS */}
+
+      {safeItems.length === 0 && (
+        <Typography
+          align="center"
+          sx={{
+            mt: 5,
+            fontSize: "1.2rem",
+            color: "text.secondary",
+          }}
+        >
+          Este menú no tiene productos ni combos registrados.
+        </Typography>
+      )}
+
+      {/* ELEMENTOS AGRUPADOS POR CATEGORÍA */}
+
+      {Object.entries(itemsPorCategoria).map(([categoria, items]) => (
+        <Box
+          key={categoria}
+          sx={{
+            mb: 5,
+          }}
+        >
           <Typography
             variant="h5"
             sx={{
@@ -148,15 +293,21 @@ export default function DetalleMenu() {
           </Typography>
 
           <Grid container spacing={3} alignItems="stretch">
-            {productos.map((item, index) => (
+            {items.map((item, index) => (
               <Grid
-                key={`${categoria}-${index}`}
+                key={`${
+                  item.IdProducto
+                    ? `producto-${item.IdProducto}`
+                    : `combo-${item.IdCombo}`
+                }-${index}`}
                 size={{
                   xs: 12,
                   sm: 6,
                   md: 4,
                 }}
-                sx={{ display: "flex" }}
+                sx={{
+                  display: "flex",
+                }}
               >
                 <Card
                   sx={{
@@ -164,30 +315,31 @@ export default function DetalleMenu() {
                     display: "flex",
                     flexDirection: "column",
                     borderRadius: 4,
+                    overflow: "hidden",
                     boxShadow: "0 10px 20px rgba(0,0,0,.12)",
                     transition: "0.3s",
+
                     "&:hover": {
                       transform: "translateY(-6px)",
                       boxShadow: "0 16px 28px rgba(0,0,0,.18)",
                     },
                   }}
                 >
-                  {(item.Imagen || item.ImagenProducto || item.ImagenCombo) && (
-                    <Box
-                      component="img"
-                      src={`${API_URL}${
-                        item.Imagen || item.ImagenProducto || item.ImagenCombo
-                      }`}
-                      alt={item.Nombre || item.NombreItem}
-                      sx={{
-                        width: "100%",
-                        height: 220,
-                        objectFit: "cover",
-                        borderRadius: "16px 16px 0 0",
-                        flexShrink: 0,
-                      }}
-                    />
-                  )}
+                  <Box
+                    component="img"
+                    src={obtenerUrlImagen(item)}
+                    alt={item.Nombre || item.NombreItem || "Imagen"}
+                    onError={(event) => {
+                      event.currentTarget.onerror = null;
+                      event.currentTarget.src = "/no-image.png";
+                    }}
+                    sx={{
+                      width: "100%",
+                      height: 220,
+                      objectFit: "cover",
+                      flexShrink: 0,
+                    }}
+                  />
 
                   <CardContent
                     sx={{
@@ -204,7 +356,7 @@ export default function DetalleMenu() {
                         fontSize: "1.25rem",
                       }}
                     >
-                      {item.Nombre || item.NombreItem}
+                      {item.Nombre || item.NombreItem || "Sin nombre"}
                     </Typography>
 
                     <Typography
@@ -216,10 +368,9 @@ export default function DetalleMenu() {
                         lineHeight: 1.6,
                       }}
                     >
-                      {item.Descripcion}
+                      {item.Descripcion || "Sin descripción"}
                     </Typography>
 
-                    {/* PRECIO */}
                     <Box
                       sx={{
                         display: "flex",
@@ -246,7 +397,7 @@ export default function DetalleMenu() {
                           fontSize: "1.3rem",
                         }}
                       >
-                        ₡{item.Precio || item.PrecioEspecial}
+                        ₡{formatearPrecio(item.Precio ?? item.PrecioEspecial)}
                       </Typography>
                     </Box>
                   </CardContent>

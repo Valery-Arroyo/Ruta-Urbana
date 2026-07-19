@@ -8,7 +8,6 @@ export default function App() {
   return ( 
       <ThemeProvider theme={appTheme}> 
         <CssBaseline enableColorScheme /> 
-        <Toaster position="top-right" reverseOrder={false} /> {/* Configuración global */}
         <Layout> 
           <Outlet /> 
         </Layout> 
