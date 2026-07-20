@@ -86,18 +86,73 @@ class PreparacionModel
         }
     }
 
+    private function validarDatosPreparacion($data)
+    {
+        if (
+            !isset($data['OrdenPaso']) ||
+            !ctype_digit((string) $data['OrdenPaso']) ||
+            intval($data['OrdenPaso']) <= 0
+        ) {
+            throw new Exception(
+                "El orden debe ser un número entero mayor que cero"
+            );
+        }
+
+        if (
+            !isset($data['TiempoEstimadoMinutos']) ||
+            !ctype_digit((string) $data['TiempoEstimadoMinutos']) ||
+            intval($data['TiempoEstimadoMinutos']) <= 0
+        ) {
+            throw new Exception(
+                "El tiempo estimado debe ser un número entero mayor que cero"
+            );
+        }
+
+        if (
+            !isset($data['IdEstacion']) ||
+            !ctype_digit((string) $data['IdEstacion']) ||
+            intval($data['IdEstacion']) <= 0
+        ) {
+            throw new Exception("Debe seleccionar una estación válida");
+        }
+    }
+
     /* Crear Proceso de Preparación */
     public function create($data)
     {
         try {
+            $this->validarDatosPreparacion($data);
+
             $ordenPaso = intval($data['OrdenPaso']);
-            $tiempoEstimadoMinutos = isset($data['TiempoEstimadoMinutos']) ? intval($data['TiempoEstimadoMinutos']) : 'NULL';
-            $idProducto = !empty($data['IdProducto']) ? intval($data['IdProducto']) : 'NULL';
-            $idCombo = !empty($data['IdCombo']) ? intval($data['IdCombo']) : 'NULL';
+            $tiempoEstimadoMinutos =
+                intval($data['TiempoEstimadoMinutos']);
+
+            $idProducto = !empty($data['IdProducto'])
+                ? intval($data['IdProducto'])
+                : 'NULL';
+
+            $idCombo = !empty($data['IdCombo'])
+                ? intval($data['IdCombo'])
+                : 'NULL';
+
             $idEstacion = intval($data['IdEstacion']);
 
-            $sql = "INSERT INTO ProcesoPreparacion (OrdenPaso, TiempoEstimadoMinutos, IdProducto, IdCombo, IdEstacion) 
-                    VALUES ($ordenPaso, $tiempoEstimadoMinutos, $idProducto, $idCombo, $idEstacion)";
+            $sql = "INSERT INTO ProcesoPreparacion
+                    (
+                        OrdenPaso,
+                        TiempoEstimadoMinutos,
+                        IdProducto,
+                        IdCombo,
+                        IdEstacion
+                    )
+                VALUES
+                    (
+                        $ordenPaso,
+                        $tiempoEstimadoMinutos,
+                        $idProducto,
+                        $idCombo,
+                        $idEstacion
+                    )";
 
             return $this->enlace->executeSQL_DML_last($sql);
         } catch (Exception $e) {
@@ -109,20 +164,31 @@ class PreparacionModel
     public function update($id, $data)
     {
         try {
+            $this->validarDatosPreparacion($data);
+
             $idProceso = intval($id);
             $ordenPaso = intval($data['OrdenPaso']);
-            $tiempoEstimadoMinutos = isset($data['TiempoEstimadoMinutos']) ? intval($data['TiempoEstimadoMinutos']) : 'NULL';
-            $idProducto = !empty($data['IdProducto']) ? intval($data['IdProducto']) : 'NULL';
-            $idCombo = !empty($data['IdCombo']) ? intval($data['IdCombo']) : 'NULL';
+            $tiempoEstimadoMinutos =
+                intval($data['TiempoEstimadoMinutos']);
+
+            $idProducto = !empty($data['IdProducto'])
+                ? intval($data['IdProducto'])
+                : 'NULL';
+
+            $idCombo = !empty($data['IdCombo'])
+                ? intval($data['IdCombo'])
+                : 'NULL';
+
             $idEstacion = intval($data['IdEstacion']);
 
-            $sql = "UPDATE ProcesoPreparacion SET 
-                        OrdenPaso = $ordenPaso, 
-                        TiempoEstimadoMinutos = $tiempoEstimadoMinutos, 
-                        IdProducto = $idProducto, 
-                        IdCombo = $idCombo, 
-                        IdEstacion = $idEstacion 
-                    WHERE IdProceso = $idProceso";
+            $sql = "UPDATE ProcesoPreparacion
+                SET
+                    OrdenPaso = $ordenPaso,
+                    TiempoEstimadoMinutos = $tiempoEstimadoMinutos,
+                    IdProducto = $idProducto,
+                    IdCombo = $idCombo,
+                    IdEstacion = $idEstacion
+                WHERE IdProceso = $idProceso";
 
             return $this->enlace->executeSQL_DML($sql);
         } catch (Exception $e) {

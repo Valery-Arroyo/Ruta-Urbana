@@ -40,9 +40,17 @@ const orangeIcon = {
 const pasoVacio = () => ({
   IdProceso: null,
   IdEstacion: "",
-  OrdenPaso: 0,
-  TiempoEstimadoMinutos: 0,
+  OrdenPaso: "",
+  TiempoEstimadoMinutos: "",
 });
+
+const manejarCampoNumerico = (setter, index, campo, valor) => {
+  // Permite dejar el campo vacío mientras se escribe,
+  // pero rechaza letras, espacios, decimales y signos.
+  if (/^\d*$/.test(valor)) {
+    modificarPaso(setter, index, campo, valor);
+  }
+};
 
 export default function ListPreparacionPublic() {
   const navigate = useNavigate();
@@ -214,15 +222,10 @@ export default function ListPreparacionPublic() {
         pasosForm.map((p) => {
           const payload = {
             IdProceso: p.IdProceso || null,
-
             OrdenPaso: Number(p.OrdenPaso),
-
             TiempoEstimadoMinutos: Number(p.TiempoEstimadoMinutos),
-
             IdEstacion: Number(p.IdEstacion),
-
             IdProducto: procesoEdit?.IdProducto || null,
-
             IdCombo: procesoEdit?.IdCombo || null,
           };
 
@@ -262,6 +265,23 @@ export default function ListPreparacionPublic() {
 
   const handleRemoverPasoNuevo = (index) => {
     setPasosNuevo((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleRemoverPaso = (index) => {
+    setPasosForm((prev) => {
+      const pasoEliminar = prev[index];
+
+      // Si ya existe en la base de datos, guardamos su ID
+      // para eliminarlo cuando el usuario presione Guardar.
+      if (pasoEliminar?.IdProceso) {
+        setPasosEliminados((eliminadosActuales) => [
+          ...eliminadosActuales,
+          pasoEliminar.IdProceso,
+        ]);
+      }
+
+      return prev.filter((_, i) => i !== index);
+    });
   };
 
   const handleCrearProceso = async () => {

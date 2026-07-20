@@ -58,7 +58,6 @@ const productoSchema = yup.object().shape({
 
   Imagen: yup.string().nullable(),
 });
-
 export default function GestionProductos() {
   const [data, setData] = useState([]);
   const [open, setOpen] = useState(false);
@@ -76,11 +75,9 @@ export default function GestionProductos() {
     reset,
     watch,
     setValue,
-
     formState: { errors },
   } = useForm({
     resolver: yupResolver(productoSchema),
-
     defaultValues: {
       Nombre: "",
       Precio: "",
@@ -91,7 +88,6 @@ export default function GestionProductos() {
       Activo: 1,
     },
   });
-
   // Ingredientes guardados en el formulario
   const ingredientesAgregados = watch("Ingredientes");
 
@@ -203,6 +199,14 @@ export default function GestionProductos() {
 
   const handleSave = async (formData) => {
     try {
+      // Validar que al crear se ingrese una ruta de imagen
+      if (
+        !productoSeleccionado?.IdProducto &&
+        (!formData.Imagen || formData.Imagen.trim() === "")
+      ) {
+        toast.error("Debe ingresar la ruta de la imagen");
+        return;
+      }
       if (productoSeleccionado?.IdProducto) {
         await ProductoService.update(productoSeleccionado.IdProducto, formData);
 

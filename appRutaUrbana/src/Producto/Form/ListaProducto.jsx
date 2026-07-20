@@ -28,6 +28,7 @@ import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import toast from "react-hot-toast";
+import InputAdornment from "@mui/material/InputAdornment";
 
 const productoSchema = yup.object().shape({
   Nombre: yup
@@ -487,9 +488,13 @@ export default function GestionProductos() {
                 type="number"
                 label="Precio"
                 slotProps={{
+                  input: {
+                    startAdornment: (
+                      <InputAdornment position="start">₡</InputAdornment>
+                    ),
+                  },
                   htmlInput: {
                     min: 0,
-
                     step: 0.01,
                   },
                 }}

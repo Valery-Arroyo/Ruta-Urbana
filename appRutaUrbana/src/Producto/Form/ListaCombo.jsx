@@ -21,19 +21,15 @@ import AddIcon from "@mui/icons-material/Add";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-
 import { useNavigate } from "react-router-dom";
-
 import ComboService from "../../services/ComboService";
 import ProductoService from "../../services/ProductoService";
 import CategoriaService from "../../services/CategoriaService";
-
 import toast from "react-hot-toast";
-
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-
 import * as yup from "yup";
+import InputAdornment from "@mui/material/InputAdornment";
 
 const comboSchema = yup.object().shape({
   Nombre: yup
@@ -451,6 +447,17 @@ export default function ListCombosAdmin() {
                 shouldValidate: true,
               })
             }
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">₡</InputAdornment>
+                ),
+              },
+              htmlInput: {
+                min: 0,
+                step: 0.01,
+              },
+            }}
             error={!!errors.PrecioEspecial}
             helperText={errors.PrecioEspecial?.message}
           />
