@@ -92,11 +92,11 @@ export default function DetallePreparacion() {
     <Box sx={{ p: 4, display: "flex", justifyContent: "center" }}>
       <Card sx={{ maxWidth: 700, width: "100%", p: 3, boxShadow: 4 }}>
         
-        {/* Botón de Retorno */}
         <Button 
           startIcon={<ArrowBackIcon />} 
           onClick={() => navigate("/preparacion")} 
           sx={{ mb: 2 }}
+          color="black"
         >
           Volver
         </Button>
