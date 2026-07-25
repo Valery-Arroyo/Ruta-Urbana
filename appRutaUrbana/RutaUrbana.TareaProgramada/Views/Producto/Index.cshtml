@@ -1,0 +1,25 @@
+@model List<RutaUrbana.TareaProgramada.Models.Producto>
+
+@{
+    ViewData["Title"] = "Productos";
+}
+
+<h1>Productos</h1>
+<p>La etiqueta "Producto del día" la asigna automáticamente la tarea programada, una vez al día.</p>
+
+<div style="display:flex; flex-wrap:wrap; gap:1rem;">
+@foreach (var producto in Model)
+{
+    <div style="border:1px solid #ddd; border-radius:8px; padding:1rem; width:220px; position:relative;">
+        @if (producto.EsProductoDelDia)
+        {
+            <span style="position:absolute; top:-10px; right:-10px; background:#e63946; color:white; padding:4px 10px; border-radius:12px; font-size:12px; font-weight:bold;">
+                Producto del día
+            </span>
+        }
+        <h3>@producto.Nombre</h3>
+        <p><small>@producto.Categoria?.Nombre</small></p>
+        <p>₡@producto.Precio</p>
+    </div>
+}
+</div>

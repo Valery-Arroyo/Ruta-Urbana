@@ -1,0 +1,10 @@
+C:\xampp\htdocs\apirutaurbana\appRutaUrbana\RutaUrbana.TareaProgramada\obj\Debug\net10.0\RutaUrbana.TareaProgramada.csproj.AssemblyReference.cache
+C:\xampp\htdocs\apirutaurbana\appRutaUrbana\RutaUrbana.TareaProgramada\obj\Debug\net10.0\rpswa.dswa.cache.json
+C:\xampp\htdocs\apirutaurbana\appRutaUrbana\RutaUrbana.TareaProgramada\obj\Debug\net10.0\RutaUrbana.TareaProgramada.GeneratedMSBuildEditorConfig.editorconfig
+C:\xampp\htdocs\apirutaurbana\appRutaUrbana\RutaUrbana.TareaProgramada\obj\Debug\net10.0\RutaUrbana.TareaProgramada.AssemblyInfoInputs.cache
+C:\xampp\htdocs\apirutaurbana\appRutaUrbana\RutaUrbana.TareaProgramada\obj\Debug\net10.0\RutaUrbana.TareaProgramada.AssemblyInfo.cs
+C:\xampp\htdocs\apirutaurbana\appRutaUrbana\RutaUrbana.TareaProgramada\obj\Debug\net10.0\RutaUrbana.TareaProgramada.csproj.CoreCompileInputs.cache
+C:\xampp\htdocs\apirutaurbana\appRutaUrbana\RutaUrbana.TareaProgramada\obj\Debug\net10.0\RutaUrbana.TareaProgramada.MvcApplicationPartsAssemblyInfo.cache
+C:\xampp\htdocs\apirutaurbana\appRutaUrbana\RutaUrbana.TareaProgramada\obj\Debug\net10.0\RutaUrbana.TareaProgramada.RazorAssemblyInfo.cache
+C:\xampp\htdocs\apirutaurbana\appRutaUrbana\RutaUrbana.TareaProgramada\obj\Debug\net10.0\RutaUrbana.TareaProgramada.RazorAssemblyInfo.cs
+C:\xampp\htdocs\apirutaurbana\appRutaUrbana\RutaUrbana.TareaProgramada\obj\Debug\net10.0\RutaUrbana.TareaProgramada.sourcelink.json
