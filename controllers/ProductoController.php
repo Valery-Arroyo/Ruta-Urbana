@@ -77,6 +77,21 @@ class Producto
         }
     }
 
+    // Método para obtener el producto del día
+    public function productoDelDia()
+    {
+        try {
+            $response = new Response();
+            $producto = new ProductoModel();
+
+            $result = $producto->productoDelDia();
+
+            $response->toJSON($result);
+        } catch (Exception $e) {
+            handleException($e);
+        }
+    }
+
     // Método para crear un nuevo producto
     public function create()
     {
@@ -110,7 +125,7 @@ class Producto
         }
     }
 
-   // Método para realizar el borrado lógico de un producto
+    // Método para realizar el borrado lógico de un producto
     public function delete($id)
     {
         try {
@@ -118,7 +133,7 @@ class Producto
             $producto = new ProductoModel();
 
             $result = $producto->delete($id);
-            
+
             // Si $result es true, devolvemos success: 1
             $response->toJSON(['success' => $result ? 1 : 0]);
         } catch (Exception $e) {

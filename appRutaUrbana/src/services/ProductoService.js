@@ -1,7 +1,8 @@
 import axios from "axios";
 
 // Ajusta la URL base directamente si la variable de entorno falla
-const API_URL = import.meta.env.VITE_BASE_URL || "http://localhost:81/apirutaurbana/";
+const API_URL =
+  import.meta.env.VITE_BASE_URL || "http://localhost:81/apirutaurbana/";
 const BASE_URL = `${API_URL}producto`;
 
 class ProductoService {
@@ -11,6 +12,10 @@ class ProductoService {
 
   getProducto(id) {
     return axios.get(`${BASE_URL}/${id}`);
+  }
+
+  getProductoDelDia() {
+    return axios.get(`${BASE_URL}/productoDelDia`);
   }
 
   get(idProducto) {

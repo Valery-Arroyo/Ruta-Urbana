@@ -32,6 +32,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
+
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -43,11 +44,13 @@ const formatearHoraNormal = (hora) => {
   if (!hora) return "";
 
   const [horaTexto, minutosTexto = "00"] = String(hora).split(":");
+
   const horaNumero = Number(horaTexto);
 
   if (Number.isNaN(horaNumero)) return hora;
 
   const periodo = horaNumero >= 12 ? "p. m." : "a. m.";
+
   const horaNormal = horaNumero % 12 || 12;
 
   return `${horaNormal}:${minutosTexto} ${periodo}`;
@@ -63,6 +66,7 @@ const convertirHora24A12 = (hora) => {
   }
 
   const [horaTexto, minutosTexto = "00"] = String(hora).split(":");
+
   const horaNumero = Number(horaTexto);
 
   return {
@@ -73,7 +77,9 @@ const convertirHora24A12 = (hora) => {
 };
 
 const convertirHora12A24 = (hora, minutos, periodo) => {
-  if (!hora || minutos === "" || !periodo) return "";
+  if (!hora || minutos === "" || !periodo) {
+    return "";
+  }
 
   let horaNumero = Number(hora);
 
@@ -85,10 +91,10 @@ const convertirHora12A24 = (hora, minutos, periodo) => {
     horaNumero += 12;
   }
 
-  return `${String(horaNumero).padStart(2, "0")}:${String(minutos).padStart(
+  return `${String(horaNumero).padStart(
     2,
     "0",
-  )}:00`;
+  )}:${String(minutos).padStart(2, "0")}:00`;
 };
 
 const obtenerFechaMenu = (menu, campo) => {
@@ -136,7 +142,9 @@ const menuSchema = yup.object({
       function (value) {
         const { FechaInicio } = this.parent;
 
-        if (!FechaInicio && !value) return true;
+        if (!FechaInicio && !value) {
+          return true;
+        }
 
         if (FechaInicio && !value) {
           return this.createError({
@@ -155,32 +163,52 @@ const menuSchema = yup.object({
     ),
 
   EstaActivo: yup.number().required(),
+
   DiasDisponibles: yup.array().of(yup.string()),
+
   Items: yup.array(),
+
+  TieneProducto: yup
+    .boolean()
+    .oneOf([true], "Debe agregar al menos un producto"),
+
+  TieneCombo: yup.boolean().oneOf([true], "Debe agregar al menos un combo"),
 });
 
 export default function ListMenusAdmin() {
   const [menus, setMenus] = useState([]);
   const [productos, setProductos] = useState([]);
   const [combos, setCombos] = useState([]);
+
   const [itemsSeleccionados, setItemsSeleccionados] = useState([]);
+
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
+
   const [menuSeleccionado, setMenuSeleccionado] = useState(null);
+
   const [openDelete, setOpenDelete] = useState(false);
+
   const [menuEliminar, setMenuEliminar] = useState(null);
+
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
+
   const [comboSeleccionado, setComboSeleccionado] = useState(null);
 
   const [horaInicio12, setHoraInicio12] = useState("");
+
   const [minutosInicio, setMinutosInicio] = useState("00");
+
   const [periodoInicio, setPeriodoInicio] = useState("a. m.");
 
   const [horaFin12, setHoraFin12] = useState("");
+
   const [minutosFin, setMinutosFin] = useState("00");
+
   const [periodoFin, setPeriodoFin] = useState("p. m.");
 
   const navigate = useNavigate();
+
   const diasSemana = [
     "Lunes",
     "Martes",
@@ -191,8 +219,11 @@ export default function ListMenusAdmin() {
     "Domingo",
   ];
 
-  const horasNormales = Array.from({ length: 12 }, (_, index) =>
-    String(index + 1),
+  const horasNormales = Array.from(
+    {
+      length: 12,
+    },
+    (_, index) => String(index + 1),
   );
 
   const opcionesMinutos = ["00", "15", "30", "45"];
@@ -217,10 +248,13 @@ export default function ListMenusAdmin() {
       EstaActivo: 1,
       DiasDisponibles: [],
       Items: [],
+      TieneProducto: false,
+      TieneCombo: false,
     },
   });
 
   const diasSeleccionados = watch("DiasDisponibles");
+
   const fechaInicioSeleccionada = watch("FechaInicio");
 
   useEffect(() => {
@@ -229,8 +263,29 @@ export default function ListMenusAdmin() {
     cargarCombos();
   }, []);
 
+  /*
+   * Sincroniza los ítems seleccionados con
+   * react-hook-form y actualiza las validaciones
+   * de producto y combo.
+   */
   useEffect(() => {
-    setValue("Items", itemsSeleccionados, { shouldValidate: true });
+    const tieneProducto = itemsSeleccionados.some(
+      (item) => item.IdProducto != null,
+    );
+
+    const tieneCombo = itemsSeleccionados.some((item) => item.IdCombo != null);
+
+    setValue("Items", itemsSeleccionados, {
+      shouldValidate: true,
+    });
+
+    setValue("TieneProducto", tieneProducto, {
+      shouldValidate: true,
+    });
+
+    setValue("TieneCombo", tieneCombo, {
+      shouldValidate: true,
+    });
   }, [itemsSeleccionados, setValue]);
 
   const cargarMenus = async () => {
@@ -240,6 +295,7 @@ export default function ListMenusAdmin() {
       setMenus(response.data || []);
     } catch (error) {
       console.error("Error cargando menús", error);
+
       toast.error("No se pudieron cargar los menús");
     } finally {
       setLoading(false);
@@ -253,6 +309,7 @@ export default function ListMenusAdmin() {
       setProductos(response.data || []);
     } catch (error) {
       console.error("Error cargando productos", error);
+
       toast.error("No se pudieron cargar productos");
     }
   };
@@ -270,6 +327,7 @@ export default function ListMenusAdmin() {
       setCombos(combosUnicos);
     } catch (error) {
       console.error("Error cargando combos", error);
+
       toast.error("No se pudieron cargar combos");
     }
   };
@@ -277,23 +335,43 @@ export default function ListMenusAdmin() {
   const isDisponibleAhora = (menu) => {
     const ahora = new Date();
 
-    if (String(menu.EstaActivo) !== "1") return false;
-    if (!menu.HoraInicio || !menu.HoraFin) return false;
+    if (String(menu.EstaActivo) !== "1") {
+      return false;
+    }
+
+    if (!menu.HoraInicio || !menu.HoraFin) {
+      return false;
+    }
 
     const fechaActual = ahora.toISOString().substring(0, 10);
+
     const fechaInicioMenu = obtenerFechaMenu(menu, "FechaInicio");
+
     const fechaFinMenu = obtenerFechaMenu(menu, "FechaFin");
 
-    if (fechaInicioMenu && fechaActual < fechaInicioMenu) return false;
-    if (fechaFinMenu && fechaActual > fechaFinMenu) return false;
+    if (fechaInicioMenu && fechaActual < fechaInicioMenu) {
+      return false;
+    }
+
+    if (fechaFinMenu && fechaActual > fechaFinMenu) {
+      return false;
+    }
+
     const [hIni, mIni, sIni] = menu.HoraInicio.split(":").map(Number);
+
     const [hFin, mFin, sFin] = menu.HoraFin.split(":").map(Number);
+
     const inicio = new Date(ahora);
+
     inicio.setHours(hIni, mIni, sIni || 0, 0);
+
     const fin = new Date(ahora);
+
     fin.setHours(hFin, mFin, sFin || 0, 0);
 
-    if (ahora < inicio || ahora > fin) return false;
+    if (ahora < inicio || ahora > fin) {
+      return false;
+    }
 
     const dias = [
       "Lunes",
@@ -309,7 +387,7 @@ export default function ListMenusAdmin() {
 
     if (menu.DiasDisponibles && menu.DiasDisponibles.trim() !== "") {
       return menu.DiasDisponibles.split(",")
-        .map((d) => d.trim())
+        .map((dia) => dia.trim())
         .includes(diaActual);
     }
 
@@ -401,30 +479,41 @@ export default function ListMenusAdmin() {
       setMenuSeleccionado(menu);
 
       const horaInicioConvertida = convertirHora24A12(menu.HoraInicio);
+
       const horaFinConvertida = convertirHora24A12(menu.HoraFin);
 
       setHoraInicio12(horaInicioConvertida.hora);
+
       setMinutosInicio(horaInicioConvertida.minutos);
+
       setPeriodoInicio(horaInicioConvertida.periodo);
 
       setHoraFin12(horaFinConvertida.hora);
+
       setMinutosFin(horaFinConvertida.minutos);
+
       setPeriodoFin(horaFinConvertida.periodo);
 
       reset({
         Nombre: menu.Nombre || "",
         HoraInicio: menu.HoraInicio || "",
         HoraFin: menu.HoraFin || "",
+
         FechaInicio: obtenerFechaMenu(menu, "FechaInicio"),
+
         FechaFin: obtenerFechaMenu(menu, "FechaFin"),
+
         EstaActivo: Number(menu.EstaActivo ?? 1),
+
         DiasDisponibles: menu.DiasDisponibles
           ? menu.DiasDisponibles.split(",")
-              .map((d) => d.trim())
+              .map((dia) => dia.trim())
               .filter(Boolean)
           : [],
 
         Items: [],
+        TieneProducto: false,
+        TieneCombo: false,
       });
 
       setItemsSeleccionados([]);
@@ -455,25 +544,33 @@ export default function ListMenusAdmin() {
         const productosDetalle = productosRespuesta.map((item) => ({
           IdProducto:
             item.IdProducto ?? item.idProducto ?? item.idproducto ?? null,
+
           IdCombo: null,
+
           Nombre:
             item.Nombre ??
             item.NombreProducto ??
             item.nombre ??
             "Producto sin nombre",
+
           Tipo: "Producto",
+
           Cantidad: Number(item.Cantidad ?? item.cantidad ?? 1),
         }));
 
         const combosDetalle = combosRespuesta.map((item) => ({
           IdProducto: null,
+
           IdCombo: item.IdCombo ?? item.idCombo ?? item.idcombo ?? null,
+
           Nombre:
             item.Nombre ??
             item.NombreCombo ??
             item.nombre ??
             "Combo sin nombre",
+
           Tipo: "Combo",
+
           Cantidad: Number(item.Cantidad ?? item.cantidad ?? 1),
         }));
 
@@ -491,16 +588,44 @@ export default function ListMenusAdmin() {
         );
 
         setItemsSeleccionados(itemsCargados);
+
         setValue("Items", itemsCargados, {
           shouldValidate: true,
         });
+
+        setValue(
+          "TieneProducto",
+          itemsCargados.some((item) => item.IdProducto != null),
+          {
+            shouldValidate: true,
+          },
+        );
+
+        setValue(
+          "TieneCombo",
+          itemsCargados.some((item) => item.IdCombo != null),
+          {
+            shouldValidate: true,
+          },
+        );
       } catch (error) {
         console.error("Error cargando detalle del menú", error);
+
         console.error("Respuesta del backend:", error.response?.data);
+
         console.error("Estado HTTP:", error.response?.status);
 
         setItemsSeleccionados([]);
+
         setValue("Items", [], {
+          shouldValidate: true,
+        });
+
+        setValue("TieneProducto", false, {
+          shouldValidate: true,
+        });
+
+        setValue("TieneCombo", false, {
           shouldValidate: true,
         });
 
@@ -530,6 +655,8 @@ export default function ListMenusAdmin() {
         EstaActivo: 1,
         DiasDisponibles: [],
         Items: [],
+        TieneProducto: false,
+        TieneCombo: false,
       });
     }
 
@@ -540,12 +667,6 @@ export default function ListMenusAdmin() {
 
   const handleSave = async (formData) => {
     try {
-      if (!menuSeleccionado && itemsSeleccionados.length === 0) {
-        toast.error("Debe agregar productos o combos");
-
-        return;
-      }
-
       const dataEnviar = {
         Nombre: formData.Nombre,
         HoraInicio: formData.HoraInicio,
@@ -553,6 +674,7 @@ export default function ListMenusAdmin() {
         FechaInicio: formData.FechaInicio,
         FechaFin: formData.FechaFin,
         EstaActivo: formData.EstaActivo,
+
         Disponibilidad: (formData.DiasDisponibles || []).map((dia) => ({
           DiaSemana: dia,
           FechaInicio: formData.FechaInicio,
@@ -561,7 +683,9 @@ export default function ListMenusAdmin() {
 
         Items: itemsSeleccionados.map((item) => ({
           IdProducto: item.IdProducto ?? null,
+
           IdCombo: item.IdCombo ?? null,
+
           Cantidad: item.Cantidad || 1,
         })),
 
@@ -583,11 +707,7 @@ export default function ListMenusAdmin() {
       console.log("DATOS MENU", dataEnviar);
 
       if (menuSeleccionado?.IdMenu) {
-        await MenuService.update(
-          menuSeleccionado.IdMenu,
-
-          dataEnviar,
-        );
+        await MenuService.update(menuSeleccionado.IdMenu, dataEnviar);
 
         toast.success("Menú actualizado correctamente");
       } else {
@@ -619,6 +739,8 @@ export default function ListMenusAdmin() {
         EstaActivo: 1,
         DiasDisponibles: [],
         Items: [],
+        TieneProducto: false,
+        TieneCombo: false,
       });
 
       cargarMenus();
@@ -636,7 +758,7 @@ export default function ListMenusAdmin() {
       setValue(
         "DiasDisponibles",
 
-        actuales.filter((d) => d !== dia),
+        actuales.filter((diaActual) => diaActual !== dia),
 
         {
           shouldValidate: true,
@@ -654,38 +776,42 @@ export default function ListMenusAdmin() {
       );
     }
   };
+
   const confirmarEliminar = (menu) => {
     setMenuEliminar(menu);
-
     setOpenDelete(true);
   };
 
   const handleDelete = async () => {
     try {
       await MenuService.delete(menuEliminar.IdMenu);
+
       toast.success("Menú eliminado correctamente");
+
       setOpenDelete(false);
       setMenuEliminar(null);
+
       cargarMenus();
     } catch (error) {
       console.error("Error eliminando menú", error);
+
       toast.error("No se pudo eliminar el menú");
     }
   };
-  if (loading)
+
+  if (loading) {
     return (
       <Box
         sx={{
           display: "flex",
-
           justifyContent: "center",
-
           mt: 10,
         }}
       >
         <CircularProgress />
       </Box>
     );
+  }
 
   return (
     <Box sx={{ p: 4 }}>
@@ -694,7 +820,6 @@ export default function ListMenusAdmin() {
         align="center"
         sx={{
           fontWeight: "bold",
-
           mb: 3,
         }}
       >
@@ -704,9 +829,7 @@ export default function ListMenusAdmin() {
       <Box
         sx={{
           display: "flex",
-
           justifyContent: "flex-end",
-
           mb: 4,
         }}
       >
@@ -731,6 +854,7 @@ export default function ListMenusAdmin() {
           display: "grid",
           justifyContent: "center",
           gap: 3,
+
           gridTemplateColumns: {
             xs: "1fr",
             sm: "repeat(2,320px)",
@@ -743,7 +867,6 @@ export default function ListMenusAdmin() {
           <Typography
             sx={{
               gridColumn: "1/-1",
-
               textAlign: "center",
             }}
           >
@@ -785,6 +908,7 @@ export default function ListMenusAdmin() {
                     sx={{
                       fontWeight: "bold",
                       mt: 1,
+
                       color: disponible ? "green" : "gray",
                     }}
                   >
@@ -823,6 +947,8 @@ export default function ListMenusAdmin() {
         )}
       </Box>
 
+      {/* CONFIRMAR ELIMINACIÓN */}
+
       <Dialog open={openDelete} onClose={() => setOpenDelete(false)}>
         <DialogTitle>Confirmar eliminación</DialogTitle>
 
@@ -841,6 +967,8 @@ export default function ListMenusAdmin() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* CREAR O EDITAR MENÚ */}
 
       <Dialog
         open={open}
@@ -868,17 +996,25 @@ export default function ListMenusAdmin() {
             )}
           />
 
-          <Typography sx={{ fontWeight: "bold", mt: 2, mb: 1 }}>
+          <Typography
+            sx={{
+              fontWeight: "bold",
+              mt: 2,
+              mb: 1,
+            }}
+          >
             Horario del menú
           </Typography>
 
           <Box
             sx={{
               display: "grid",
+
               gridTemplateColumns: {
                 xs: "1fr",
                 md: "repeat(2, 1fr)",
               },
+
               gap: 2,
             }}
           >
@@ -896,18 +1032,23 @@ export default function ListMenusAdmin() {
                   select
                   label="Hora"
                   value={horaInicio12}
-                  onChange={(e) => {
-                    const nuevaHora = e.target.value;
+                  onChange={(event) => {
+                    const nuevaHora = event.target.value;
+
                     setHoraInicio12(nuevaHora);
 
                     setValue(
                       "HoraInicio",
+
                       convertirHora12A24(
                         nuevaHora,
                         minutosInicio,
                         periodoInicio,
                       ),
-                      { shouldValidate: true },
+
+                      {
+                        shouldValidate: true,
+                      },
                     );
                   }}
                   error={!!errors.HoraInicio}
@@ -923,18 +1064,23 @@ export default function ListMenusAdmin() {
                   select
                   label="Minutos"
                   value={minutosInicio}
-                  onChange={(e) => {
-                    const nuevosMinutos = e.target.value;
+                  onChange={(event) => {
+                    const nuevosMinutos = event.target.value;
+
                     setMinutosInicio(nuevosMinutos);
 
                     setValue(
                       "HoraInicio",
+
                       convertirHora12A24(
                         horaInicio12,
                         nuevosMinutos,
                         periodoInicio,
                       ),
-                      { shouldValidate: true },
+
+                      {
+                        shouldValidate: true,
+                      },
                     );
                   }}
                 >
@@ -949,22 +1095,28 @@ export default function ListMenusAdmin() {
                   select
                   label="Periodo"
                   value={periodoInicio}
-                  onChange={(e) => {
-                    const nuevoPeriodo = e.target.value;
+                  onChange={(event) => {
+                    const nuevoPeriodo = event.target.value;
+
                     setPeriodoInicio(nuevoPeriodo);
 
                     setValue(
                       "HoraInicio",
+
                       convertirHora12A24(
                         horaInicio12,
                         minutosInicio,
                         nuevoPeriodo,
                       ),
-                      { shouldValidate: true },
+
+                      {
+                        shouldValidate: true,
+                      },
                     );
                   }}
                 >
                   <MenuItem value="a. m.">a. m.</MenuItem>
+
                   <MenuItem value="p. m.">p. m.</MenuItem>
                 </TextField>
               </Box>
@@ -990,14 +1142,19 @@ export default function ListMenusAdmin() {
                   select
                   label="Hora"
                   value={horaFin12}
-                  onChange={(e) => {
-                    const nuevaHora = e.target.value;
+                  onChange={(event) => {
+                    const nuevaHora = event.target.value;
+
                     setHoraFin12(nuevaHora);
 
                     setValue(
                       "HoraFin",
+
                       convertirHora12A24(nuevaHora, minutosFin, periodoFin),
-                      { shouldValidate: true },
+
+                      {
+                        shouldValidate: true,
+                      },
                     );
                   }}
                   error={!!errors.HoraFin}
@@ -1013,14 +1170,19 @@ export default function ListMenusAdmin() {
                   select
                   label="Minutos"
                   value={minutosFin}
-                  onChange={(e) => {
-                    const nuevosMinutos = e.target.value;
+                  onChange={(event) => {
+                    const nuevosMinutos = event.target.value;
+
                     setMinutosFin(nuevosMinutos);
 
                     setValue(
                       "HoraFin",
+
                       convertirHora12A24(horaFin12, nuevosMinutos, periodoFin),
-                      { shouldValidate: true },
+
+                      {
+                        shouldValidate: true,
+                      },
                     );
                   }}
                 >
@@ -1035,18 +1197,24 @@ export default function ListMenusAdmin() {
                   select
                   label="Periodo"
                   value={periodoFin}
-                  onChange={(e) => {
-                    const nuevoPeriodo = e.target.value;
+                  onChange={(event) => {
+                    const nuevoPeriodo = event.target.value;
+
                     setPeriodoFin(nuevoPeriodo);
 
                     setValue(
                       "HoraFin",
+
                       convertirHora12A24(horaFin12, minutosFin, nuevoPeriodo),
-                      { shouldValidate: true },
+
+                      {
+                        shouldValidate: true,
+                      },
                     );
                   }}
                 >
                   <MenuItem value="a. m.">a. m.</MenuItem>
+
                   <MenuItem value="p. m.">p. m.</MenuItem>
                 </TextField>
               </Box>
@@ -1059,17 +1227,25 @@ export default function ListMenusAdmin() {
             </Box>
           </Box>
 
-          <Typography sx={{ fontWeight: "bold", mt: 3, mb: 1 }}>
+          <Typography
+            sx={{
+              fontWeight: "bold",
+              mt: 3,
+              mb: 1,
+            }}
+          >
             Vigencia del menú
           </Typography>
 
           <Box
             sx={{
               display: "grid",
+
               gridTemplateColumns: {
                 xs: "1fr",
                 sm: "repeat(2, 1fr)",
               },
+
               gap: 2,
               mt: 2,
             }}
@@ -1107,6 +1283,7 @@ export default function ListMenusAdmin() {
                     inputLabel: {
                       shrink: true,
                     },
+
                     htmlInput: {
                       min: fechaInicioSeleccionada || undefined,
                     },
@@ -1127,7 +1304,9 @@ export default function ListMenusAdmin() {
                 control={
                   <Checkbox
                     checked={field.value === 1}
-                    onChange={(e) => field.onChange(e.target.checked ? 1 : 0)}
+                    onChange={(event) =>
+                      field.onChange(event.target.checked ? 1 : 0)
+                    }
                   />
                 }
               />
@@ -1135,10 +1314,12 @@ export default function ListMenusAdmin() {
           />
 
           <Divider sx={{ my: 3 }} />
+
+          {/* AGREGAR PRODUCTO */}
+
           <Typography
             sx={{
               fontWeight: "bold",
-
               mb: 1,
             }}
           >
@@ -1165,9 +1346,13 @@ export default function ListMenusAdmin() {
                   {option.Nombre}
                 </li>
               )}
-              onChange={(e, value) => setProductoSeleccionado(value)}
+              onChange={(event, value) => setProductoSeleccionado(value)}
               renderInput={(params) => (
-                <TextField {...params} label="Buscar producto" />
+                <TextField
+                  {...params}
+                  label="Buscar producto"
+                  error={!!errors.TieneProducto}
+                />
               )}
             />
 
@@ -1190,12 +1375,29 @@ export default function ListMenusAdmin() {
                 }
 
                 agregarProducto(productoSeleccionado);
+
                 setProductoSeleccionado(null);
               }}
             >
               AGREGAR
             </Button>
           </Box>
+
+          {errors.TieneProducto && (
+            <Typography
+              color="error"
+              variant="caption"
+              sx={{
+                display: "block",
+                mt: 0.5,
+                ml: 1.75,
+              }}
+            >
+              {errors.TieneProducto.message}
+            </Typography>
+          )}
+
+          {/* AGREGAR COMBO */}
 
           <Typography
             sx={{
@@ -1227,9 +1429,13 @@ export default function ListMenusAdmin() {
                   {option.NombreCombo}
                 </li>
               )}
-              onChange={(e, value) => setComboSeleccionado(value)}
+              onChange={(event, value) => setComboSeleccionado(value)}
               renderInput={(params) => (
-                <TextField {...params} label="Buscar combo" />
+                <TextField
+                  {...params}
+                  label="Buscar combo"
+                  error={!!errors.TieneCombo}
+                />
               )}
             />
 
@@ -1252,6 +1458,7 @@ export default function ListMenusAdmin() {
                 }
 
                 agregarCombo(comboSeleccionado);
+
                 setComboSeleccionado(null);
               }}
             >
@@ -1259,9 +1466,29 @@ export default function ListMenusAdmin() {
             </Button>
           </Box>
 
+          {errors.TieneCombo && (
+            <Typography
+              color="error"
+              variant="caption"
+              sx={{
+                display: "block",
+                mt: 0.5,
+                ml: 1.75,
+              }}
+            >
+              {errors.TieneCombo.message}
+            </Typography>
+          )}
+
           <Divider sx={{ my: 3 }} />
 
-          <Typography sx={{ fontWeight: "bold" }}>
+          {/* ÍTEMS SELECCIONADOS */}
+
+          <Typography
+            sx={{
+              fontWeight: "bold",
+            }}
+          >
             Items seleccionados
           </Typography>
 
@@ -1272,7 +1499,9 @@ export default function ListMenusAdmin() {
                 p: 2,
                 mt: 2,
                 display: "flex",
+
                 justifyContent: "space-between",
+
                 alignItems: "center",
               }}
             >
@@ -1298,12 +1527,8 @@ export default function ListMenusAdmin() {
                       min: 1,
                     },
                   }}
-                  onChange={(e) =>
-                    cambiarCantidad(
-                      index,
-
-                      e.target.value,
-                    )
+                  onChange={(event) =>
+                    cambiarCantidad(index, event.target.value)
                   }
                 />
 
@@ -1315,6 +1540,8 @@ export default function ListMenusAdmin() {
           ))}
 
           <Divider sx={{ my: 3 }} />
+
+          {/* DÍAS DISPONIBLES */}
 
           <Typography fontWeight="bold">Días disponibles</Typography>
 
@@ -1347,6 +1574,10 @@ export default function ListMenusAdmin() {
             onClick={handleSubmit(handleSave)}
             sx={{
               bgcolor: "#FF8C00",
+
+              "&:hover": {
+                bgcolor: "#E67E00",
+              },
             }}
           >
             Guardar

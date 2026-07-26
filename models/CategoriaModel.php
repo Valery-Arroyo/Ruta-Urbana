@@ -102,4 +102,6 @@ class CategoriaModel
             handleException($e);
         }
     }
+    
 }
+

@@ -12,18 +12,23 @@ class ProductoModel
     {
         try {
             $sql = "SELECT 
-                        p.IdProducto,
-                        p.Nombre,
-                        p.Descripcion,
-                        p.Precio,
-                        p.Activo,
-                        p.IdCategoria,
-                        c.Nombre AS NombreCategoria,
-                        pi.Imagen
-                    FROM Producto p
-                    LEFT JOIN Categoria c ON p.IdCategoria = c.IdCategoria
-                    LEFT JOIN ProductoImagen pi ON p.IdProducto = pi.IdProducto AND pi.EsPrincipal = 1
-                    GROUP BY p.IdProducto";
+            p.IdProducto,
+            p.Nombre,
+            p.Descripcion,
+            p.Precio,
+            p.Activo,
+            p.EsProductoDelDia,
+            p.FechaProductoDelDia,
+            p.IdCategoria,
+            c.Nombre AS NombreCategoria,
+            pi.Imagen
+        FROM Producto p
+        LEFT JOIN Categoria c
+            ON p.IdCategoria = c.IdCategoria
+        LEFT JOIN ProductoImagen pi
+            ON p.IdProducto = pi.IdProducto
+           AND pi.EsPrincipal = 1
+        GROUP BY p.IdProducto";
 
             $productos = $this->enlace->ExecuteSQL($sql);
 
@@ -107,6 +112,49 @@ class ProductoModel
         $resultado = $this->enlace->ExecuteSQL($sql);
 
         return !empty($resultado);
+    }
+
+    public function productoDelDia()
+    {
+        try {
+            $sql = "SELECT 
+                    p.IdProducto,
+                    p.Nombre,
+                    p.Descripcion,
+                    p.Precio,
+                    p.Activo,
+                    p.EsProductoDelDia,
+                    p.FechaProductoDelDia,
+                    p.IdCategoria,
+                    c.Nombre AS NombreCategoria,
+                    pi.Imagen
+                FROM Producto p
+                LEFT JOIN Categoria c
+                    ON p.IdCategoria = c.IdCategoria
+                LEFT JOIN ProductoImagen pi
+                    ON p.IdProducto = pi.IdProducto
+                   AND pi.EsPrincipal = 1
+                WHERE p.EsProductoDelDia = 1
+                  AND p.FechaProductoDelDia = CURDATE()
+                  AND p.Activo = 1
+                LIMIT 1";
+
+            $resultado = $this->enlace->ExecuteSQL($sql);
+
+            if (!empty($resultado) && isset($resultado[0])) {
+                $resultado[0]->Ingredientes =
+                    $this->getIngredientesByProducto(
+                        $resultado[0]->IdProducto
+                    );
+
+                return $resultado[0];
+            }
+
+            return null;
+        } catch (Exception $e) {
+            handleException($e);
+            return null;
+        }
     }
 
     public function create($data)

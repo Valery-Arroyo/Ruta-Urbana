@@ -28,7 +28,6 @@ import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import toast from "react-hot-toast";
-import InputAdornment from "@mui/material/InputAdornment";
 
 const productoSchema = yup.object().shape({
   Nombre: yup
@@ -70,18 +69,18 @@ export default function GestionProductos() {
   const [openDelete, setOpenDelete] = useState(false);
   const [productoEliminar, setProductoEliminar] = useState(null);
   const [errorIngrediente, setErrorIngrediente] = useState("");
+
   const navigate = useNavigate();
+
   const {
     control,
     handleSubmit,
     reset,
     watch,
     setValue,
-
     formState: { errors },
   } = useForm({
     resolver: yupResolver(productoSchema),
-
     defaultValues: {
       Nombre: "",
       Precio: "",
@@ -204,6 +203,15 @@ export default function GestionProductos() {
 
   const handleSave = async (formData) => {
     try {
+      // Validar que al crear se ingrese una ruta de imagen
+      if (
+        !productoSeleccionado?.IdProducto &&
+        (!formData.Imagen || formData.Imagen.trim() === "")
+      ) {
+        toast.error("Debe ingresar la ruta de la imagen");
+        return;
+      }
+
       if (productoSeleccionado?.IdProducto) {
         await ProductoService.update(productoSeleccionado.IdProducto, formData);
 
@@ -269,19 +277,16 @@ export default function GestionProductos() {
         align="center"
         sx={{
           fontWeight: "bold",
-
           mb: 3,
         }}
       >
-        Gestión de Productos
+        Gestión de Productos - ARCHIVO CORRECTO
       </Typography>
 
       <Box
         sx={{
           display: "flex",
-
           justifyContent: "flex-end",
-
           mb: 4,
         }}
       >
@@ -324,102 +329,216 @@ export default function GestionProductos() {
             No hay productos registrados.
           </Typography>
         ) : (
-          data.map((prod) => (
-            <Card
-              key={prod.IdProducto}
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                borderRadius: 4,
-                overflow: "hidden",
-                boxShadow: "0 4px 12px rgba(0,0,0,.12)",
-              }}
-            >
-              <CardMedia
-                component="img"
-                height="170"
-                image={obtenerImagenProducto(prod)}
-                alt={prod.Nombre}
-                onError={(event) => {
-                  console.error(
-                    "No se pudo cargar la imagen:",
-                    event.currentTarget.src,
-                  );
+          data.map((prod) => {
+            /*
+             * MySQL/PHP puede devolver el valor como número,
+             * booleano o cadena. Esta validación permite
+             * reconocer cualquiera de esos formatos.
+             */
+            console.log(
+              prod.Nombre,
+              prod.EsProductoDelDia,
+              Number(prod.EsProductoDelDia) === 1,
+            );
+            const esProductoDelDia =
+              prod.EsProductoDelDia === true ||
+              Number(prod.EsProductoDelDia) === 1;
 
-                  console.log("Producto relacionado:", prod);
-
-                  event.currentTarget.onerror = null;
-                  event.currentTarget.src = "/no-image.png";
-                }}
+            return (
+              <Card
+                key={prod.IdProducto}
                 sx={{
-                  objectFit: "cover",
-                  width: "100%",
-                }}
-              />
+                  display: "flex",
+                  flexDirection: "column",
+                  position: "relative",
+                  borderRadius: 4,
+                  overflow: "hidden",
 
-              <CardContent
-                sx={{
-                  flexGrow: 1,
+                  bgcolor: esProductoDelDia ? "#111111" : "#FFFFFF",
+
+                  color: esProductoDelDia ? "#FFFFFF" : "inherit",
+
+                  border: esProductoDelDia
+                    ? "3px solid #FF8C00"
+                    : "1px solid transparent",
+
+                  boxShadow: esProductoDelDia
+                    ? "0 8px 28px rgba(255, 140, 0, 0.45)"
+                    : "0 4px 12px rgba(0,0,0,.12)",
+
+                  transform: esProductoDelDia ? "translateY(-4px)" : "none",
+
+                  transition:
+                    "transform 0.3s ease, box-shadow 0.3s ease, border 0.3s ease",
+
+                  "&:hover": {
+                    transform: esProductoDelDia
+                      ? "translateY(-8px)"
+                      : "translateY(-4px)",
+
+                    boxShadow: esProductoDelDia
+                      ? "0 12px 35px rgba(255, 140, 0, 0.6)"
+                      : "0 8px 20px rgba(0,0,0,.18)",
+                  },
                 }}
               >
-                <Typography
-                  align="center"
-                  sx={{
-                    fontWeight: "bold",
+                {esProductoDelDia && (
+                  <Box
+                    sx={{
+                      bgcolor: "#000000",
+                      color: "#FF8C00",
+                      textAlign: "center",
+                      py: 1.2,
+                      px: 1,
+                      fontWeight: "bold",
+                      letterSpacing: "0.12rem",
+                      fontSize: "0.9rem",
+                      borderBottom: "1px solid rgba(255,140,0,.45)",
+                    }}
+                  >
+                    ⭐ PRODUCTO DEL DÍA ⭐
+                  </Box>
+                )}
 
-                    fontSize: "1.3rem",
+                <CardMedia
+                  component="img"
+                  height="170"
+                  image={obtenerImagenProducto(prod)}
+                  alt={prod.Nombre}
+                  onError={(event) => {
+                    console.error(
+                      "No se pudo cargar la imagen:",
+                      event.currentTarget.src,
+                    );
+
+                    console.log("Producto relacionado:", prod);
+
+                    event.currentTarget.onerror = null;
+                    event.currentTarget.src = "/no-image.png";
+                  }}
+                  sx={{
+                    objectFit: "cover",
+                    width: "100%",
+                  }}
+                />
+
+                <CardContent
+                  sx={{
+                    flexGrow: 1,
                   }}
                 >
-                  {prod.Nombre}
-                </Typography>
+                  <Typography
+                    align="center"
+                    sx={{
+                      fontWeight: "bold",
+                      fontSize: "1.3rem",
+                      color: esProductoDelDia ? "#FFFFFF" : "text.primary",
+                    }}
+                  >
+                    {prod.Nombre}
+                  </Typography>
 
-                <Typography align="center" color="text.secondary">
-                  {prod.Descripcion}
-                </Typography>
+                  <Typography
+                    align="center"
+                    sx={{
+                      color: esProductoDelDia
+                        ? "rgba(255,255,255,.75)"
+                        : "text.secondary",
+                      mt: 0.5,
+                    }}
+                  >
+                    {prod.Descripcion}
+                  </Typography>
 
-                <Typography
-                  align="center"
+                  <Typography
+                    align="center"
+                    sx={{
+                      fontWeight: "bold",
+                      color: "#FF8C00",
+                      mt: 1,
+                      fontSize: esProductoDelDia ? "1.25rem" : "1rem",
+                    }}
+                  >
+                    ₡
+                    {Number(prod.Precio).toLocaleString("es-CR", {
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 0,
+                    })}
+                  </Typography>
+
+                  {esProductoDelDia && (
+                    <Typography
+                      align="center"
+                      sx={{
+                        color: "rgba(255,255,255,.7)",
+                        fontSize: "0.75rem",
+                        mt: 1,
+                        fontStyle: "italic",
+                      }}
+                    >
+                      Seleccionado automáticamente
+                    </Typography>
+                  )}
+                </CardContent>
+
+                <CardActions
                   sx={{
-                    fontWeight: "bold",
-                    color: "#FF8C00",
-                    mt: 1,
+                    justifyContent: "center",
+                    borderTop: esProductoDelDia
+                      ? "1px solid rgba(255,255,255,.12)"
+                      : "none",
                   }}
                 >
-                  ₡
-                  {Number(prod.Precio).toLocaleString("es-CR", {
-                    minimumFractionDigits: 0,
-                    maximumFractionDigits: 0,
-                  })}
-                </Typography>
-              </CardContent>
+                  <IconButton
+                    aria-label={`Ver ${prod.Nombre}`}
+                    sx={{
+                      color: "#FF8C00",
 
-              <CardActions
-                sx={{
-                  justifyContent: "center",
-                }}
-              >
-                <IconButton
-                  sx={{
-                    color: "#FF8C00",
-                  }}
-                  onClick={() => navigate(`/productos/${prod.IdProducto}`)}
-                >
-                  <ZoomInIcon />
-                </IconButton>
+                      "&:hover": {
+                        bgcolor: esProductoDelDia
+                          ? "rgba(255,140,0,.15)"
+                          : "rgba(255,140,0,.1)",
+                      },
+                    }}
+                    onClick={() => navigate(`/productos/${prod.IdProducto}`)}
+                  >
+                    <ZoomInIcon />
+                  </IconButton>
 
-                <IconButton onClick={() => handleEdit(prod)}>
-                  <EditIcon />
-                </IconButton>
+                  <IconButton
+                    aria-label={`Editar ${prod.Nombre}`}
+                    onClick={() => handleEdit(prod)}
+                    sx={{
+                      color: esProductoDelDia ? "#FFFFFF" : "inherit",
 
-                <IconButton
-                  color="error"
-                  onClick={() => confirmarEliminar(prod)}
-                >
-                  <DeleteIcon />
-                </IconButton>
-              </CardActions>
-            </Card>
-          ))
+                      "&:hover": {
+                        bgcolor: esProductoDelDia
+                          ? "rgba(255,255,255,.12)"
+                          : "rgba(0,0,0,.04)",
+                      },
+                    }}
+                  >
+                    <EditIcon />
+                  </IconButton>
+
+                  <IconButton
+                    aria-label={`Eliminar ${prod.Nombre}`}
+                    color="error"
+                    onClick={() => confirmarEliminar(prod)}
+                    sx={{
+                      "&:hover": {
+                        bgcolor: esProductoDelDia
+                          ? "rgba(211,47,47,.18)"
+                          : "rgba(211,47,47,.08)",
+                      },
+                    }}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </CardActions>
+              </Card>
+            );
+          })
         )}
 
         <Dialog open={openDelete} onClose={() => setOpenDelete(false)}>
@@ -488,11 +607,6 @@ export default function GestionProductos() {
                 type="number"
                 label="Precio"
                 slotProps={{
-                  input: {
-                    startAdornment: (
-                      <InputAdornment position="start">₡</InputAdornment>
-                    ),
-                  },
                   htmlInput: {
                     min: 0,
                     step: 0.01,
@@ -588,6 +702,7 @@ export default function GestionProductos() {
               sx={{
                 bgcolor: "#FF8C00",
                 height: "56px",
+
                 "&:hover": {
                   bgcolor: "#E67E00",
                 },
@@ -630,6 +745,7 @@ export default function GestionProductos() {
               {errors.Ingredientes.message}
             </Typography>
           )}
+
           <Box sx={{ mt: 2 }}>
             {ingredientesAgregados?.map((id) => {
               const ingrediente = ingredientes.find(
