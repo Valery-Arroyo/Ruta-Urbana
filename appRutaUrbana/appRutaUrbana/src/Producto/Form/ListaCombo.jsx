@@ -47,7 +47,11 @@ const comboSchema = yup.object().shape({
     .positive("Debe ser positivo")
     .required("El precio es requerido"),
 
-  Descripcion: yup.string().required("La descripción es requerida"),
+  Descripcion: yup
+    .string()
+    .trim()
+    .required("La descripción es requerida")
+    .min(3, "La descripción debe tener mínimo 3 caracteres"),
 
   RutaImagen: yup.string().nullable(),
 
@@ -61,6 +65,7 @@ const comboSchema = yup.object().shape({
 
 export default function ListCombosAdmin() {
   const navigate = useNavigate();
+
   const [data, setData] = useState([]);
   const [productos, setProductos] = useState([]);
   const [categorias, setCategorias] = useState([]);
@@ -70,12 +75,12 @@ export default function ListCombosAdmin() {
   const [cantidadProducto, setCantidadProducto] = useState(1);
   const [openDelete, setOpenDelete] = useState(false);
   const [comboEliminar, setComboEliminar] = useState(null);
+
   const {
     handleSubmit,
     reset,
     watch,
     setValue,
-
     formState: { errors },
   } = useForm({
     resolver: yupResolver(comboSchema),
@@ -102,13 +107,13 @@ export default function ListCombosAdmin() {
   const cargarCombos = async () => {
     try {
       const response = await ComboService.getCombos();
+
       const agrupados = response.data.reduce((acc, item) => {
         let combo = acc.find((c) => c.IdCombo === item.IdCombo);
 
         if (!combo) {
           combo = {
             ...item,
-
             Productos: [],
           };
 
@@ -129,7 +134,6 @@ export default function ListCombosAdmin() {
       setData(agrupados);
     } catch (error) {
       console.error(error);
-
       toast.error("Error cargando combos");
     }
   };
@@ -137,7 +141,6 @@ export default function ListCombosAdmin() {
   const cargarProductos = async () => {
     try {
       const response = await ProductoService.getProductos();
-
       setProductos(response.data || []);
     } catch (error) {
       console.error("Error cargando productos", error);
@@ -147,7 +150,6 @@ export default function ListCombosAdmin() {
   const cargarCategorias = async () => {
     try {
       const response = await CategoriaService.getCategorias();
-
       setCategorias(response.data || []);
     } catch (error) {
       console.error("Error cargando categorías", error);
@@ -160,7 +162,6 @@ export default function ListCombosAdmin() {
 
       reset({
         Nombre: combo.NombreCombo,
-
         Descripcion: combo.Descripcion,
         PrecioEspecial: combo.PrecioEspecial,
         RutaImagen: combo.RutaImagen || "",
@@ -169,7 +170,6 @@ export default function ListCombosAdmin() {
         Productos:
           combo.Productos?.map((p) => ({
             IdProducto: p.IdProducto,
-
             Cantidad: p.Cantidad,
           })) || [],
       });
@@ -195,17 +195,15 @@ export default function ListCombosAdmin() {
       console.log("Datos enviados:", data);
 
       if (comboSeleccionado?.IdCombo) {
-        await ComboService.updateCombo(
-          comboSeleccionado.IdCombo,
-
-          data,
-        );
+        await ComboService.updateCombo(comboSeleccionado.IdCombo, data);
 
         toast.success("Combo actualizado correctamente");
       } else {
         await ComboService.createCombo(data);
+
         toast.success("Combo creado correctamente");
       }
+
       setOpen(false);
       setComboSeleccionado(null);
       reset();
@@ -229,6 +227,7 @@ export default function ListCombosAdmin() {
       toast.error("Error eliminando combo");
     }
   };
+
   return (
     <Box sx={{ p: 4 }}>
       <Typography
@@ -370,7 +369,6 @@ export default function ListCombosAdmin() {
                   color="error"
                   onClick={() => {
                     setComboEliminar(combo);
-
                     setOpenDelete(true);
                   }}
                 >
@@ -386,7 +384,6 @@ export default function ListCombosAdmin() {
         open={openDelete}
         onClose={() => {
           setOpenDelete(false);
-
           setComboEliminar(null);
         }}
       >
@@ -403,7 +400,6 @@ export default function ListCombosAdmin() {
           <Button
             onClick={() => {
               setOpenDelete(false);
-
               setComboEliminar(null);
             }}
           >
@@ -415,6 +411,7 @@ export default function ListCombosAdmin() {
           </Button>
         </DialogActions>
       </Dialog>
+
       <Dialog
         open={open}
         onClose={() => setOpen(false)}
@@ -467,6 +464,8 @@ export default function ListCombosAdmin() {
                 shouldValidate: true,
               })
             }
+            error={!!errors.Descripcion}
+            helperText={errors.Descripcion?.message}
           />
 
           <TextField
@@ -486,15 +485,9 @@ export default function ListCombosAdmin() {
             label="Categoría"
             value={watch("IdCategoria")}
             onChange={(e) =>
-              setValue(
-                "IdCategoria",
-
-                Number(e.target.value),
-
-                {
-                  shouldValidate: true,
-                },
-              )
+              setValue("IdCategoria", Number(e.target.value), {
+                shouldValidate: true,
+              })
             }
             error={!!errors.IdCategoria}
             helperText={errors.IdCategoria?.message}
@@ -552,6 +545,7 @@ export default function ListCombosAdmin() {
               sx={{
                 bgcolor: "#FF8C00",
                 height: "56px",
+
                 "&:hover": {
                   bgcolor: "#E67E00",
                 },
@@ -559,13 +553,13 @@ export default function ListCombosAdmin() {
               onClick={() => {
                 if (!productoSeleccionado) {
                   toast.error("Seleccione un producto");
-
                   return;
                 }
 
                 const existe = productosAgregados.some(
                   (p) => Number(p.IdProducto) === Number(productoSeleccionado),
                 );
+
                 if (existe) {
                   toast.error("El producto ya está agregado");
                   return;
@@ -582,6 +576,7 @@ export default function ListCombosAdmin() {
                 setValue("Productos", nuevosProductos, {
                   shouldValidate: true,
                 });
+
                 setProductoSeleccionado("");
                 setCantidadProducto(1);
               }}
