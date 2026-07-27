@@ -62,7 +62,6 @@ export function Home() {
         overflowX: "hidden",
       }}
     >
-
       <Box
         sx={{
           width: "100%",
@@ -112,7 +111,6 @@ export function Home() {
           }}
         >
           <Grid container spacing={6} alignItems="center">
-
             <Grid
               size={{
                 xs: 12,
@@ -260,8 +258,6 @@ export function Home() {
               </Box>
             </Grid>
 
-            {/* IMAGEN */}
-
             <Grid
               size={{
                 xs: 12,
@@ -272,49 +268,96 @@ export function Home() {
                 sx={{
                   display: "flex",
                   justifyContent: "center",
+                  alignItems: "center",
                   position: "relative",
+
+                  width: {
+                    xs: 350,
+                    sm: 430,
+                    md: 610,
+                  },
+
+                  height: {
+                    xs: 350,
+                    sm: 430,
+                    md: 610,
+                  },
+
+                  maxWidth: "100%",
+                  mx: "auto",
                 }}
               >
+                {/* Mancha naranja circular detrás del logo */}
                 <Box
                   sx={{
                     position: "absolute",
-                    inset: {
-                      xs: 20,
-                      md: 40,
+
+                    width: {
+                      xs: 305,
+                      sm: 385,
+                      md: 535,
                     },
-                    borderRadius: 8,
-                    bgcolor: "#ff7a00",
-                    transform: "rotate(-4deg)",
-                    opacity: 0.6,
+
+                    height: {
+                      xs: 305,
+                      sm: 385,
+                      md: 535,
+                    },
+
+                    borderRadius: "50%",
+                    bgcolor: "rgba(255,122,0,0.48)",
+                    boxShadow: "0 20px 55px rgba(255,122,0,0.22)",
+                    zIndex: 0,
                   }}
                 />
 
+                {/* Contenedor circular principal */}
                 <Box
-                  component="img"
-                  src={`${API_URL}/uploads/ImagenesRutaUrbana/Logo.jpg`}
-                  alt="Food truck Ruta Urbana"
                   sx={{
                     position: "relative",
-                    width: "100%",
-                    maxWidth: 650,
-                    height: {
-                      xs: 350,
-                      sm: 470,
+                    zIndex: 1,
+
+                    width: {
+                      xs: 320,
+                      sm: 400,
                       md: 560,
                     },
-                    objectFit: "cover",
-                    borderRadius: 8,
-                    border: "5px solid #ff7a00",
-                    boxShadow: "0 25px 60px rgba(0,0,0,.65)",
+
+                    height: {
+                      xs: 320,
+                      sm: 400,
+                      md: 560,
+                    },
+
+                    borderRadius: "50%",
+                    border: "4px solid #ff7a00",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    bgcolor: "#0f0f0f",
+                    boxShadow: "0 25px 60px rgba(0,0,0,.6)",
+                    overflow: "hidden",
                   }}
-                />
+                >
+                  <Box
+                    component="img"
+                    src={`${API_URL}/uploads/ImagenesRutaUrbana/logoMejorado.png`}
+                    alt="Logo de Ruta Urbana"
+                    sx={{
+                      position: "relative",
+                      zIndex: 2,
+                      width: "88%",
+                      height: "88%",
+                      objectFit: "contain",
+                      display: "block",
+                    }}
+                  />
+                </Box>
               </Box>
             </Grid>
           </Grid>
         </Container>
       </Box>
-
-      {/* NUESTRA ESENCIA */}
 
       <Container
         maxWidth="lg"
@@ -463,8 +506,6 @@ export function Home() {
           ))}
         </Grid>
       </Container>
-
-      {/* FRASE FINAL */}
 
       <Box
         sx={{
