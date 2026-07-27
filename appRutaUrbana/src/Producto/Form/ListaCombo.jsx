@@ -23,6 +23,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 import ComboService from "../../services/ComboService";
 import ProductoService from "../../services/ProductoService";
@@ -64,6 +65,7 @@ const comboSchema = yup.object().shape({
 });
 
 export default function ListCombosAdmin() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const [data, setData] = useState([]);
@@ -134,7 +136,7 @@ export default function ListCombosAdmin() {
       setData(agrupados);
     } catch (error) {
       console.error(error);
-      toast.error("Error cargando combos");
+      toast.error(t("combos.messages.loadError"));
     }
   };
 
@@ -197,11 +199,11 @@ export default function ListCombosAdmin() {
       if (comboSeleccionado?.IdCombo) {
         await ComboService.updateCombo(comboSeleccionado.IdCombo, data);
 
-        toast.success("Combo actualizado correctamente");
+        toast.success(t("combos.messages.updated"));
       } else {
         await ComboService.createCombo(data);
 
-        toast.success("Combo creado correctamente");
+        toast.success(t("combos.messages.created"));
       }
 
       setOpen(false);
@@ -210,7 +212,7 @@ export default function ListCombosAdmin() {
       cargarCombos();
     } catch (error) {
       console.error(error);
-      toast.error("Error guardando combo");
+      toast.error(t("combos.messages.saveError"));
     }
   };
 
@@ -218,13 +220,13 @@ export default function ListCombosAdmin() {
     try {
       await ComboService.delete(comboEliminar.IdCombo);
 
-      toast.success("Combo eliminado correctamente");
+      toast.success(t("combos.messages.deleted"));
       setOpenDelete(false);
       setComboEliminar(null);
       cargarCombos();
     } catch (error) {
       console.error(error);
-      toast.error("Error eliminando combo");
+      toast.error(t("combos.messages.deleteError"));
     }
   };
 
@@ -238,7 +240,7 @@ export default function ListCombosAdmin() {
           mb: 3,
         }}
       >
-        Gestión de Combos
+        {t("combos.title")}
       </Typography>
 
       <Box
@@ -260,7 +262,7 @@ export default function ListCombosAdmin() {
             },
           }}
         >
-          Nuevo Combo
+          {t("combos.new")}
         </Button>
       </Box>
 
@@ -284,7 +286,7 @@ export default function ListCombosAdmin() {
               textAlign: "center",
             }}
           >
-            No hay combos registrados.
+            {t("combos.noCombos")}
           </Typography>
         ) : (
           data.map((combo) => (
@@ -387,11 +389,11 @@ export default function ListCombosAdmin() {
           setComboEliminar(null);
         }}
       >
-        <DialogTitle>Confirmar eliminación</DialogTitle>
+        <DialogTitle>{t("combos.confirmDeleteTitle")}</DialogTitle>
 
         <DialogContent>
           <Typography>
-            ¿Está seguro que desea eliminar el combo:
+            {t("combos.confirmDeleteMessage")}:
             <b> {comboEliminar?.NombreCombo}</b>?
           </Typography>
         </DialogContent>
@@ -403,11 +405,11 @@ export default function ListCombosAdmin() {
               setComboEliminar(null);
             }}
           >
-            Cancelar
+            {t("actions.cancel")}
           </Button>
 
           <Button variant="contained" color="error" onClick={handleDelete}>
-            Eliminar
+            {t("actions.delete")}
           </Button>
         </DialogActions>
       </Dialog>
@@ -419,14 +421,14 @@ export default function ListCombosAdmin() {
         maxWidth="sm"
       >
         <DialogTitle>
-          {comboSeleccionado?.IdCombo ? "Editar Combo" : "Nuevo Combo"}
+          {comboSeleccionado?.IdCombo ? t("combos.edit") : t("combos.new")}
         </DialogTitle>
 
         <DialogContent>
           <TextField
             fullWidth
             margin="dense"
-            label="Nombre"
+            label={t("fields.name")}
             value={watch("Nombre")}
             onChange={(e) =>
               setValue("Nombre", e.target.value, {
@@ -440,7 +442,7 @@ export default function ListCombosAdmin() {
           <TextField
             fullWidth
             margin="dense"
-            label="Precio especial"
+            label={t("combos.specialPrice")}
             type="number"
             value={watch("PrecioEspecial")}
             onChange={(e) =>
@@ -455,7 +457,7 @@ export default function ListCombosAdmin() {
           <TextField
             fullWidth
             margin="dense"
-            label="Descripción"
+            label={t("fields.description")}
             multiline
             rows={3}
             value={watch("Descripcion")}
@@ -471,18 +473,18 @@ export default function ListCombosAdmin() {
           <TextField
             fullWidth
             margin="dense"
-            label="Ruta imagen"
+            label={t("combos.imagePath")}
             placeholder="imagenes/combo.jpg"
             value={watch("RutaImagen")}
             onChange={(e) => setValue("RutaImagen", e.target.value)}
-            helperText="Ejemplo: imagenes/combo1.jpg"
+            helperText={t("combos.imagePathExample")}
           />
 
           <TextField
             select
             fullWidth
             margin="dense"
-            label="Categoría"
+            label={t("fields.category")}
             value={watch("IdCategoria")}
             onChange={(e) =>
               setValue("IdCategoria", Number(e.target.value), {
@@ -506,7 +508,7 @@ export default function ListCombosAdmin() {
               fontWeight: "bold",
             }}
           >
-            Productos del combo
+            {t("combos.comboProducts")}
           </Typography>
 
           <Box
@@ -519,7 +521,7 @@ export default function ListCombosAdmin() {
             <TextField
               select
               fullWidth
-              label="Seleccionar producto"
+              label={t("combos.selectProduct")}
               value={productoSeleccionado}
               onChange={(e) => setProductoSeleccionado(e.target.value)}
             >
@@ -531,7 +533,7 @@ export default function ListCombosAdmin() {
             </TextField>
 
             <TextField
-              label="Cantidad"
+              label={t("combos.quantity")}
               type="number"
               value={cantidadProducto}
               sx={{
@@ -552,7 +554,7 @@ export default function ListCombosAdmin() {
               }}
               onClick={() => {
                 if (!productoSeleccionado) {
-                  toast.error("Seleccione un producto");
+                  toast.error(t("combos.messages.selectProduct"));
                   return;
                 }
 
@@ -561,7 +563,7 @@ export default function ListCombosAdmin() {
                 );
 
                 if (existe) {
-                  toast.error("El producto ya está agregado");
+                  toast.error(t("combos.messages.duplicateProduct"));
                   return;
                 }
 
@@ -581,7 +583,7 @@ export default function ListCombosAdmin() {
                 setCantidadProducto(1);
               }}
             >
-              AGREGAR
+              {t("actions.add")}
             </Button>
           </Box>
 
@@ -644,7 +646,7 @@ export default function ListCombosAdmin() {
         </DialogContent>
 
         <DialogActions>
-          <Button onClick={() => setOpen(false)}>Cancelar</Button>
+          <Button onClick={() => setOpen(false)}>{t("actions.cancel")}</Button>
 
           <Button
             variant="contained"
@@ -657,7 +659,7 @@ export default function ListCombosAdmin() {
               },
             }}
           >
-            Guardar
+            {t("actions.save")}
           </Button>
         </DialogActions>
       </Dialog>

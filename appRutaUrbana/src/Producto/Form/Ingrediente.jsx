@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import IngredienteService from "../../services/IngredienteService";
 
 import {
@@ -28,6 +29,7 @@ import AddIcon from "@mui/icons-material/Add";
 import toast from "react-hot-toast";
 
 export default function ListIngredientesAdmin() {
+  const { t } = useTranslation();
   const [data, setData] = useState([]);
   const [open, setOpen] = useState(false);
   const [ingredienteSeleccionado, setIngredienteSeleccionado] = useState(null);
@@ -43,7 +45,7 @@ export default function ListIngredientesAdmin() {
       })
       .catch((error) => {
         console.error(error);
-        toast.error("No se pudieron cargar los ingredientes.");
+        toast.error(t("ingredientsPage.messages.loadError"));
       });
   };
 
@@ -65,26 +67,26 @@ export default function ListIngredientesAdmin() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("¿Está seguro de eliminar este ingrediente?")) return;
+    if (!window.confirm(t("ingredientsPage.confirmDelete"))) return;
 
     try {
       await IngredienteService.delete(id);
 
-      toast.success("Ingrediente eliminado correctamente.");
+      toast.success(t("ingredientsPage.messages.deleted"));
 
       cargarIngredientes();
     } catch (error) {
       console.error(error);
 
       toast.error(
-        error.response?.data?.result || "No se pudo eliminar el ingrediente.",
+        error.response?.data?.result || t("ingredientsPage.messages.deleteError"),
       );
     }
   };
 
   const handleSave = async () => {
     if (!ingredienteSeleccionado?.Nombre.trim()) {
-      toast("Debe ingresar el nombre del ingrediente.", {
+      toast(t("ingredientsPage.messages.nameRequired"), {
         icon: "⚠️",
       });
       return;
@@ -97,11 +99,11 @@ export default function ListIngredientesAdmin() {
           ingredienteSeleccionado,
         );
 
-        toast.success("Ingrediente actualizado correctamente.");
+        toast.success(t("ingredientsPage.messages.updated"));
       } else {
         await IngredienteService.create(ingredienteSeleccionado);
 
-        toast.success("Ingrediente creado correctamente.");
+        toast.success(t("ingredientsPage.messages.created"));
       }
 
       handleClose();
@@ -112,7 +114,7 @@ export default function ListIngredientesAdmin() {
       toast.error(
         error.response?.data?.result ||
           error.response?.data?.message ||
-          "Ocurrió un error al guardar el ingrediente.",
+          t("ingredientsPage.messages.saveError"),
       );
     }
   };
@@ -124,7 +126,7 @@ export default function ListIngredientesAdmin() {
         align="center"
         sx={{ fontWeight: "bold", mb: 3 }}
       >
-        Gestión de Ingredientes
+        {t("ingredientsPage.title")}
       </Typography>
 
       <Box
@@ -145,7 +147,7 @@ export default function ListIngredientesAdmin() {
             },
           }}
         >
-          Nuevo Ingrediente
+          {t("ingredientsPage.new")}
         </Button>
       </Box>
 
@@ -154,15 +156,15 @@ export default function ListIngredientesAdmin() {
           <TableHead>
             <TableRow>
               <TableCell>
-                <b>ID</b>
+                <b>{t("ingredientsPage.columnId")}</b>
               </TableCell>
 
               <TableCell>
-                <b>Ingrediente</b>
+                <b>{t("ingredientsPage.columnName")}</b>
               </TableCell>
 
               <TableCell align="center">
-                <b>Acciones</b>
+                <b>{t("ingredientsPage.columnActions")}</b>
               </TableCell>
             </TableRow>
           </TableHead>
@@ -198,8 +200,8 @@ export default function ListIngredientesAdmin() {
       <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
         <DialogTitle>
           {ingredienteSeleccionado?.IdIngrediente
-            ? "Editar Ingrediente"
-            : "Nuevo Ingrediente"}
+            ? t("ingredientsPage.edit")
+            : t("ingredientsPage.new")}
         </DialogTitle>
 
         <DialogContent>
@@ -207,7 +209,7 @@ export default function ListIngredientesAdmin() {
             autoFocus
             fullWidth
             margin="dense"
-            label="Nombre del ingrediente"
+            label={t("ingredientsPage.nameLabel")}
             value={ingredienteSeleccionado?.Nombre || ""}
             onChange={(e) =>
               setIngredienteSeleccionado({
@@ -219,7 +221,7 @@ export default function ListIngredientesAdmin() {
         </DialogContent>
 
         <DialogActions>
-          <Button onClick={handleClose}>Cancelar</Button>
+          <Button onClick={handleClose}>{t("actions.cancel")}</Button>
 
           <Button
             variant="contained"
@@ -231,7 +233,7 @@ export default function ListIngredientesAdmin() {
               },
             }}
           >
-            Guardar
+            {t("actions.save")}
           </Button>
         </DialogActions>
       </Dialog>

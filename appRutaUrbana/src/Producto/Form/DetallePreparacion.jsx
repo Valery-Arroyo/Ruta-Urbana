@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import PreparacionService from "../../services/PreparacionService";
 import {
   Box,
@@ -15,6 +16,7 @@ import {
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 export default function DetallePreparacion() {
+  const { t } = useTranslation();
   // Obtenemos el ID de la preparación desde los parámetros de la URL
   const { id } = useParams();
 
@@ -80,9 +82,9 @@ export default function DetallePreparacion() {
   if (!data) {
     return (
       <Box sx={{ p: 4, textAlign: "center" }}>
-        <Typography variant="h6" color="text.secondary">Proceso de preparación no encontrado.</Typography>
+        <Typography variant="h6" color="text.secondary">{t("preparations.detail.notFound")}</Typography>
         <Button startIcon={<ArrowBackIcon />} onClick={() => navigate("/preparacion")} sx={{ mt: 2 }}>
-          Volver a Preparaciones
+          {t("preparations.detail.backToList")}
         </Button>
       </Box>
     );
@@ -98,7 +100,7 @@ export default function DetallePreparacion() {
           sx={{ mb: 2 }}
           color="black"
         >
-          Volver
+          {t("actions.back")}
         </Button>
 
         {data.Imagen && (
@@ -124,7 +126,7 @@ export default function DetallePreparacion() {
         <Divider sx={{ mb: 3 }} />
 
         <Typography variant="h6" sx={{ fontWeight: "bold", mb: 2 }}>
-          Flujo de Preparación por Pasos
+          {t("preparations.detail.flowTitle")}
         </Typography>
 
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -145,7 +147,7 @@ export default function DetallePreparacion() {
             >
               <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                 <Typography variant="subtitle1" sx={{ fontWeight: "bold", minWidth: 70 }}>
-                  Paso {paso.OrdenPaso}
+                  {t("preparations.detail.step")} {paso.OrdenPaso}
                 </Typography>
                 <Chip 
                   label={paso.NombreEstacion} 
@@ -157,7 +159,7 @@ export default function DetallePreparacion() {
 
               {paso.TiempoEstimadoMinutos && (
                 <Chip 
-                  label={`${paso.TiempoEstimadoMinutos} mins`} 
+                  label={`${paso.TiempoEstimadoMinutos} ${t("preparations.detail.minutesUnit")}`}
                   color="secondary" 
                   size="small" 
                 />

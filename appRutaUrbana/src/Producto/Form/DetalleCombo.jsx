@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import ComboService from "../../services/ComboService";
 
 import {
@@ -14,6 +15,7 @@ import {
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 export default function DetalleCombo() {
+  const { t } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
   const [combo, setCombo] = useState(null);
@@ -70,7 +72,7 @@ export default function DetalleCombo() {
       </Box>
     );
 
-  if (!combo) return <Typography>Combo no encontrado.</Typography>;
+  if (!combo) return <Typography>{t("combos.detail.notFound")}</Typography>;
 
   return (
     <Box
@@ -107,7 +109,7 @@ export default function DetalleCombo() {
             },
           }}
         >
-          Volver
+          {t("combos.detail.back")}
         </Button>
 
         <Box sx={{ display: "flex", justifyContent: "center" }}>
@@ -133,7 +135,7 @@ export default function DetalleCombo() {
             letterSpacing: 0.5,
           }}
         >
-          Categoría: {combo.NombreCategoria}
+          {t("combos.detail.category")}: {combo.NombreCategoria}
         </Typography>
 
         <Typography
@@ -167,7 +169,7 @@ export default function DetalleCombo() {
             letterSpacing: 1,
           }}
         >
-          Productos
+          {t("combos.detail.products")}
         </Typography>
 
         {combo.productos.map((p, index) => (
@@ -199,7 +201,7 @@ export default function DetalleCombo() {
               fontWeight: "bold",
             }}
           >
-            Precio
+            {t("combos.detail.price")}
           </Typography>
 
           <Typography

@@ -2,11 +2,14 @@
 import React from "react";
 
 import { Box, Container, Grid, Typography, Divider } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 import CodeOutlinedIcon from "@mui/icons-material/CodeOutlined";
 import SchoolOutlinedIcon from "@mui/icons-material/SchoolOutlined";
 
 export function Footer() {
+  const { t } = useTranslation();
+
   return (
     <Box
       component="footer"
@@ -57,7 +60,7 @@ export function Footer() {
                 color: "#bdbdbd",
               }}
             >
-              El sabor de la ciudad.
+              {t("footer.slogan")}
             </Typography>
           </Grid>
 
@@ -85,7 +88,7 @@ export function Footer() {
                   letterSpacing: 1,
                 }}
               >
-                DESARROLLADORES
+                {t("footer.developers")}
               </Typography>
             </Box>
 
@@ -128,7 +131,7 @@ export function Footer() {
                   color: "#9e9e9e",
                 }}
               >
-                ISW-613 · Universidad Técnica Nacional
+                {t("footer.institution")}
               </Typography>
             </Box>
           </Grid>
@@ -150,8 +153,7 @@ export function Footer() {
             color: "#757575",
           }}
         >
-          &copy; {new Date().getFullYear()} Ruta Urbana. Todos los derechos
-          reservados.
+          &copy; {new Date().getFullYear()} Ruta Urbana. {t("footer.rights")}
         </Typography>
       </Container>
     </Box>

@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import ProductoService from "../../services/ProductoService";
 
 import {
@@ -22,6 +23,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 
 export default function TablaProductosAdmin() {
+  const { t } = useTranslation();
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -45,7 +47,7 @@ export default function TablaProductosAdmin() {
   return (
     <Box sx={{ p: 2, maxWidth: "100%" }}>
       <Typography variant="h5" sx={{ mb: 2, fontWeight: 600 }}>
-        Administración de Productos
+        {t("productTable.title")}
       </Typography>
 
       <TableContainer
@@ -60,25 +62,25 @@ export default function TablaProductosAdmin() {
           <TableHead>
             <TableRow sx={{ backgroundColor: "#f2f2f2" }}>
               <TableCell sx={{ fontWeight: 600, fontSize: "15px" }}>
-                ID
+                {t("productTable.columnId")}
               </TableCell>
               <TableCell sx={{ fontWeight: 600, fontSize: "15px" }}>
-                Nombre
+                {t("productTable.columnName")}
               </TableCell>
               <TableCell sx={{ fontWeight: 600, fontSize: "15px" }}>
-                Descripción
+                {t("productTable.columnDescription")}
               </TableCell>
               <TableCell sx={{ fontWeight: 600, fontSize: "15px" }}>
-                Precio
+                {t("productTable.columnPrice")}
               </TableCell>
               <TableCell sx={{ fontWeight: 600, fontSize: "15px" }}>
-                Estado
+                {t("productTable.columnStatus")}
               </TableCell>
               <TableCell
                 align="center"
                 sx={{ fontWeight: 600, fontSize: "15px", width: 140 }}
               >
-                Acciones
+                {t("productTable.columnActions")}
               </TableCell>
             </TableRow>
           </TableHead>
@@ -104,7 +106,11 @@ export default function TablaProductosAdmin() {
 
                 <TableCell>
                   <Chip
-                    label={p.Activo === "1" ? "Activo" : "Inactivo"}
+                    label={
+                      p.Activo === "1"
+                        ? t("productTable.active")
+                        : t("productTable.inactive")
+                    }
                     color={p.Activo === "1" ? "success" : "default"}
                     size="small"
                   />

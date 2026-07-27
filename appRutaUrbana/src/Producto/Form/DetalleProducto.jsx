@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import ProductoService from "../../services/ProductoService";
 
 import {
@@ -15,6 +16,7 @@ import {
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 export default function DetalleProducto() {
+  const { t } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -48,7 +50,8 @@ export default function DetalleProducto() {
       </Box>
     );
 
-  if (!producto) return <Typography>Producto no encontrado.</Typography>;
+  if (!producto)
+    return <Typography>{t("productDetail.notFound")}</Typography>;
 
   return (
     <Box
@@ -91,7 +94,7 @@ export default function DetalleProducto() {
             },
           }}
         >
-          Volver
+          {t("actions.back")}
         </Button>
 
         <Box sx={{ display: "flex", justifyContent: "center" }}>
@@ -120,7 +123,7 @@ export default function DetalleProducto() {
             letterSpacing: 0.5,
           }}
         >
-          Categoría: {producto.NombreCategoria}
+          {t("productDetail.category")}: {producto.NombreCategoria}
         </Typography>
 
         <Typography
@@ -154,7 +157,7 @@ export default function DetalleProducto() {
             letterSpacing: 1,
           }}
         >
-          Ingredientes
+          {t("productDetail.ingredients")}
         </Typography>
 
         {producto.Ingredientes?.map((ingrediente) => (
@@ -186,7 +189,7 @@ export default function DetalleProducto() {
               fontWeight: "bold",
             }}
           >
-            Precio
+            {t("productDetail.price")}
           </Typography>
 
           <Typography

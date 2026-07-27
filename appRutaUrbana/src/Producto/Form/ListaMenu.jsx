@@ -37,6 +37,7 @@ import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import toast from "react-hot-toast";
+import { useTranslation } from "react-i18next";
 
 const HORA_REGEX = /^([01]\d|2[0-3]):([0-5]\d)(:([0-5]\d))?$/;
 
@@ -176,6 +177,7 @@ const menuSchema = yup.object({
 });
 
 export default function ListMenusAdmin() {
+  const { t } = useTranslation();
   const [menus, setMenus] = useState([]);
   const [productos, setProductos] = useState([]);
   const [combos, setCombos] = useState([]);
@@ -296,7 +298,7 @@ export default function ListMenusAdmin() {
     } catch (error) {
       console.error("Error cargando menús", error);
 
-      toast.error("No se pudieron cargar los menús");
+      toast.error(t("menus.messages.loadError"));
     } finally {
       setLoading(false);
     }
@@ -310,7 +312,7 @@ export default function ListMenusAdmin() {
     } catch (error) {
       console.error("Error cargando productos", error);
 
-      toast.error("No se pudieron cargar productos");
+      toast.error(t("menus.messages.loadProductsError"));
     }
   };
 
@@ -328,7 +330,7 @@ export default function ListMenusAdmin() {
     } catch (error) {
       console.error("Error cargando combos", error);
 
-      toast.error("No se pudieron cargar combos");
+      toast.error(t("menus.messages.loadCombosError"));
     }
   };
 
@@ -402,7 +404,7 @@ export default function ListMenusAdmin() {
     );
 
     if (existe) {
-      toast.error("El producto ya está agregado");
+      toast.error(t("menus.messages.duplicateProduct"));
 
       return;
     }
@@ -428,7 +430,7 @@ export default function ListMenusAdmin() {
     );
 
     if (existe) {
-      toast.error("El combo ya está agregado");
+      toast.error(t("menus.messages.duplicateCombo"));
 
       return;
     }
@@ -631,7 +633,7 @@ export default function ListMenusAdmin() {
 
         toast.error(
           error.response?.data?.message ||
-            "No se pudieron cargar los productos/combos del menú",
+            t("menus.messages.loadDetailError"),
         );
       }
     } else {
@@ -709,11 +711,11 @@ export default function ListMenusAdmin() {
       if (menuSeleccionado?.IdMenu) {
         await MenuService.update(menuSeleccionado.IdMenu, dataEnviar);
 
-        toast.success("Menú actualizado correctamente");
+        toast.success(t("menus.messages.updated"));
       } else {
         await MenuService.create(dataEnviar);
 
-        toast.success("Menú creado correctamente");
+        toast.success(t("menus.messages.created"));
       }
 
       setOpen(false);
@@ -747,7 +749,7 @@ export default function ListMenusAdmin() {
     } catch (error) {
       console.error("Error guardando menú", error);
 
-      toast.error("Error al guardar menú");
+      toast.error(t("menus.messages.saveError"));
     }
   };
 
@@ -786,7 +788,7 @@ export default function ListMenusAdmin() {
     try {
       await MenuService.delete(menuEliminar.IdMenu);
 
-      toast.success("Menú eliminado correctamente");
+      toast.success(t("menus.messages.deleted"));
 
       setOpenDelete(false);
       setMenuEliminar(null);
@@ -795,7 +797,7 @@ export default function ListMenusAdmin() {
     } catch (error) {
       console.error("Error eliminando menú", error);
 
-      toast.error("No se pudo eliminar el menú");
+      toast.error(t("menus.messages.deleteError"));
     }
   };
 
@@ -823,7 +825,7 @@ export default function ListMenusAdmin() {
           mb: 3,
         }}
       >
-        Gestión de Menús
+        {t("menus.title")}
       </Typography>
 
       <Box
@@ -845,7 +847,7 @@ export default function ListMenusAdmin() {
             },
           }}
         >
-          Nuevo Menú
+          {t("menus.new")}
         </Button>
       </Box>
 
@@ -870,7 +872,7 @@ export default function ListMenusAdmin() {
               textAlign: "center",
             }}
           >
-            No hay menús registrados
+            {t("menus.noMenus")}
           </Typography>
         ) : (
           menus.map((menu) => {
@@ -912,7 +914,9 @@ export default function ListMenusAdmin() {
                       color: disponible ? "green" : "gray",
                     }}
                   >
-                    {disponible ? "Disponible ahora" : "No disponible"}
+                    {disponible
+                      ? t("menus.availableNow")
+                      : t("menus.notAvailable")}
                   </Typography>
                 </CardContent>
 
@@ -950,20 +954,22 @@ export default function ListMenusAdmin() {
       {/* CONFIRMAR ELIMINACIÓN */}
 
       <Dialog open={openDelete} onClose={() => setOpenDelete(false)}>
-        <DialogTitle>Confirmar eliminación</DialogTitle>
+        <DialogTitle>{t("menus.confirmDeleteTitle")}</DialogTitle>
 
         <DialogContent>
           <Typography>
-            ¿Eliminar menú?
+            {t("menus.confirmDeleteMessage")}
             <b> {menuEliminar?.Nombre}</b>
           </Typography>
         </DialogContent>
 
         <DialogActions>
-          <Button onClick={() => setOpenDelete(false)}>Cancelar</Button>
+          <Button onClick={() => setOpenDelete(false)}>
+            {t("actions.cancel")}
+          </Button>
 
           <Button color="error" variant="contained" onClick={handleDelete}>
-            Eliminar
+            {t("actions.delete")}
           </Button>
         </DialogActions>
       </Dialog>
@@ -977,7 +983,7 @@ export default function ListMenusAdmin() {
         maxWidth="md"
       >
         <DialogTitle>
-          {menuSeleccionado ? "Editar Menú" : "Crear Menú"}
+          {menuSeleccionado ? t("menus.edit") : t("menus.create")}
         </DialogTitle>
 
         <DialogContent>
@@ -989,7 +995,7 @@ export default function ListMenusAdmin() {
                 {...field}
                 fullWidth
                 margin="dense"
-                label="Nombre"
+                label={t("fields.name")}
                 error={!!errors.Nombre}
                 helperText={errors.Nombre?.message}
               />
@@ -1003,7 +1009,7 @@ export default function ListMenusAdmin() {
               mb: 1,
             }}
           >
-            Horario del menú
+            {t("menus.schedule")}
           </Typography>
 
           <Box
@@ -1019,7 +1025,7 @@ export default function ListMenusAdmin() {
             }}
           >
             <Box>
-              <Typography sx={{ mb: 1 }}>Hora de inicio</Typography>
+              <Typography sx={{ mb: 1 }}>{t("menus.startTime")}</Typography>
 
               <Box
                 sx={{
@@ -1030,7 +1036,7 @@ export default function ListMenusAdmin() {
               >
                 <TextField
                   select
-                  label="Hora"
+                  label={t("menus.hour")}
                   value={horaInicio12}
                   onChange={(event) => {
                     const nuevaHora = event.target.value;
@@ -1062,7 +1068,7 @@ export default function ListMenusAdmin() {
 
                 <TextField
                   select
-                  label="Minutos"
+                  label={t("menus.minutes")}
                   value={minutosInicio}
                   onChange={(event) => {
                     const nuevosMinutos = event.target.value;
@@ -1093,7 +1099,7 @@ export default function ListMenusAdmin() {
 
                 <TextField
                   select
-                  label="Periodo"
+                  label={t("menus.period")}
                   value={periodoInicio}
                   onChange={(event) => {
                     const nuevoPeriodo = event.target.value;
@@ -1129,7 +1135,7 @@ export default function ListMenusAdmin() {
             </Box>
 
             <Box>
-              <Typography sx={{ mb: 1 }}>Hora de finalización</Typography>
+              <Typography sx={{ mb: 1 }}>{t("menus.endTime")}</Typography>
 
               <Box
                 sx={{
@@ -1140,7 +1146,7 @@ export default function ListMenusAdmin() {
               >
                 <TextField
                   select
-                  label="Hora"
+                  label={t("menus.hour")}
                   value={horaFin12}
                   onChange={(event) => {
                     const nuevaHora = event.target.value;
@@ -1168,7 +1174,7 @@ export default function ListMenusAdmin() {
 
                 <TextField
                   select
-                  label="Minutos"
+                  label={t("menus.minutes")}
                   value={minutosFin}
                   onChange={(event) => {
                     const nuevosMinutos = event.target.value;
@@ -1195,7 +1201,7 @@ export default function ListMenusAdmin() {
 
                 <TextField
                   select
-                  label="Periodo"
+                  label={t("menus.period")}
                   value={periodoFin}
                   onChange={(event) => {
                     const nuevoPeriodo = event.target.value;
@@ -1234,7 +1240,7 @@ export default function ListMenusAdmin() {
               mb: 1,
             }}
           >
-            Vigencia del menú
+            {t("menus.validity")}
           </Typography>
 
           <Box
@@ -1258,7 +1264,7 @@ export default function ListMenusAdmin() {
                   {...field}
                   fullWidth
                   type="date"
-                  label="Fecha de inicio"
+                  label={t("menus.startDate")}
                   slotProps={{
                     inputLabel: {
                       shrink: true,
@@ -1278,7 +1284,7 @@ export default function ListMenusAdmin() {
                   {...field}
                   fullWidth
                   type="date"
-                  label="Fecha de finalización"
+                  label={t("menus.endDate")}
                   slotProps={{
                     inputLabel: {
                       shrink: true,
@@ -1300,7 +1306,7 @@ export default function ListMenusAdmin() {
             control={control}
             render={({ field }) => (
               <FormControlLabel
-                label="Menú activo"
+                label={t("menus.activeMenu")}
                 control={
                   <Checkbox
                     checked={field.value === 1}
@@ -1323,7 +1329,7 @@ export default function ListMenusAdmin() {
               mb: 1,
             }}
           >
-            Agregar producto
+            {t("menus.addProduct")}
           </Typography>
 
           <Box
@@ -1350,7 +1356,7 @@ export default function ListMenusAdmin() {
               renderInput={(params) => (
                 <TextField
                   {...params}
-                  label="Buscar producto"
+                  label={t("menus.searchProduct")}
                   error={!!errors.TieneProducto}
                 />
               )}
@@ -1369,7 +1375,7 @@ export default function ListMenusAdmin() {
               }}
               onClick={() => {
                 if (!productoSeleccionado) {
-                  toast.error("Seleccione un producto");
+                  toast.error(t("menus.messages.selectProduct"));
 
                   return;
                 }
@@ -1379,7 +1385,7 @@ export default function ListMenusAdmin() {
                 setProductoSeleccionado(null);
               }}
             >
-              AGREGAR
+              {t("actions.add")}
             </Button>
           </Box>
 
@@ -1406,7 +1412,7 @@ export default function ListMenusAdmin() {
               mb: 1,
             }}
           >
-            Agregar combos
+            {t("menus.addCombos")}
           </Typography>
 
           <Box
@@ -1433,7 +1439,7 @@ export default function ListMenusAdmin() {
               renderInput={(params) => (
                 <TextField
                   {...params}
-                  label="Buscar combo"
+                  label={t("menus.searchCombo")}
                   error={!!errors.TieneCombo}
                 />
               )}
@@ -1452,7 +1458,7 @@ export default function ListMenusAdmin() {
               }}
               onClick={() => {
                 if (!comboSeleccionado) {
-                  toast.error("Seleccione un combo");
+                  toast.error(t("menus.messages.selectCombo"));
 
                   return;
                 }
@@ -1462,7 +1468,7 @@ export default function ListMenusAdmin() {
                 setComboSeleccionado(null);
               }}
             >
-              AGREGAR
+              {t("actions.add")}
             </Button>
           </Box>
 
@@ -1489,7 +1495,7 @@ export default function ListMenusAdmin() {
               fontWeight: "bold",
             }}
           >
-            Items seleccionados
+            {t("menus.selectedItems")}
           </Typography>
 
           {itemsSeleccionados.map((item, index) => (
@@ -1520,7 +1526,7 @@ export default function ListMenusAdmin() {
                 <TextField
                   type="number"
                   size="small"
-                  label="Cantidad"
+                  label={t("combos.quantity")}
                   value={item.Cantidad}
                   slotProps={{
                     htmlInput: {
@@ -1533,7 +1539,7 @@ export default function ListMenusAdmin() {
                 />
 
                 <Button color="error" onClick={() => eliminarItem(item)}>
-                  Eliminar
+                  {t("actions.delete")}
                 </Button>
               </Box>
             </Card>
@@ -1543,7 +1549,7 @@ export default function ListMenusAdmin() {
 
           {/* DÍAS DISPONIBLES */}
 
-          <Typography fontWeight="bold">Días disponibles</Typography>
+          <Typography fontWeight="bold">{t("menus.availableDays")}</Typography>
 
           <Box
             sx={{
@@ -1567,7 +1573,7 @@ export default function ListMenusAdmin() {
         </DialogContent>
 
         <DialogActions>
-          <Button onClick={() => setOpen(false)}>Cancelar</Button>
+          <Button onClick={() => setOpen(false)}>{t("actions.cancel")}</Button>
 
           <Button
             variant="contained"
@@ -1580,7 +1586,7 @@ export default function ListMenusAdmin() {
               },
             }}
           >
-            Guardar
+            {t("actions.save")}
           </Button>
         </DialogActions>
       </Dialog>

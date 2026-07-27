@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 import MenuService from "../../services/MenuService";
 
@@ -19,6 +20,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 const API_URL = import.meta.env.VITE_BASE_URL;
 
 export default function DetalleMenu() {
+  const { t } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -44,7 +46,7 @@ export default function DetalleMenu() {
   }, [id]);
 
   const formatearHora = (hora) => {
-    if (!hora) return "No definida";
+    if (!hora) return t("menus.detail.notDefined");
 
     const [horaTexto, minutos = "00"] = String(hora).split(":");
 
@@ -128,14 +130,14 @@ export default function DetalleMenu() {
           gap: 2,
         }}
       >
-        <Typography variant="h5">No fue posible cargar el menú.</Typography>
+        <Typography variant="h5">{t("menus.detail.loadError")}</Typography>
 
         <Button
           variant="outlined"
           startIcon={<ArrowBackIcon />}
           onClick={() => navigate("/menu")}
         >
-          Volver al listado
+          {t("menus.detail.backToList")}
         </Button>
       </Box>
     );
@@ -151,7 +153,8 @@ export default function DetalleMenu() {
    * Agrupar productos y combos por categoría.
    */
   const itemsPorCategoria = safeItems.reduce((acc, item) => {
-    const categoria = item.Categoria || item.NombreCategoria || "Sin categoría";
+    const categoria =
+      item.Categoria || item.NombreCategoria || t("menus.detail.otherCategory");
 
     if (!acc[categoria]) {
       acc[categoria] = [];
@@ -191,7 +194,10 @@ export default function DetalleMenu() {
           fontSize: "1.05rem",
         }}
       >
-        Estado: {String(detalle.EstaActivo) === "1" ? "Activo" : "Inactivo"}
+        {t("menus.detail.status")}:{" "}
+        {String(detalle.EstaActivo) === "1"
+          ? t("menus.detail.active")
+          : t("menus.detail.inactive")}
       </Typography>
 
       <Typography
@@ -201,10 +207,10 @@ export default function DetalleMenu() {
           fontSize: "1.05rem",
         }}
       >
-        Día(s):{" "}
+        {t("menus.detail.days")}:{" "}
         {detalle.DiasDisponibles?.trim()
           ? detalle.DiasDisponibles
-          : "No definido"}
+          : t("menus.detail.noDaysDefined")}
       </Typography>
 
       {(detalle.FechaInicio || detalle.FechaFin) && (
@@ -215,9 +221,10 @@ export default function DetalleMenu() {
             fontSize: "1.05rem",
           }}
         >
-          Vigencia: {detalle.FechaInicio || "Sin fecha inicial"}
+          {t("menus.detail.validity")}:{" "}
+          {detalle.FechaInicio || t("menus.detail.noStartDate")}
           {" - "}
-          {detalle.FechaFin || "Sin fecha final"}
+          {detalle.FechaFin || t("menus.detail.noEndDate")}
         </Typography>
       )}
 
@@ -229,7 +236,7 @@ export default function DetalleMenu() {
           mb: 2,
         }}
       >
-        Horario: {formatearHora(detalle.HoraInicio)}
+        {t("menus.detail.schedule")}: {formatearHora(detalle.HoraInicio)}
         {" - "}
         {formatearHora(detalle.HoraFin)}
       </Typography>
@@ -252,7 +259,7 @@ export default function DetalleMenu() {
           },
         }}
       >
-        Volver al listado
+        {t("menus.detail.backToList")}
       </Button>
 
       {/* MENÚ SIN ELEMENTOS */}
@@ -266,7 +273,7 @@ export default function DetalleMenu() {
             color: "text.secondary",
           }}
         >
-          Este menú no tiene productos ni combos registrados.
+          {t("menus.detail.noItems")}
         </Typography>
       )}
 
@@ -356,7 +363,7 @@ export default function DetalleMenu() {
                         fontSize: "1.25rem",
                       }}
                     >
-                      {item.Nombre || item.NombreItem || "Sin nombre"}
+                      {item.Nombre || item.NombreItem || t("menus.detail.noName")}
                     </Typography>
 
                     <Typography
@@ -368,7 +375,7 @@ export default function DetalleMenu() {
                         lineHeight: 1.6,
                       }}
                     >
-                      {item.Descripcion || "Sin descripción"}
+                      {item.Descripcion || t("menus.detail.noDescription")}
                     </Typography>
 
                     <Box
@@ -387,7 +394,7 @@ export default function DetalleMenu() {
                           fontSize: "1rem",
                         }}
                       >
-                        Precio
+                        {t("menus.detail.price")}
                       </Typography>
 
                       <Typography

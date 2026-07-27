@@ -16,6 +16,8 @@ import TablaProducto from "./Producto/Form/TablaProducto";
 import ListaPreparacion from "./Producto/Form/ListaPreparacion";
 import DetallePreparacion from "./Producto/Form/DetallePreparacion";
 import Ingrediente from "./Producto/Form/Ingrediente";
+import "./i18n/i18n";
+
 const rutas = createBrowserRouter([
   {
     element: <App />,

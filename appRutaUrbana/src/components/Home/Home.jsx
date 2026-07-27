@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 import { Box, Container, Typography, Paper, Grid, Button } from "@mui/material";
 
@@ -14,33 +15,30 @@ const API_URL = "http://localhost:81/apirutaurbana";
 
 export function Home() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const secciones = [
     {
-      titulo: "Productos",
-      descripcion:
-        "Descubre hamburguesas, entradas, bebidas y postres preparados con el auténtico sabor urbano.",
+      titulo: t("home.sections.products.title"),
+      descripcion: t("home.sections.products.description"),
       icono: <LunchDiningOutlinedIcon />,
       ruta: "/productos",
     },
     {
-      titulo: "Combos",
-      descripcion:
-        "Encuentra combinaciones pensadas para compartir, disfrutar y vivir una experiencia completa.",
+      titulo: t("home.sections.combos.title"),
+      descripcion: t("home.sections.combos.description"),
       icono: <FastfoodOutlinedIcon />,
       ruta: "/combos",
     },
     {
-      titulo: "Menús",
-      descripcion:
-        "Consulta las opciones disponibles según el horario, el día y la temporada.",
+      titulo: t("home.sections.menus.title"),
+      descripcion: t("home.sections.menus.description"),
       icono: <MenuBookOutlinedIcon />,
       ruta: "/menu",
     },
     {
-      titulo: "Ingredientes",
-      descripcion:
-        "Conoce y administra los ingredientes que forman parte de cada preparación.",
+      titulo: t("home.sections.ingredients.title"),
+      descripcion: t("home.sections.ingredients.description"),
       icono: <EggAltOutlinedIcon />,
       ruta: "/ingrediente",
     },
@@ -147,7 +145,7 @@ export function Home() {
                     letterSpacing: 1,
                   }}
                 >
-                  FOOD TRUCK 
+                  {t("home.badge")}
                 </Typography>
               </Box>
 
@@ -188,7 +186,7 @@ export function Home() {
                   color: "#f5f5f5",
                 }}
               >
-                El sabor de la ciudad en cada parada
+                {t("home.tagline")}
               </Typography>
 
               <Typography
@@ -200,10 +198,7 @@ export function Home() {
                   lineHeight: 1.8,
                 }}
               >
-                Ruta Urbana es una experiencia gastronómica inspirada en el
-                movimiento, la energía y los sabores de la ciudad. Nuestro food
-                truck combina hamburguesas, entradas, bebidas y combos
-                especiales en un concepto moderno, dinámico y lleno de sabor.
+                {t("home.description")}
               </Typography>
 
               <Box
@@ -236,7 +231,7 @@ export function Home() {
                     },
                   }}
                 >
-                  Explorar productos
+                  {t("home.exploreProducts")}
                 </Button>
 
                 <Button
@@ -260,7 +255,7 @@ export function Home() {
                     },
                   }}
                 >
-                  Ver menús
+                  {t("home.viewMenus")}
                 </Button>
               </Box>
             </Grid>
@@ -343,7 +338,7 @@ export function Home() {
               textTransform: "uppercase",
             }}
           >
-            Nuestra esencia
+            {t("home.essenceLabel")}
           </Typography>
 
           <Typography
@@ -354,7 +349,7 @@ export function Home() {
               color: "#ffffff",
             }}
           >
-            Sabor urbano sobre ruedas
+            {t("home.essenceTitle")}
           </Typography>
 
           <Typography
@@ -367,9 +362,7 @@ export function Home() {
               lineHeight: 1.8,
             }}
           >
-            Cada preparación de Ruta Urbana representa una parada diferente:
-            ingredientes frescos, combinaciones originales y una propuesta
-            gastronómica creada para quienes disfrutan descubrir nuevos sabores.
+            {t("home.essenceDescription")}
           </Typography>
         </Box>
 
@@ -463,7 +456,7 @@ export function Home() {
                     transition: ".3s",
                   }}
                 >
-                  Explorar →
+                  {t("home.explore")}
                 </Typography>
               </Paper>
             </Grid>
@@ -499,7 +492,7 @@ export function Home() {
             color: "white",
           }}
         >
-          Más que comida rápida
+          {t("home.finalTitle")}
         </Typography>
 
         <Typography
@@ -509,7 +502,7 @@ export function Home() {
             fontSize: "1.15rem",
           }}
         >
-          Llevamos el sabor de la ciudad a cada cliente.
+          {t("home.finalSubtitle")}
         </Typography>
       </Box>
     </Box>

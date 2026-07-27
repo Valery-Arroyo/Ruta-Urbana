@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 
 import {
@@ -45,6 +46,7 @@ const pasoVacio = () => ({
 });
 
 export default function ListPreparacionPublic() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const [data, setData] = useState([]);
@@ -107,7 +109,7 @@ export default function ListPreparacionPublic() {
       setData(Object.values(agrupado));
     } catch (e) {
       console.error("Error cargando procesos:", e);
-      toast.error("Error al cargar");
+      toast.error(t("preparations.messages.loadError"));
     }
   };
 
@@ -118,7 +120,7 @@ export default function ListPreparacionPublic() {
       setEstaciones(response.data || []);
     } catch (e) {
       console.error("Error cargando estaciones:", e);
-      toast.error("Error al cargar estaciones");
+      toast.error(t("preparations.messages.loadStationsError"));
     }
   };
 
@@ -129,7 +131,7 @@ export default function ListPreparacionPublic() {
       setProductos(response.data || []);
     } catch (e) {
       console.error("Error cargando productos:", e);
-      toast.error("Error al cargar productos");
+      toast.error(t("preparations.messages.loadProductsError"));
     }
   };
 
@@ -165,7 +167,7 @@ export default function ListPreparacionPublic() {
       return;
     }
 
-    toast.error("Solo se permiten números enteros positivos", {
+    toast.error(t("preparations.messages.onlyIntegers"), {
       id: "validacion-campo-numerico",
     });
   };
@@ -216,7 +218,7 @@ export default function ListPreparacionPublic() {
 
   const handleSave = async () => {
     if (pasosForm.length === 0) {
-      toast.error("El proceso debe tener al menos un paso");
+      toast.error(t("preparations.messages.noSteps"));
       return;
     }
 
@@ -228,7 +230,7 @@ export default function ListPreparacionPublic() {
     );
 
     if (invalido) {
-      toast.error("Completa Orden, Estación y Minutos en todos los pasos");
+      toast.error(t("preparations.messages.incompleteSteps"));
 
       return;
     }
@@ -240,7 +242,7 @@ export default function ListPreparacionPublic() {
     const hayOrdenesRepetidos = new Set(ordenes).size !== ordenes.length;
 
     if (hayOrdenesRepetidos) {
-      toast.error("No se pueden repetir los números de orden");
+      toast.error(t("preparations.messages.duplicateOrder"));
 
       return;
     }
@@ -250,9 +252,7 @@ export default function ListPreparacionPublic() {
     );
 
     if (ordenNoConsecutivo) {
-      toast.error(
-        "Los pasos deben seguir una secuencia consecutiva: 1, 2, 3, ...",
-      );
+      toast.error(t("preparations.messages.nonConsecutiveOrder"));
 
       return;
     }
@@ -288,7 +288,7 @@ export default function ListPreparacionPublic() {
         }),
       );
 
-      toast.success("Proceso actualizado correctamente");
+      toast.success(t("preparations.messages.updated"));
 
       setOpen(false);
       setProcesoEdit(null);
@@ -298,7 +298,7 @@ export default function ListPreparacionPublic() {
       await cargarDatos();
     } catch (e) {
       console.error("Error actualizando proceso:", e);
-      toast.error("Error al actualizar el proceso");
+      toast.error(t("preparations.messages.updateError"));
     } finally {
       setGuardando(false);
     }
@@ -324,12 +324,12 @@ export default function ListPreparacionPublic() {
 
   const handleCrearProceso = async () => {
     if (!idSeleccionado) {
-      toast.error("Selecciona un producto");
+      toast.error(t("preparations.messages.selectProduct"));
       return;
     }
 
     if (pasosNuevo.length === 0) {
-      toast.error("Agrega al menos un paso");
+      toast.error(t("preparations.messages.addAtLeastOneStep"));
       return;
     }
 
@@ -341,7 +341,7 @@ export default function ListPreparacionPublic() {
     );
 
     if (invalido) {
-      toast.error("Completa Orden, Estación y Minutos en todos los pasos");
+      toast.error(t("preparations.messages.incompleteSteps"));
       return;
     }
 
@@ -352,7 +352,7 @@ export default function ListPreparacionPublic() {
     const hayOrdenesRepetidos = new Set(ordenes).size !== ordenes.length;
 
     if (hayOrdenesRepetidos) {
-      toast.error("No se pueden repetir los números de orden");
+      toast.error(t("preparations.messages.duplicateOrder"));
       return;
     }
 
@@ -361,9 +361,7 @@ export default function ListPreparacionPublic() {
     );
 
     if (ordenNoConsecutivo) {
-      toast.error(
-        "Los pasos deben seguir una secuencia consecutiva: 1, 2, 3, ...",
-      );
+      toast.error(t("preparations.messages.nonConsecutiveOrder"));
       return;
     }
 
@@ -388,7 +386,7 @@ export default function ListPreparacionPublic() {
         }),
       );
 
-      toast.success("Proceso creado correctamente");
+      toast.success(t("preparations.messages.created"));
 
       setOpenCreate(false);
       setPasosNuevo([]);
@@ -397,7 +395,7 @@ export default function ListPreparacionPublic() {
       await cargarDatos();
     } catch (e) {
       console.error("Error creando proceso:", e);
-      toast.error("Error al crear el proceso");
+      toast.error(t("preparations.messages.createError"));
     } finally {
       setGuardandoNuevo(false);
     }
@@ -426,7 +424,7 @@ export default function ListPreparacionPublic() {
           .map((p) => PreparacionService.deletePreparacion(p.IdProceso)),
       );
 
-      toast.success("Proceso eliminado correctamente");
+      toast.success(t("preparations.messages.deleted"));
 
       setOpenDelete(false);
       setProcesoEliminar(null);
@@ -434,7 +432,7 @@ export default function ListPreparacionPublic() {
       await cargarDatos();
     } catch (e) {
       console.error("Error eliminando proceso:", e);
-      toast.error("Error al eliminar el proceso");
+      toast.error(t("preparations.messages.deleteError"));
     } finally {
       setEliminando(null);
     }
@@ -481,7 +479,7 @@ export default function ListPreparacionPublic() {
               color: "black",
             }}
           >
-            Procesos
+            {t("preparations.title")}
           </Typography>
 
           <Button
@@ -492,7 +490,7 @@ export default function ListPreparacionPublic() {
             }}
             onClick={abrirCreacion}
           >
-            Crear Proceso
+            {t("preparations.create")}
           </Button>
         </Box>
 
@@ -524,7 +522,7 @@ export default function ListPreparacionPublic() {
                     </Typography>
 
                     <Chip
-                      label={`Pasos: ${item.pasos.length}`}
+                      label={`${t("preparations.steps")}: ${item.pasos.length}`}
                       size="small"
                       color={item.esProducto ? "primary" : "success"}
                       sx={{
@@ -584,11 +582,11 @@ export default function ListPreparacionPublic() {
           }
         }}
       >
-        <DialogTitle>Confirmar eliminación</DialogTitle>
+        <DialogTitle>{t("preparations.confirmDeleteTitle")}</DialogTitle>
 
         <DialogContent>
           <Typography>
-            ¿Está seguro de que desea eliminar todo el proceso de preparación de
+            {t("preparations.confirmDeleteMessage")}
             <b> {procesoEliminar?.Nombre}</b>?
           </Typography>
 
@@ -598,8 +596,9 @@ export default function ListPreparacionPublic() {
               mt: 1,
             }}
           >
-            Se eliminarán <b>{procesoEliminar?.pasos?.length || 0}</b> paso(s)
-            de preparación.
+            {t("preparations.willDeleteSteps")}{" "}
+            <b>{procesoEliminar?.pasos?.length || 0}</b>{" "}
+            {t("preparations.stepsWord")}
           </Typography>
         </DialogContent>
 
@@ -611,7 +610,7 @@ export default function ListPreparacionPublic() {
             }}
             disabled={!!eliminando}
           >
-            Cancelar
+            {t("actions.cancel")}
           </Button>
 
           <Button
@@ -620,7 +619,7 @@ export default function ListPreparacionPublic() {
             onClick={handleEliminarProceso}
             disabled={!!eliminando}
           >
-            {eliminando ? "Eliminando..." : "Eliminar"}
+            {eliminando ? t("preparations.deleting") : t("actions.delete")}
           </Button>
         </DialogActions>
       </Dialog>
@@ -639,7 +638,9 @@ export default function ListPreparacionPublic() {
         fullWidth
         maxWidth="sm"
       >
-        <DialogTitle>Editar: {procesoEdit?.Nombre}</DialogTitle>
+        <DialogTitle>
+          {t("preparations.editTitle")}: {procesoEdit?.Nombre}
+        </DialogTitle>
 
         <DialogContent>
           {pasosForm.map((paso, index) => (
@@ -654,7 +655,7 @@ export default function ListPreparacionPublic() {
               }}
             >
               <TextField
-                label="Orden"
+                label={t("preparations.order")}
                 size="small"
                 sx={{
                   width: 90,
@@ -681,7 +682,7 @@ export default function ListPreparacionPublic() {
 
               <TextField
                 select
-                label="Estación"
+                label={t("preparations.station")}
                 size="small"
                 fullWidth
                 value={paso.IdEstacion || ""}
@@ -702,7 +703,7 @@ export default function ListPreparacionPublic() {
               </TextField>
 
               <TextField
-                label="Minutos"
+                label={t("preparations.minutes")}
                 size="small"
                 sx={{
                   width: 110,
@@ -734,7 +735,7 @@ export default function ListPreparacionPublic() {
                   flexShrink: 0,
                 }}
                 disabled={guardando}
-                title="Eliminar paso"
+                title={t("preparations.deleteStepTitle")}
               >
                 <RemoveIcon />
               </IconButton>
@@ -746,7 +747,7 @@ export default function ListPreparacionPublic() {
             onClick={() => agregarPaso(setPasosForm)}
             disabled={guardando}
           >
-            Agregar Paso
+            {t("preparations.addStep")}
           </Button>
         </DialogContent>
 
@@ -759,7 +760,7 @@ export default function ListPreparacionPublic() {
             }}
             disabled={guardando}
           >
-            Cancelar
+            {t("actions.cancel")}
           </Button>
 
           <Button
@@ -770,7 +771,7 @@ export default function ListPreparacionPublic() {
             }}
             disabled={guardando}
           >
-            {guardando ? "Actualizando..." : "Guardar"}
+            {guardando ? t("preparations.updating") : t("actions.save")}
           </Button>
         </DialogActions>
       </Dialog>
@@ -789,12 +790,12 @@ export default function ListPreparacionPublic() {
         fullWidth
         maxWidth="sm"
       >
-        <DialogTitle>Crear nuevo proceso</DialogTitle>
+        <DialogTitle>{t("preparations.createNew")}</DialogTitle>
 
         <DialogContent>
           <TextField
             select
-            label="Producto"
+            label={t("preparations.product")}
             size="small"
             fullWidth
             sx={{
@@ -822,7 +823,7 @@ export default function ListPreparacionPublic() {
               }}
             >
               <TextField
-                label="Orden"
+                label={t("preparations.order")}
                 size="small"
                 sx={{
                   width: 90,
@@ -849,7 +850,7 @@ export default function ListPreparacionPublic() {
 
               <TextField
                 select
-                label="Estación"
+                label={t("preparations.station")}
                 size="small"
                 fullWidth
                 value={paso.IdEstacion || ""}
@@ -870,7 +871,7 @@ export default function ListPreparacionPublic() {
               </TextField>
 
               <TextField
-                label="Minutos"
+                label={t("preparations.minutes")}
                 size="small"
                 sx={{
                   width: 110,
@@ -902,7 +903,7 @@ export default function ListPreparacionPublic() {
                   flexShrink: 0,
                 }}
                 disabled={guardandoNuevo}
-                title="Eliminar paso"
+                title={t("preparations.deleteStepTitle")}
               >
                 <RemoveIcon />
               </IconButton>
@@ -914,7 +915,7 @@ export default function ListPreparacionPublic() {
             onClick={() => agregarPaso(setPasosNuevo)}
             disabled={guardandoNuevo}
           >
-            Agregar Paso
+            {t("preparations.addStep")}
           </Button>
         </DialogContent>
 
@@ -927,7 +928,7 @@ export default function ListPreparacionPublic() {
             }}
             disabled={guardandoNuevo}
           >
-            Cancelar
+            {t("actions.cancel")}
           </Button>
 
           <Button
@@ -938,7 +939,7 @@ export default function ListPreparacionPublic() {
             }}
             disabled={guardandoNuevo}
           >
-            {guardandoNuevo ? "Creando..." : "Crear"}
+            {guardandoNuevo ? t("preparations.creating") : t("actions.create")}
           </Button>
         </DialogActions>
       </Dialog>

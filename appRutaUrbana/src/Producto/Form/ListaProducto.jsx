@@ -16,16 +16,22 @@ import {
   TextField,
   MenuItem,
 } from "@mui/material";
+
 import AddIcon from "@mui/icons-material/Add";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+
 import ProductoService from "../../services/ProductoService";
 import IngredienteService from "../../services/IngredienteService";
 import CategoriaService from "../../services/CategoriaService";
+
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
+
 import * as yup from "yup";
 import toast from "react-hot-toast";
 
@@ -60,14 +66,21 @@ const productoSchema = yup.object().shape({
 });
 
 export default function GestionProductos() {
+  const { t, i18n } = useTranslation();
+
   const [data, setData] = useState([]);
   const [open, setOpen] = useState(false);
+
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
+
   const [ingredientes, setIngredientes] = useState([]);
   const [categorias, setCategorias] = useState([]);
+
   const [ingredienteSeleccionado, setIngredienteSeleccionado] = useState("");
+
   const [openDelete, setOpenDelete] = useState(false);
   const [productoEliminar, setProductoEliminar] = useState(null);
+
   const [errorIngrediente, setErrorIngrediente] = useState("");
 
   const navigate = useNavigate();
@@ -81,6 +94,7 @@ export default function GestionProductos() {
     formState: { errors },
   } = useForm({
     resolver: yupResolver(productoSchema),
+
     defaultValues: {
       Nombre: "",
       Precio: "",
@@ -109,7 +123,7 @@ export default function GestionProductos() {
     } catch (error) {
       console.error("Error cargando productos", error);
 
-      toast.error("No fue posible cargar productos");
+      toast.error(t("products.messages.loadError"));
     }
   };
 
@@ -208,18 +222,18 @@ export default function GestionProductos() {
         !productoSeleccionado?.IdProducto &&
         (!formData.Imagen || formData.Imagen.trim() === "")
       ) {
-        toast.error("Debe ingresar la ruta de la imagen");
+        toast.error(t("products.messages.imageRequired"));
         return;
       }
 
       if (productoSeleccionado?.IdProducto) {
         await ProductoService.update(productoSeleccionado.IdProducto, formData);
 
-        toast.success("Producto actualizado correctamente");
+        toast.success(t("products.messages.updated"));
       } else {
         await ProductoService.create(formData);
 
-        toast.success("Producto creado correctamente");
+        toast.success(t("products.messages.created"));
       }
 
       setOpen(false);
@@ -242,7 +256,7 @@ export default function GestionProductos() {
       const mensaje =
         error.response?.data?.message ||
         error.response?.data?.result ||
-        "Error al guardar producto";
+        t("products.messages.saveError");
 
       toast.error(mensaje);
     }
@@ -257,7 +271,7 @@ export default function GestionProductos() {
     try {
       await ProductoService.delete(productoEliminar.IdProducto);
 
-      toast.success("Producto eliminado correctamente");
+      toast.success(t("products.messages.deleted"));
 
       setOpenDelete(false);
       setProductoEliminar(null);
@@ -266,7 +280,7 @@ export default function GestionProductos() {
     } catch (error) {
       console.error("Error eliminando producto", error);
 
-      toast.error("Error al eliminar producto");
+      toast.error(t("products.messages.deleteError"));
     }
   };
 
@@ -280,7 +294,7 @@ export default function GestionProductos() {
           mb: 3,
         }}
       >
-        Gestión de Productos - ARCHIVO CORRECTO
+        {t("products.title")}
       </Typography>
 
       <Box
@@ -302,7 +316,7 @@ export default function GestionProductos() {
             },
           }}
         >
-          Nuevo Producto
+          {t("products.new")}
         </Button>
       </Box>
 
@@ -311,6 +325,7 @@ export default function GestionProductos() {
           display: "grid",
           justifyContent: "center",
           gap: 3,
+
           gridTemplateColumns: {
             xs: "1fr",
             sm: "repeat(2,320px)",
@@ -326,7 +341,7 @@ export default function GestionProductos() {
               textAlign: "center",
             }}
           >
-            No hay productos registrados.
+            {t("products.noProducts")}
           </Typography>
         ) : (
           data.map((prod) => {
@@ -340,6 +355,7 @@ export default function GestionProductos() {
               prod.EsProductoDelDia,
               Number(prod.EsProductoDelDia) === 1,
             );
+
             const esProductoDelDia =
               prod.EsProductoDelDia === true ||
               Number(prod.EsProductoDelDia) === 1;
@@ -396,7 +412,7 @@ export default function GestionProductos() {
                       borderBottom: "1px solid rgba(255,140,0,.45)",
                     }}
                   >
-                    ⭐ PRODUCTO DEL DÍA ⭐
+                    ⭐ {t("products.productOfTheDay")} ⭐
                   </Box>
                 )}
 
@@ -444,6 +460,7 @@ export default function GestionProductos() {
                       color: esProductoDelDia
                         ? "rgba(255,255,255,.75)"
                         : "text.secondary",
+
                       mt: 0.5,
                     }}
                   >
@@ -460,10 +477,13 @@ export default function GestionProductos() {
                     }}
                   >
                     ₡
-                    {Number(prod.Precio).toLocaleString("es-CR", {
-                      minimumFractionDigits: 0,
-                      maximumFractionDigits: 0,
-                    })}
+                    {Number(prod.Precio).toLocaleString(
+                      i18n.language === "en" ? "en-US" : "es-CR",
+                      {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0,
+                      },
+                    )}
                   </Typography>
 
                   {esProductoDelDia && (
@@ -476,7 +496,7 @@ export default function GestionProductos() {
                         fontStyle: "italic",
                       }}
                     >
-                      Seleccionado automáticamente
+                      {t("products.selectedAutomatically")}
                     </Typography>
                   )}
                 </CardContent>
@@ -484,13 +504,14 @@ export default function GestionProductos() {
                 <CardActions
                   sx={{
                     justifyContent: "center",
+
                     borderTop: esProductoDelDia
                       ? "1px solid rgba(255,255,255,.12)"
                       : "none",
                   }}
                 >
                   <IconButton
-                    aria-label={`Ver ${prod.Nombre}`}
+                    aria-label={`${t("actions.view")} ${prod.Nombre}`}
                     sx={{
                       color: "#FF8C00",
 
@@ -506,7 +527,7 @@ export default function GestionProductos() {
                   </IconButton>
 
                   <IconButton
-                    aria-label={`Editar ${prod.Nombre}`}
+                    aria-label={`${t("actions.edit")} ${prod.Nombre}`}
                     onClick={() => handleEdit(prod)}
                     sx={{
                       color: esProductoDelDia ? "#FFFFFF" : "inherit",
@@ -522,7 +543,7 @@ export default function GestionProductos() {
                   </IconButton>
 
                   <IconButton
-                    aria-label={`Eliminar ${prod.Nombre}`}
+                    aria-label={`${t("actions.delete")} ${prod.Nombre}`}
                     color="error"
                     onClick={() => confirmarEliminar(prod)}
                     sx={{
@@ -542,11 +563,11 @@ export default function GestionProductos() {
         )}
 
         <Dialog open={openDelete} onClose={() => setOpenDelete(false)}>
-          <DialogTitle>Confirmar eliminación</DialogTitle>
+          <DialogTitle>{t("products.confirmDeleteTitle")}</DialogTitle>
 
           <DialogContent>
             <Typography>
-              ¿Está seguro que desea eliminar el producto:
+              {t("products.confirmDeleteMessage")}:
               <b> {productoEliminar?.Nombre}</b>?
             </Typography>
           </DialogContent>
@@ -558,11 +579,11 @@ export default function GestionProductos() {
                 setProductoEliminar(null);
               }}
             >
-              Cancelar
+              {t("actions.cancel")}
             </Button>
 
             <Button variant="contained" color="error" onClick={handleDelete}>
-              Eliminar
+              {t("actions.delete")}
             </Button>
           </DialogActions>
         </Dialog>
@@ -576,8 +597,8 @@ export default function GestionProductos() {
       >
         <DialogTitle>
           {productoSeleccionado?.IdProducto
-            ? "Editar Producto"
-            : "Nuevo Producto"}
+            ? t("products.edit")
+            : t("products.new")}
         </DialogTitle>
 
         <DialogContent>
@@ -589,7 +610,7 @@ export default function GestionProductos() {
                 {...field}
                 fullWidth
                 margin="dense"
-                label="Nombre"
+                label={t("fields.name")}
                 error={!!errors.Nombre}
                 helperText={errors.Nombre?.message}
               />
@@ -605,7 +626,7 @@ export default function GestionProductos() {
                 fullWidth
                 margin="dense"
                 type="number"
-                label="Precio"
+                label={t("fields.price")}
                 slotProps={{
                   htmlInput: {
                     min: 0,
@@ -628,7 +649,7 @@ export default function GestionProductos() {
                 margin="dense"
                 multiline
                 rows={3}
-                label="Descripción"
+                label={t("fields.description")}
                 error={!!errors.Descripcion}
                 helperText={errors.Descripcion?.message}
               />
@@ -644,7 +665,7 @@ export default function GestionProductos() {
                 select
                 fullWidth
                 margin="dense"
-                label="Categoría"
+                label={t("fields.category")}
                 error={!!errors.IdCategoria}
                 helperText={errors.IdCategoria?.message}
               >
@@ -664,7 +685,7 @@ export default function GestionProductos() {
               fontWeight: "bold",
             }}
           >
-            Ingredientes
+            {t("fields.ingredients")}
           </Typography>
 
           <Box
@@ -677,17 +698,17 @@ export default function GestionProductos() {
             <TextField
               select
               fullWidth
-              label="Seleccionar ingrediente"
+              label={t("products.selectIngredient")}
               value={ingredienteSeleccionado}
-              onChange={(e) => {
-                setIngredienteSeleccionado(e.target.value);
+              onChange={(event) => {
+                setIngredienteSeleccionado(event.target.value);
                 setErrorIngrediente("");
               }}
               error={!!errorIngrediente}
               helperText={errorIngrediente}
             >
               <MenuItem value="">
-                <em>Seleccione un ingrediente</em>
+                <em>{t("products.chooseIngredient")}</em>
               </MenuItem>
 
               {ingredientes.map((ing) => (
@@ -709,7 +730,8 @@ export default function GestionProductos() {
               }}
               onClick={() => {
                 if (!ingredienteSeleccionado) {
-                  setErrorIngrediente("Debe seleccionar un ingrediente");
+                  setErrorIngrediente(t("products.messages.selectIngredient"));
+
                   return;
                 }
 
@@ -717,7 +739,8 @@ export default function GestionProductos() {
                 const nuevo = Number(ingredienteSeleccionado);
 
                 if (actuales.some((id) => Number(id) === nuevo)) {
-                  toast.error("Ese ingrediente ya fue agregado");
+                  toast.error(t("products.messages.duplicateIngredient"));
+
                   return;
                 }
 
@@ -729,7 +752,7 @@ export default function GestionProductos() {
                 setErrorIngrediente("");
               }}
             >
-              AGREGAR
+              {t("actions.add")}
             </Button>
           </Box>
 
@@ -779,7 +802,7 @@ export default function GestionProductos() {
                       });
                     }}
                   >
-                    ELIMINAR
+                    {t("actions.delete")}
                   </Button>
                 </Box>
               );
@@ -794,12 +817,12 @@ export default function GestionProductos() {
                 {...field}
                 fullWidth
                 margin="dense"
-                label="Ruta de imagen"
+                label={t("products.imagePath")}
                 placeholder="imagenes/hamburguesa.jpg"
                 helperText={
                   productoSeleccionado
-                    ? "Deje vacío para conservar la imagen actual"
-                    : "Ingrese la ruta de la imagen"
+                    ? t("products.keepCurrentImage")
+                    : t("products.enterImagePath")
                 }
               />
             )}
@@ -807,7 +830,7 @@ export default function GestionProductos() {
         </DialogContent>
 
         <DialogActions>
-          <Button onClick={() => setOpen(false)}>Cancelar</Button>
+          <Button onClick={() => setOpen(false)}>{t("actions.cancel")}</Button>
 
           <Button
             variant="contained"
@@ -820,7 +843,9 @@ export default function GestionProductos() {
               },
             }}
           >
-            Guardar
+            {productoSeleccionado?.IdProducto
+              ? t("actions.update")
+              : t("actions.save")}
           </Button>
         </DialogActions>
       </Dialog>

@@ -11,6 +11,7 @@ import {
 } from "@mui/material";
 
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 import LunchDiningOutlinedIcon from "@mui/icons-material/LunchDiningOutlined";
 import FastfoodOutlinedIcon from "@mui/icons-material/FastfoodOutlined";
@@ -21,45 +22,49 @@ import PersonIcon from "@mui/icons-material/Person";
 import EggAltOutlinedIcon from "@mui/icons-material/EggAltOutlined";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 
-const menu = [
-  {
-    nombre: "Productos",
-    ruta: "/productos",
-    icono: <LunchDiningOutlinedIcon />,
-  },
-  {
-    nombre: "Combos",
-    ruta: "/combos",
-    icono: <FastfoodOutlinedIcon />,
-  },
-  {
-    nombre: "Menús",
-    ruta: "/menu",
-    icono: <MenuBookOutlinedIcon />,
-  },
-  {
-    nombre: "Tabla Productos",
-    ruta: "/tabla",
-    icono: <AssignmentOutlinedIcon />,
-  },
-  {
-    nombre: "Procesos",
-    ruta: "/preparacion",
-    icono: <SettingsOutlinedIcon />,
-  },
-  {
-    nombre: "Ingredientes",
-    ruta: "/ingrediente",
-    icono: <EggAltOutlinedIcon />,
-  },
-  {
-    nombre: "Home",
-    ruta: "/home",
-    icono: <HomeOutlinedIcon />,
-  },
-];
+import LanguageSelector from "../LanguageSelector";
 
 export default function Header() {
+  const { t } = useTranslation();
+
+  const menu = [
+    {
+      nombre: t("navigation.products"),
+      ruta: "/productos",
+      icono: <LunchDiningOutlinedIcon />,
+    },
+    {
+      nombre: t("navigation.combos"),
+      ruta: "/combos",
+      icono: <FastfoodOutlinedIcon />,
+    },
+    {
+      nombre: t("navigation.menus"),
+      ruta: "/menu",
+      icono: <MenuBookOutlinedIcon />,
+    },
+    {
+      nombre: t("navigation.productTable"),
+      ruta: "/tabla",
+      icono: <AssignmentOutlinedIcon />,
+    },
+    {
+      nombre: t("navigation.processes"),
+      ruta: "/preparacion",
+      icono: <SettingsOutlinedIcon />,
+    },
+    {
+      nombre: t("navigation.ingredients"),
+      ruta: "/ingrediente",
+      icono: <EggAltOutlinedIcon />,
+    },
+    {
+      nombre: t("navigation.home"),
+      ruta: "/home",
+      icono: <HomeOutlinedIcon />,
+    },
+  ];
+
   return (
     <AppBar
       position="static"
@@ -119,7 +124,7 @@ export default function Header() {
           }}
         >
           {menu.map((item, index) => (
-            <React.Fragment key={item.nombre}>
+            <React.Fragment key={item.ruta}>
               <Button
                 component={Link}
                 to={item.ruta}
@@ -187,6 +192,52 @@ export default function Header() {
           ))}
         </Box>
 
+        <Box
+          sx={{
+            mr: 2,
+            minWidth: 130,
+
+            // Texto seleccionado: English / Español
+            "& .MuiSelect-select": {
+              color: "#ff7a00 !important",
+            },
+
+            // Borde normal
+            "& .MuiOutlinedInput-notchedOutline": {
+              borderColor: "#ff7a00 !important",
+            },
+
+            // Borde al pasar el mouse
+            "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
+              borderColor: "#ff8c1a !important",
+            },
+
+            // Borde cuando está seleccionado
+            "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline":
+              {
+                borderColor: "#ff7a00 !important",
+                borderWidth: "2px",
+              },
+
+            // Texto del label: Language
+            "& .MuiInputLabel-root": {
+              color: "#ff7a00 !important",
+            },
+
+            // Label cuando está seleccionado
+            "& .MuiInputLabel-root.Mui-focused": {
+              color: "#ff7a00 !important",
+            },
+
+            // Flecha del selector
+            "& .MuiSelect-icon": {
+              color: "#ff7a00 !important",
+            },
+          }}
+        >
+          <LanguageSelector />
+        </Box>
+
         <Button
           component={Link}
           to="/login"
@@ -200,6 +251,7 @@ export default function Header() {
             py: 1.2,
             fontWeight: "bold",
             boxShadow: "0 5px 18px rgba(255,122,0,.4)",
+            whiteSpace: "nowrap",
 
             "&:hover": {
               bgcolor: "#ff8c1a",
@@ -208,7 +260,7 @@ export default function Header() {
             },
           }}
         >
-          INICIAR SESIÓN
+          {t("actions.login")}
         </Button>
       </Toolbar>
     </AppBar>

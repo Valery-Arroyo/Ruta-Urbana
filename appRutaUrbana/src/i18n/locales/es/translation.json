@@ -1,0 +1,293 @@
+{
+  "app": {
+    "name": "Ruta Urbana",
+    "slogan": "El sabor de la ciudad"
+  },
+  "navigation": {
+    "home": "Inicio",
+    "products": "Productos",
+    "combos": "Combos",
+    "menus": "Menús",
+    "preparations": "Preparaciones",
+    "productTable": "Tabla de productos",
+    "processes": "Procesos",
+    "ingredients": "Ingredientes",
+    "administration": "Administración"
+  },
+  "actions": {
+    "view": "Ver",
+    "create": "Crear",
+    "edit": "Editar",
+    "save": "Guardar",
+    "update": "Actualizar",
+    "delete": "Eliminar",
+    "cancel": "Cancelar",
+    "back": "Volver",
+    "search": "Buscar",
+    "add": "Agregar",
+    "login": "Iniciar sesión"
+  },
+  "fields": {
+    "name": "Nombre",
+    "price": "Precio",
+    "description": "Descripción",
+    "category": "Categoría",
+    "ingredients": "Ingredientes",
+    "image": "Imagen",
+    "active": "Activo"
+  },
+  "messages": {
+    "loading": "Cargando...",
+    "noResults": "No se encontraron resultados.",
+    "confirmDelete": "¿Desea eliminar este registro?",
+    "saved": "Registro guardado correctamente.",
+    "updated": "Registro actualizado correctamente.",
+    "deleted": "Registro eliminado correctamente.",
+    "error": "Ocurrió un error. Intente nuevamente."
+  },
+  "language": {
+    "label": "Idioma",
+    "spanish": "Español",
+    "english": "Inglés"
+  },
+  "products": {
+    "title": "Gestión de Productos",
+    "new": "Nuevo Producto",
+    "edit": "Editar Producto",
+    "noProducts": "No hay productos registrados.",
+    "productOfTheDay": "Producto del día",
+    "selectedAutomatically": "Seleccionado automáticamente",
+    "confirmDeleteTitle": "Confirmar eliminación",
+    "confirmDeleteMessage": "¿Está seguro que desea eliminar el producto",
+    "selectIngredient": "Seleccionar ingrediente",
+    "chooseIngredient": "Elija un ingrediente",
+    "imagePath": "Ruta de la imagen",
+    "enterImagePath": "Ejemplo: imagenes/hamburguesa.jpg",
+    "keepCurrentImage": "Deje el campo igual para mantener la imagen actual",
+    "messages": {
+      "loadError": "No se pudieron cargar los productos",
+      "created": "Producto creado correctamente",
+      "updated": "Producto actualizado correctamente",
+      "saveError": "Error al guardar el producto",
+      "deleted": "Producto eliminado correctamente",
+      "deleteError": "No se pudo eliminar el producto",
+      "imageRequired": "Debe ingresar una ruta de imagen",
+      "selectIngredient": "Seleccione un ingrediente",
+      "duplicateIngredient": "El ingrediente ya está agregado"
+    }
+  },
+  "combos": {
+    "title": "Gestión de Combos",
+    "new": "Nuevo Combo",
+    "edit": "Editar Combo",
+    "noCombos": "No hay combos registrados.",
+    "confirmDeleteTitle": "Confirmar eliminación",
+    "confirmDeleteMessage": "¿Está seguro que desea eliminar el combo",
+    "comboProducts": "Productos del combo",
+    "selectProduct": "Seleccionar producto",
+    "quantity": "Cantidad",
+    "specialPrice": "Precio especial",
+    "imagePath": "Ruta imagen",
+    "imagePathExample": "Ejemplo: imagenes/combo1.jpg",
+    "messages": {
+      "loadError": "Error cargando combos",
+      "created": "Combo creado correctamente",
+      "updated": "Combo actualizado correctamente",
+      "saveError": "Error guardando combo",
+      "deleted": "Combo eliminado correctamente",
+      "deleteError": "Error eliminando combo",
+      "selectProduct": "Seleccione un producto",
+      "duplicateProduct": "El producto ya está agregado"
+    },
+    "detail": {
+      "notFound": "Combo no encontrado.",
+      "category": "Categoría",
+      "products": "Productos",
+      "price": "Precio",
+      "back": "Volver"
+    }
+  },
+  "menus": {
+    "title": "Gestión de Menús",
+    "new": "Nuevo Menú",
+    "edit": "Editar Menú",
+    "create": "Crear Menú",
+    "noMenus": "No hay menús registrados",
+    "availableNow": "Disponible ahora",
+    "notAvailable": "No disponible",
+    "confirmDeleteTitle": "Confirmar eliminación",
+    "confirmDeleteMessage": "¿Eliminar menú?",
+    "schedule": "Horario del menú",
+    "startTime": "Hora de inicio",
+    "endTime": "Hora de finalización",
+    "hour": "Hora",
+    "minutes": "Minutos",
+    "period": "Periodo",
+    "validity": "Vigencia del menú",
+    "startDate": "Fecha de inicio",
+    "endDate": "Fecha de finalización",
+    "activeMenu": "Menú activo",
+    "addProduct": "Agregar producto",
+    "searchProduct": "Buscar producto",
+    "addCombos": "Agregar combos",
+    "searchCombo": "Buscar combo",
+    "selectedItems": "Items seleccionados",
+    "availableDays": "Días disponibles",
+    "messages": {
+      "loadError": "No se pudieron cargar los menús",
+      "loadProductsError": "No se pudieron cargar productos",
+      "loadCombosError": "No se pudieron cargar combos",
+      "created": "Menú creado correctamente",
+      "updated": "Menú actualizado correctamente",
+      "saveError": "Error al guardar menú",
+      "deleted": "Menú eliminado correctamente",
+      "deleteError": "No se pudo eliminar el menú",
+      "selectProduct": "Seleccione un producto",
+      "selectCombo": "Seleccione un combo",
+      "duplicateProduct": "El producto ya está agregado",
+      "duplicateCombo": "El combo ya está agregado",
+      "loadDetailError": "No se pudieron cargar los productos/combos del menú"
+    },
+    "detail": {
+      "loadError": "No fue posible cargar el menú.",
+      "backToList": "Volver al listado",
+      "status": "Estado",
+      "active": "Activo",
+      "inactive": "Inactivo",
+      "days": "Día(s)",
+      "noDaysDefined": "No definido",
+      "validity": "Vigencia",
+      "noStartDate": "Sin fecha inicial",
+      "noEndDate": "Sin fecha final",
+      "schedule": "Horario",
+      "noItems": "Este menú no tiene productos ni combos registrados.",
+      "price": "Precio",
+      "noName": "Sin nombre",
+      "noDescription": "Sin descripción",
+      "otherCategory": "Sin categoría",
+      "notDefined": "No definida"
+    }
+  },
+  "preparations": {
+    "title": "Procesos",
+    "create": "Crear Proceso",
+    "createNew": "Crear nuevo proceso",
+    "steps": "Pasos",
+    "addStep": "Agregar Paso",
+    "order": "Orden",
+    "station": "Estación",
+    "minutes": "Minutos",
+    "product": "Producto",
+    "deleteStepTitle": "Eliminar paso",
+    "confirmDeleteTitle": "Confirmar eliminación",
+    "confirmDeleteMessage": "¿Está seguro de que desea eliminar todo el proceso de preparación de",
+    "willDeleteSteps": "Se eliminarán",
+    "stepsWord": "paso(s) de preparación.",
+    "deleting": "Eliminando...",
+    "updating": "Actualizando...",
+    "creating": "Creando...",
+    "editTitle": "Editar",
+    "messages": {
+      "loadError": "Error al cargar",
+      "loadStationsError": "Error al cargar estaciones",
+      "loadProductsError": "Error al cargar productos",
+      "onlyIntegers": "Solo se permiten números enteros positivos",
+      "noSteps": "El proceso debe tener al menos un paso",
+      "incompleteSteps": "Completa Orden, Estación y Minutos en todos los pasos",
+      "duplicateOrder": "No se pueden repetir los números de orden",
+      "nonConsecutiveOrder": "Los pasos deben seguir una secuencia consecutiva: 1, 2, 3, ...",
+      "updated": "Proceso actualizado correctamente",
+      "updateError": "Error al actualizar el proceso",
+      "selectProduct": "Selecciona un producto",
+      "addAtLeastOneStep": "Agrega al menos un paso",
+      "created": "Proceso creado correctamente",
+      "createError": "Error al crear el proceso",
+      "deleted": "Proceso eliminado correctamente",
+      "deleteError": "Error al eliminar el proceso"
+    },
+    "detail": {
+      "notFound": "Proceso de preparación no encontrado.",
+      "backToList": "Volver a Preparaciones",
+      "flowTitle": "Flujo de Preparación por Pasos",
+      "step": "Paso",
+      "minutesUnit": "mins"
+    }
+  },
+  "ingredientsPage": {
+    "title": "Gestión de Ingredientes",
+    "new": "Nuevo Ingrediente",
+    "edit": "Editar Ingrediente",
+    "columnId": "ID",
+    "columnName": "Ingrediente",
+    "columnActions": "Acciones",
+    "nameLabel": "Nombre del ingrediente",
+    "confirmDelete": "¿Está seguro de eliminar este ingrediente?",
+    "messages": {
+      "loadError": "No se pudieron cargar los ingredientes.",
+      "deleted": "Ingrediente eliminado correctamente.",
+      "deleteError": "No se pudo eliminar el ingrediente.",
+      "nameRequired": "Debe ingresar el nombre del ingrediente.",
+      "updated": "Ingrediente actualizado correctamente.",
+      "created": "Ingrediente creado correctamente.",
+      "saveError": "Ocurrió un error al guardar el ingrediente."
+    }
+  },
+  "productTable": {
+    "title": "Administración de Productos",
+    "columnId": "ID",
+    "columnName": "Nombre",
+    "columnDescription": "Descripción",
+    "columnPrice": "Precio",
+    "columnStatus": "Estado",
+    "columnActions": "Acciones",
+    "active": "Activo",
+    "inactive": "Inactivo"
+  },
+  "productDetail": {
+    "notFound": "Producto no encontrado.",
+    "category": "Categoría",
+    "ingredients": "Ingredientes",
+    "price": "Precio"
+  },
+  "home": {
+    "badge": "FOOD TRUCK",
+    "tagline": "El sabor de la ciudad en cada parada",
+    "description": "Ruta Urbana es una experiencia gastronómica inspirada en el movimiento, la energía y los sabores de la ciudad. Nuestro food truck combina hamburguesas, entradas, bebidas y combos especiales en un concepto moderno, dinámico y lleno de sabor.",
+    "exploreProducts": "Explorar productos",
+    "viewMenus": "Ver menús",
+    "essenceLabel": "Nuestra esencia",
+    "essenceTitle": "Sabor urbano sobre ruedas",
+    "essenceDescription": "Cada preparación de Ruta Urbana representa una parada diferente: ingredientes frescos, combinaciones originales y una propuesta gastronómica creada para quienes disfrutan descubrir nuevos sabores.",
+    "explore": "Explorar →",
+    "sections": {
+      "products": {
+        "title": "Productos",
+        "description": "Descubre hamburguesas, entradas, bebidas y postres preparados con el auténtico sabor urbano."
+      },
+      "combos": {
+        "title": "Combos",
+        "description": "Encuentra combinaciones pensadas para compartir, disfrutar y vivir una experiencia completa."
+      },
+      "menus": {
+        "title": "Menús",
+        "description": "Consulta las opciones disponibles según el horario, el día y la temporada."
+      },
+      "ingredients": {
+        "title": "Ingredientes",
+        "description": "Conoce y administra los ingredientes que forman parte de cada preparación."
+      }
+    },
+    "finalTitle": "Más que comida rápida",
+    "finalSubtitle": "Llevamos el sabor de la ciudad a cada cliente."
+  },
+  "notFound": {
+    "title": "Recurso no encontrado",
+    "message": "La página que está buscando podría haber sido eliminada, cambió su nombre o no está disponible temporalmente"
+  },
+  "footer": {
+    "slogan": "El sabor de la ciudad.",
+    "developers": "DESARROLLADORES",
+    "institution": "ISW-613 · Universidad Técnica Nacional",
+    "rights": "Todos los derechos reservados."
+  }
+}

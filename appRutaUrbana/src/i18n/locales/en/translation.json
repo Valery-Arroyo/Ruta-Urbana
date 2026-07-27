@@ -1,0 +1,293 @@
+{
+  "app": {
+    "name": "Ruta Urbana",
+    "slogan": "The taste of the city"
+  },
+  "navigation": {
+    "home": "Home",
+    "products": "Products",
+    "combos": "Combos",
+    "menus": "Menus",
+    "preparations": "Preparations",
+    "productTable": "Product table",
+    "processes": "Processes",
+    "ingredients": "Ingredients",
+    "administration": "Administration"
+  },
+  "actions": {
+    "view": "View",
+    "create": "Create",
+    "edit": "Edit",
+    "save": "Save",
+    "update": "Update",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "back": "Back",
+    "search": "Search",
+    "add": "Add",
+    "login": "Log in"
+  },
+  "fields": {
+    "name": "Name",
+    "price": "Price",
+    "description": "Description",
+    "category": "Category",
+    "ingredients": "Ingredients",
+    "image": "Image",
+    "active": "Active"
+  },
+  "messages": {
+    "loading": "Loading...",
+    "noResults": "No results were found.",
+    "confirmDelete": "Do you want to delete this record?",
+    "saved": "Record saved successfully.",
+    "updated": "Record updated successfully.",
+    "deleted": "Record deleted successfully.",
+    "error": "An error occurred. Please try again."
+  },
+  "language": {
+    "label": "Language",
+    "spanish": "Spanish",
+    "english": "English"
+  },
+  "products": {
+    "title": "Product Management",
+    "new": "New Product",
+    "edit": "Edit Product",
+    "noProducts": "No products registered.",
+    "productOfTheDay": "Product of the day",
+    "selectedAutomatically": "Automatically selected",
+    "confirmDeleteTitle": "Confirm deletion",
+    "confirmDeleteMessage": "Are you sure you want to delete the product",
+    "selectIngredient": "Select ingredient",
+    "chooseIngredient": "Choose an ingredient",
+    "imagePath": "Image path",
+    "enterImagePath": "Example: imagenes/hamburguesa.jpg",
+    "keepCurrentImage": "Leave the field unchanged to keep the current image",
+    "messages": {
+      "loadError": "Products could not be loaded",
+      "created": "Product created successfully",
+      "updated": "Product updated successfully",
+      "saveError": "Error saving the product",
+      "deleted": "Product deleted successfully",
+      "deleteError": "The product could not be deleted",
+      "imageRequired": "You must enter an image path",
+      "selectIngredient": "Select an ingredient",
+      "duplicateIngredient": "The ingredient is already added"
+    }
+  },
+  "combos": {
+    "title": "Combo Management",
+    "new": "New Combo",
+    "edit": "Edit Combo",
+    "noCombos": "No combos registered.",
+    "confirmDeleteTitle": "Confirm deletion",
+    "confirmDeleteMessage": "Are you sure you want to delete the combo",
+    "comboProducts": "Combo products",
+    "selectProduct": "Select product",
+    "quantity": "Quantity",
+    "specialPrice": "Special price",
+    "imagePath": "Image path",
+    "imagePathExample": "Example: imagenes/combo1.jpg",
+    "messages": {
+      "loadError": "Error loading combos",
+      "created": "Combo created successfully",
+      "updated": "Combo updated successfully",
+      "saveError": "Error saving combo",
+      "deleted": "Combo deleted successfully",
+      "deleteError": "Error deleting combo",
+      "selectProduct": "Select a product",
+      "duplicateProduct": "The product is already added"
+    },
+    "detail": {
+      "notFound": "Combo not found.",
+      "category": "Category",
+      "products": "Products",
+      "price": "Price",
+      "back": "Back"
+    }
+  },
+  "menus": {
+    "title": "Menu Management",
+    "new": "New Menu",
+    "edit": "Edit Menu",
+    "create": "Create Menu",
+    "noMenus": "No menus registered",
+    "availableNow": "Available now",
+    "notAvailable": "Not available",
+    "confirmDeleteTitle": "Confirm deletion",
+    "confirmDeleteMessage": "Delete menu?",
+    "schedule": "Menu schedule",
+    "startTime": "Start time",
+    "endTime": "End time",
+    "hour": "Hour",
+    "minutes": "Minutes",
+    "period": "Period",
+    "validity": "Menu validity",
+    "startDate": "Start date",
+    "endDate": "End date",
+    "activeMenu": "Active menu",
+    "addProduct": "Add product",
+    "searchProduct": "Search product",
+    "addCombos": "Add combos",
+    "searchCombo": "Search combo",
+    "selectedItems": "Selected items",
+    "availableDays": "Available days",
+    "messages": {
+      "loadError": "Menus could not be loaded",
+      "loadProductsError": "Products could not be loaded",
+      "loadCombosError": "Combos could not be loaded",
+      "created": "Menu created successfully",
+      "updated": "Menu updated successfully",
+      "saveError": "Error saving menu",
+      "deleted": "Menu deleted successfully",
+      "deleteError": "The menu could not be deleted",
+      "selectProduct": "Select a product",
+      "selectCombo": "Select a combo",
+      "duplicateProduct": "The product is already added",
+      "duplicateCombo": "The combo is already added",
+      "loadDetailError": "The menu's products/combos could not be loaded"
+    },
+    "detail": {
+      "loadError": "The menu could not be loaded.",
+      "backToList": "Back to list",
+      "status": "Status",
+      "active": "Active",
+      "inactive": "Inactive",
+      "days": "Day(s)",
+      "noDaysDefined": "Not defined",
+      "validity": "Validity",
+      "noStartDate": "No start date",
+      "noEndDate": "No end date",
+      "schedule": "Schedule",
+      "noItems": "This menu has no products or combos registered.",
+      "price": "Price",
+      "noName": "No name",
+      "noDescription": "No description",
+      "otherCategory": "No category",
+      "notDefined": "Not defined"
+    }
+  },
+  "preparations": {
+    "title": "Processes",
+    "create": "Create Process",
+    "createNew": "Create new process",
+    "steps": "Steps",
+    "addStep": "Add Step",
+    "order": "Order",
+    "station": "Station",
+    "minutes": "Minutes",
+    "product": "Product",
+    "deleteStepTitle": "Delete step",
+    "confirmDeleteTitle": "Confirm deletion",
+    "confirmDeleteMessage": "Are you sure you want to delete the entire preparation process for",
+    "willDeleteSteps": "This will delete",
+    "stepsWord": "preparation step(s).",
+    "deleting": "Deleting...",
+    "updating": "Updating...",
+    "creating": "Creating...",
+    "editTitle": "Edit",
+    "messages": {
+      "loadError": "Error loading",
+      "loadStationsError": "Error loading stations",
+      "loadProductsError": "Error loading products",
+      "onlyIntegers": "Only positive whole numbers are allowed",
+      "noSteps": "The process must have at least one step",
+      "incompleteSteps": "Complete Order, Station and Minutes for all steps",
+      "duplicateOrder": "Order numbers cannot be repeated",
+      "nonConsecutiveOrder": "Steps must follow a consecutive sequence: 1, 2, 3, ...",
+      "updated": "Process updated successfully",
+      "updateError": "Error updating the process",
+      "selectProduct": "Select a product",
+      "addAtLeastOneStep": "Add at least one step",
+      "created": "Process created successfully",
+      "createError": "Error creating the process",
+      "deleted": "Process deleted successfully",
+      "deleteError": "Error deleting the process"
+    },
+    "detail": {
+      "notFound": "Preparation process not found.",
+      "backToList": "Back to Preparations",
+      "flowTitle": "Preparation Flow by Steps",
+      "step": "Step",
+      "minutesUnit": "mins"
+    }
+  },
+  "ingredientsPage": {
+    "title": "Ingredient Management",
+    "new": "New Ingredient",
+    "edit": "Edit Ingredient",
+    "columnId": "ID",
+    "columnName": "Ingredient",
+    "columnActions": "Actions",
+    "nameLabel": "Ingredient name",
+    "confirmDelete": "Are you sure you want to delete this ingredient?",
+    "messages": {
+      "loadError": "The ingredients could not be loaded.",
+      "deleted": "Ingredient deleted successfully.",
+      "deleteError": "The ingredient could not be deleted.",
+      "nameRequired": "You must enter the ingredient's name.",
+      "updated": "Ingredient updated successfully.",
+      "created": "Ingredient created successfully.",
+      "saveError": "An error occurred while saving the ingredient."
+    }
+  },
+  "productTable": {
+    "title": "Product Administration",
+    "columnId": "ID",
+    "columnName": "Name",
+    "columnDescription": "Description",
+    "columnPrice": "Price",
+    "columnStatus": "Status",
+    "columnActions": "Actions",
+    "active": "Active",
+    "inactive": "Inactive"
+  },
+  "productDetail": {
+    "notFound": "Product not found.",
+    "category": "Category",
+    "ingredients": "Ingredients",
+    "price": "Price"
+  },
+  "home": {
+    "badge": "FOOD TRUCK",
+    "tagline": "The taste of the city at every stop",
+    "description": "Ruta Urbana is a gastronomic experience inspired by the movement, energy and flavors of the city. Our food truck combines burgers, appetizers, drinks and special combos in a modern, dynamic concept full of flavor.",
+    "exploreProducts": "Explore products",
+    "viewMenus": "View menus",
+    "essenceLabel": "Our essence",
+    "essenceTitle": "Urban flavor on wheels",
+    "essenceDescription": "Every Ruta Urbana preparation represents a different stop: fresh ingredients, original combinations and a gastronomic proposal created for those who enjoy discovering new flavors.",
+    "explore": "Explore →",
+    "sections": {
+      "products": {
+        "title": "Products",
+        "description": "Discover burgers, appetizers, drinks and desserts prepared with authentic urban flavor."
+      },
+      "combos": {
+        "title": "Combos",
+        "description": "Find combinations designed to share, enjoy and experience a complete meal."
+      },
+      "menus": {
+        "title": "Menus",
+        "description": "Check the available options based on time, day and season."
+      },
+      "ingredients": {
+        "title": "Ingredients",
+        "description": "Learn about and manage the ingredients that are part of each preparation."
+      }
+    },
+    "finalTitle": "More than fast food",
+    "finalSubtitle": "We bring the taste of the city to every customer."
+  },
+  "notFound": {
+    "title": "Resource not found",
+    "message": "The page you are looking for may have been removed, had its name changed, or is temporarily unavailable"
+  },
+  "footer": {
+    "slogan": "The taste of the city.",
+    "developers": "DEVELOPERS",
+    "institution": "ISW-613 · National Technical University",
+    "rights": "All rights reserved."
+  }
+}
