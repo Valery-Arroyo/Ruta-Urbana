@@ -1,5 +1,6 @@
 // eslint-disable-next-line no-unused-vars
 import * as React from "react";
+import { useEffect, useState } from "react";
 
 import {
   AppBar,
@@ -21,11 +22,25 @@ import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import PersonIcon from "@mui/icons-material/Person";
 import EggAltOutlinedIcon from "@mui/icons-material/EggAltOutlined";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
+import LocalFireDepartmentIcon from "@mui/icons-material/LocalFireDepartment";
 
 import LanguageSelector from "../LanguageSelector";
+import ProductoService from "../../services/ProductoService";
 
 export default function Header() {
   const { t } = useTranslation();
+
+  const [productoDelDia, setProductoDelDia] = useState(null);
+
+  useEffect(() => {
+    ProductoService.getProductoDelDia()
+      .then((response) => {
+        setProductoDelDia(response.data || null);
+      })
+      .catch((error) => {
+        console.error("Error cargando producto del día", error);
+      });
+  }, []);
 
   const menu = [
     {
@@ -191,6 +206,51 @@ export default function Header() {
             </React.Fragment>
           ))}
         </Box>
+
+        {productoDelDia?.IdProducto && (
+          <Button
+            component={Link}
+            to={`/productos/${productoDelDia.IdProducto}`}
+            startIcon={<LocalFireDepartmentIcon />}
+            sx={{
+              mr: 2,
+              px: 2.5,
+              py: 1,
+              borderRadius: "30px",
+              textTransform: "none",
+              color: "#111",
+              background: "linear-gradient(90deg,#ff7a00,#ffb347)",
+              boxShadow: "0 5px 18px rgba(255,122,0,.5)",
+              whiteSpace: "nowrap",
+              animation: "pulsePromo 2.2s ease-in-out infinite",
+
+              "@keyframes pulsePromo": {
+                "0%, 100%": {
+                  boxShadow: "0 5px 18px rgba(255,122,0,.5)",
+                },
+                "50%": {
+                  boxShadow: "0 5px 26px rgba(255,122,0,.9)",
+                },
+              },
+
+              "&:hover": {
+                background: "linear-gradient(90deg,#ff8c1a,#ffc56e)",
+                transform: "translateY(-2px)",
+                transition: ".3s",
+              },
+            }}
+          >
+            <Box sx={{ display: "flex", flexDirection: "column", lineHeight: 1.1, alignItems: "flex-start" }}>
+              <Typography sx={{ fontSize: 11, fontWeight: 800, letterSpacing: 1 }}>
+                {t("products.productOfTheDay")}
+              </Typography>
+
+              <Typography sx={{ fontSize: 14, fontWeight: 700 }}>
+                {productoDelDia.Nombre}
+              </Typography>
+            </Box>
+          </Button>
+        )}
 
         <Box
           sx={{

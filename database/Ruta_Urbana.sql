@@ -728,3 +728,276 @@ USE RutaUrbana;
 UPDATE Menu
 SET HoraFin = '23:00:00'
 WHERE IdMenu = 2;
+
+USE RutaUrbana;
+
+-- Eliminar disponibilidades actuales del menú
+DELETE FROM MenuDisponibilidad
+WHERE IdMenu = 3;
+
+-- Agregar disponibilidad de lunes a viernes
+INSERT INTO MenuDisponibilidad (IdMenu, DiaSemana)
+VALUES
+(3, 'Lunes'),
+(3, 'Martes'),
+(3, 'Miércoles'),
+(3, 'Jueves'),
+(3, 'Viernes');
+
+DELETE FROM MenuItem WHERE IdMenu = 1;
+
+INSERT INTO MenuItem (IdMenu, IdProducto, IdCombo) VALUES
+(1, 17, NULL), -- Café Americano
+(1, 12, NULL), -- Bizcocho de Chocolate
+(1, NULL, 6),  -- Combo Goloso
+(1, NULL, 5);  -- Combo Barbacoa Familiar
+
+USE RutaUrbana;
+SELECT IdProducto, Imagen, EsPrincipal
+FROM ProductoImagen
+WHERE IdProducto = 17;
+
+SELECT IdProductoImagen, IdProducto, Imagen, EsPrincipal
+FROM ProductoImagen
+WHERE IdProducto = 17;
+
+SELECT 
+    IdProducto,
+    COUNT(*) cantidad
+FROM ProductoImagen
+WHERE EsPrincipal = 1
+GROUP BY IdProducto
+HAVING cantidad > 1;
+
+USE RutaUrbana;
+SELECT *
+FROM MenuItem
+WHERE IdMenu = 3;
+
+SELECT 
+    pi.IdImagen,
+    pi.Imagen,
+    pi.EsPrincipal,
+    pi.IdProducto,
+    p.Nombre
+FROM ProductoImagen pi
+INNER JOIN Producto p
+ON pi.IdProducto = p.IdProducto
+WHERE pi.EsPrincipal = 1
+ORDER BY pi.IdProducto;
+
+ALTER TABLE ProductoImagen
+ADD UNIQUE KEY unica_imagen_principal (IdProducto, EsPrincipal);
+
+SELECT 
+    IdProducto,
+    COUNT(*) AS Cantidad
+FROM ProductoImagen
+WHERE EsPrincipal = 1
+GROUP BY IdProducto
+HAVING COUNT(*) > 1;
+
+
+SELECT * FROM MenuItem WHERE IdMenu = 3;
+
+
+SELECT *
+FROM MenuItem
+WHERE IdMenu = 1;
+
+SELECT * FROM MenuItem WHERE IdMenu = 1;
+
+SELECT *
+FROM MenuItem;
+SELECT *
+FROM MenuItem
+WHERE IdMenu = 1;
+INSERT INTO MenuItem (IdMenu, IdProducto, IdCombo) VALUES
+(1, 17, NULL),
+(1, 12, NULL),
+(1, NULL, 6),
+(1, NULL, 5);
+
+SELECT
+    mi.IdProducto,
+    p.Nombre,
+    p.Precio
+FROM MenuItem mi
+INNER JOIN Producto p
+    ON mi.IdProducto = p.IdProducto
+WHERE mi.IdMenu = 3
+  AND mi.IdProducto IS NOT NULL;
+  SELECT
+    IdMenuItem,
+    IdMenu,
+    IdProducto,
+    IdCombo
+FROM MenuItem
+WHERE IdMenu = 3;
+
+INSERT INTO MenuItem (IdMenu, IdProducto, IdCombo) VALUES
+(3, 1,  NULL),   -- Papas Ruta
+(3, 6,  NULL),   -- Ruta Clásica
+(3, 7,  NULL),   -- La Doble Ruta
+(3, 8,  NULL),   -- Pollo Crujiente
+(3, 13, NULL),   -- Helado de Oreo
+(3, 15, NULL),   -- Refresco Natural
+(3, 16, NULL),   -- Limonada
+(3, NULL, 1),    -- Combo Clásico
+(3, NULL, 2),    -- Combo Doble
+(3, NULL, 6);    -- Combo Goloso
+SELECT * FROM MenuItem WHERE IdMenu = 8;
+
+USE RutaUrbana;
+SELECT * FROM Producto;
+
+SELECT * FROM Combo;
+
+SELECT *
+FROM MenuDisponibilidad
+WHERE IdMenu = 3;
+
+USE RutaUrbana;
+
+INSERT INTO MenuDisponibilidad (
+    IdMenu,
+    FechaInicio,
+    FechaFin,
+    DiaSemana
+)
+VALUES
+    (1, NULL, NULL, 'Lunes'),
+    (1, NULL, NULL, 'Martes'),
+    (1, NULL, NULL, 'Miércoles'),
+    (1, NULL, NULL, 'Jueves'),
+    (1, NULL, NULL, 'Viernes'),
+
+    (2, NULL, NULL, 'Lunes'),
+    (2, NULL, NULL, 'Martes'),
+    (2, NULL, NULL, 'Miércoles'),
+    (2, NULL, NULL, 'Jueves'),
+    (2, NULL, NULL, 'Viernes'),
+
+    (3, NULL, NULL, 'Lunes'),
+    (3, NULL, NULL, 'Martes'),
+    (3, NULL, NULL, 'Miércoles'),
+    (3, NULL, NULL, 'Jueves'),
+    (3, NULL, NULL, 'Viernes'),
+
+    (4, '2026-12-24', '2026-12-26', NULL),
+
+    (5, NULL, NULL, 'Sábado'),
+    (5, NULL, NULL, 'Domingo'),
+
+    (6, NULL, NULL, 'Lunes'),
+    (6, NULL, NULL, 'Martes'),
+    (6, NULL, NULL, 'Miércoles'),
+    (6, NULL, NULL, 'Jueves'),
+    (6, NULL, NULL, 'Viernes'),
+    (6, NULL, NULL, 'Sábado'),
+    (6, NULL, NULL, 'Domingo');
+    
+    SELECT *
+FROM MenuDisponibilidad
+ORDER BY IdMenu, IdDisponibilidad;
+
+DELETE mi1
+FROM MenuItem mi1
+INNER JOIN MenuItem mi2
+    ON mi1.IdMenu = mi2.IdMenu
+   AND mi1.IdMenuItem > mi2.IdMenuItem
+   AND (
+        (
+            mi1.IdProducto = mi2.IdProducto
+            AND mi1.IdProducto IS NOT NULL
+        )
+        OR
+        (
+            mi1.IdCombo = mi2.IdCombo
+            AND mi1.IdCombo IS NOT NULL
+        )
+   );
+   
+   SET SQL_SAFE_UPDATES = 0;
+   DELETE mi1
+FROM MenuItem mi1
+INNER JOIN MenuItem mi2
+    ON mi1.IdMenu = mi2.IdMenu
+   AND mi1.IdMenuItem > mi2.IdMenuItem
+   AND (
+        (
+            mi1.IdProducto = mi2.IdProducto
+            AND mi1.IdProducto IS NOT NULL
+        )
+        OR
+        (
+            mi1.IdCombo = mi2.IdCombo
+            AND mi1.IdCombo IS NOT NULL
+        )
+   );
+   SET SQL_SAFE_UPDATES = 1;
+   
+   SELECT
+    IdMenu,
+    IdProducto,
+    IdCombo,
+    COUNT(*) AS Cantidad
+FROM MenuItem
+GROUP BY
+    IdMenu,
+    IdProducto,
+    IdCombo
+HAVING COUNT(*) > 1;
+
+SELECT *
+FROM MenuItem
+ORDER BY IdMenu, IdMenuItem;
+
+SELECT
+    mi.IdMenuItem,
+    mi.IdMenu,
+    mi.IdProducto,
+    p.Nombre,
+    mi.IdCombo
+FROM MenuItem mi
+LEFT JOIN Producto p
+    ON p.IdProducto = mi.IdProducto
+WHERE mi.IdMenu = 5
+  AND mi.IdProducto = 16;
+  
+  SELECT
+    IdImagen,
+    IdProducto,
+    Imagen,
+    EsPrincipal
+FROM ProductoImagen
+WHERE IdProducto = 16
+  AND EsPrincipal = 1;
+  
+  SET SQL_SAFE_UPDATES = 0;
+
+DELETE FROM ProductoImagen
+WHERE IdProducto = 16
+  AND EsPrincipal = 1
+  AND IdImagen NOT IN (
+    SELECT IdImagen
+    FROM (
+      SELECT MIN(IdImagen) AS IdImagen
+      FROM ProductoImagen
+      WHERE IdProducto = 16
+        AND EsPrincipal = 1
+    ) AS principal
+  );
+
+SET SQL_SAFE_UPDATES = 1;
+
+ALTER TABLE ProductoImagen
+ADD UNIQUE KEY uq_producto_imagen_principal (
+  IdProducto,
+  EsPrincipal
+);
+
+USE RutaUrbana;
+ALTER TABLE Producto
+ADD COLUMN EsProductoDelDia TINYINT(1) NOT NULL DEFAULT 0,
+ADD COLUMN FechaProductoDelDia DATE NULL;
