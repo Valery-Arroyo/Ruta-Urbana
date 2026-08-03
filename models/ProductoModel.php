@@ -117,44 +117,59 @@ class ProductoModel
     public function productoDelDia()
     {
         try {
-            $sql = "SELECT 
-                    p.IdProducto,
-                    p.Nombre,
-                    p.Descripcion,
-                    p.Precio,
-                    p.Activo,
-                    p.EsProductoDelDia,
-                    p.FechaProductoDelDia,
-                    p.IdCategoria,
-                    c.Nombre AS NombreCategoria,
-                    pi.Imagen
-                FROM Producto p
-                LEFT JOIN Categoria c
-                    ON p.IdCategoria = c.IdCategoria
-                LEFT JOIN ProductoImagen pi
-                    ON p.IdProducto = pi.IdProducto
-                   AND pi.EsPrincipal = 1
-                WHERE p.EsProductoDelDia = 1
-                  AND p.FechaProductoDelDia = CURDATE()
-                  AND p.Activo = 1
-                LIMIT 1";
-
-            $resultado = $this->enlace->ExecuteSQL($sql);
-
-            if (!empty($resultado) && isset($resultado[0])) {
-                $resultado[0]->Ingredientes =
-                    $this->getIngredientesByProducto(
-                        $resultado[0]->IdProducto
-                    );
-
-                return $resultado[0];
-            }
-
-            return null;
+            /*
+             * Solo LEE cuál es el producto del día vigente. La
+             * asignación (elegir uno nuevo y enviar el correo) la
+             * hace exclusivamente la tarea programada del proyecto
+             * .NET (ProductoDelDiaService.cs). Si este método
+             * también asignara uno nuevo, le "robaría" el trabajo
+             * a la tarea programada antes de que ella lo note, y
+             * como su lógica es "si ya existe uno para hoy, no
+             * hago nada", el correo nunca se llegaría a enviar.
+             */
+            return $this->obtenerProductoDelDiaDeHoy();
         } catch (Exception $e) {
             handleException($e);
             return null;
         }
+    }
+
+    private function obtenerProductoDelDiaDeHoy()
+    {
+        $sql = "SELECT
+                p.IdProducto,
+                p.Nombre,
+                p.Descripcion,
+                p.Precio,
+                p.Activo,
+                p.EsProductoDelDia,
+                p.FechaProductoDelDia,
+                p.IdCategoria,
+                c.Nombre AS NombreCategoria,
+                pi.Imagen
+            FROM Producto p
+            LEFT JOIN Categoria c
+                ON p.IdCategoria = c.IdCategoria
+            LEFT JOIN ProductoImagen pi
+                ON p.IdProducto = pi.IdProducto
+               AND pi.EsPrincipal = 1
+            WHERE p.EsProductoDelDia = 1
+              AND p.FechaProductoDelDia = CURDATE()
+              AND p.Activo = 1
+            LIMIT 1";
+
+        $resultado = $this->enlace->ExecuteSQL($sql);
+
+        if (!empty($resultado) && isset($resultado[0])) {
+            $resultado[0]->Ingredientes =
+                $this->getIngredientesByProducto(
+                    $resultado[0]->IdProducto
+                );
+
+            return $resultado[0];
+        }
+
+        return null;
     }
 
     public function create($data)

@@ -69,6 +69,7 @@ export default function GestionProductos() {
   const { t, i18n } = useTranslation();
 
   const [data, setData] = useState([]);
+  const [productoDelDiaId, setProductoDelDiaId] = useState(null);
   const [open, setOpen] = useState(false);
 
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
@@ -111,6 +112,7 @@ export default function GestionProductos() {
 
   useEffect(() => {
     cargarProductos();
+    cargarProductoDelDia();
     cargarIngredientes();
     cargarCategorias();
   }, []);
@@ -124,6 +126,23 @@ export default function GestionProductos() {
       console.error("Error cargando productos", error);
 
       toast.error(t("products.messages.loadError"));
+    }
+  };
+
+  /*
+   * Consulta el endpoint que valida la fecha en el servidor
+   * (CURDATE()) y, si es necesario, elige un nuevo producto del
+   * día ahí mismo. Se usa el IdProducto que devuelve, en vez del
+   * flag EsProductoDelDia que viene con la lista completa, porque
+   * ese flag puede quedar desactualizado de un día para otro.
+   */
+  const cargarProductoDelDia = async () => {
+    try {
+      const response = await ProductoService.getProductoDelDia();
+
+      setProductoDelDiaId(response.data?.IdProducto ?? null);
+    } catch (error) {
+      console.error("Error cargando producto del día", error);
     }
   };
 
@@ -346,19 +365,15 @@ export default function GestionProductos() {
         ) : (
           data.map((prod) => {
             /*
-             * MySQL/PHP puede devolver el valor como número,
-             * booleano o cadena. Esta validación permite
-             * reconocer cualquiera de esos formatos.
+             * Se compara contra el IdProducto que devolvió el
+             * endpoint productoDelDia (que valida la fecha en el
+             * servidor), no contra el flag EsProductoDelDia de esta
+             * lista, que puede quedar desactualizado de un día
+             * para otro.
              */
-            console.log(
-              prod.Nombre,
-              prod.EsProductoDelDia,
-              Number(prod.EsProductoDelDia) === 1,
-            );
-
             const esProductoDelDia =
-              prod.EsProductoDelDia === true ||
-              Number(prod.EsProductoDelDia) === 1;
+              productoDelDiaId !== null &&
+              Number(prod.IdProducto) === Number(productoDelDiaId);
 
             return (
               <Card
