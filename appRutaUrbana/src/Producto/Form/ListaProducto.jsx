@@ -500,6 +500,20 @@ export default function GestionProductos() {
                       },
                     )}
                   </Typography>
+
+                  {esProductoDelDia && (
+                    <Typography
+                      align="center"
+                      sx={{
+                        color: "rgba(255,255,255,.7)",
+                        fontSize: "0.75rem",
+                        mt: 1,
+                        fontStyle: "italic",
+                      }}
+                    >
+                      {t("products.selectedAutomatically")}
+                    </Typography>
+                  )}
                 </CardContent>
 
                 <CardActions

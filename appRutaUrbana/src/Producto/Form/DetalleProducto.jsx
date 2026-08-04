@@ -22,7 +22,6 @@ export default function DetalleProducto() {
 
   const [producto, setProducto] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [productoDelDiaId, setProductoDelDiaId] = useState(null);
 
   useEffect(() => {
     ProductoService.getProducto(id)
@@ -36,20 +35,6 @@ export default function DetalleProducto() {
         setLoading(false);
       });
   }, [id]);
-
-  useEffect(() => {
-    ProductoService.getProductoDelDia()
-      .then((response) => {
-        setProductoDelDiaId(response.data?.IdProducto ?? null);
-      })
-      .catch((error) => {
-        console.error("Error cargando producto del día", error);
-      });
-  }, []);
-
-  const esProductoDelDia =
-    productoDelDiaId !== null &&
-    Number(id) === Number(productoDelDiaId);
 
   if (loading)
     return (
@@ -88,42 +73,10 @@ export default function DetalleProducto() {
           display: "flex",
           flexDirection: "column",
           borderRadius: 4,
-
-          bgcolor: esProductoDelDia ? "#111111" : "background.paper",
-          color: esProductoDelDia ? "#FFFFFF" : "inherit",
-
-          border: esProductoDelDia
-            ? "3px solid #FF8C00"
-            : "2px solid #FF8C00",
-
-          boxShadow: esProductoDelDia
-            ? "0 10px 30px rgba(255,140,0,0.45)"
-            : "0 10px 25px rgba(0,0,0,0.15)",
+          border: "2px solid #FF8C00",
+          boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
         }}
       >
-        {esProductoDelDia && (
-          <Box
-            sx={{
-              bgcolor: "#000000",
-              color: "#FF8C00",
-              textAlign: "center",
-              py: 1.2,
-              px: 1,
-              mb: 2,
-              mx: -3,
-              mt: -3,
-              fontWeight: "bold",
-              letterSpacing: "0.12rem",
-              fontSize: "0.9rem",
-              borderBottom: "1px solid rgba(255,140,0,.45)",
-              borderTopLeftRadius: 16,
-              borderTopRightRadius: 16,
-            }}
-          >
-            ⭐ {t("products.productOfTheDay")} ⭐
-          </Box>
-        )}
-
         <Button
           variant="outlined"
           startIcon={<ArrowBackIcon />}
@@ -131,15 +84,13 @@ export default function DetalleProducto() {
           sx={{
             mb: 2,
             alignSelf: "flex-start",
-            color: esProductoDelDia ? "#FFFFFF" : "black",
-            borderColor: esProductoDelDia ? "#FFFFFF" : "black",
+            color: "black",
+            borderColor: "black",
             fontWeight: "bold",
             textTransform: "none",
             "&:hover": {
-              borderColor: esProductoDelDia ? "#FF8C00" : "black",
-              backgroundColor: esProductoDelDia
-                ? "rgba(255,255,255,.08)"
-                : "#FFF3E0",
+              borderColor: "black",
+              backgroundColor: "#FFF3E0",
             },
           }}
         >
@@ -168,7 +119,7 @@ export default function DetalleProducto() {
           sx={{
             mt: 2,
             fontSize: "1.05rem",
-            color: esProductoDelDia ? "rgba(255,255,255,.75)" : "text.secondary",
+            color: "text.secondary",
             letterSpacing: 0.5,
           }}
         >
@@ -229,9 +180,7 @@ export default function DetalleProducto() {
             alignItems: "center",
             mt: 3,
             pt: 2,
-            borderTop: esProductoDelDia
-              ? "1px solid rgba(255,255,255,.2)"
-              : "1px solid #e0e0e0",
+            borderTop: "1px solid #e0e0e0",
           }}
         >
           <Typography
@@ -247,7 +196,7 @@ export default function DetalleProducto() {
             variant="h5"
             sx={{
               fontWeight: "bold",
-              color: esProductoDelDia ? "#FF8C00" : "black",
+              color: "black",
               fontSize: "1.7rem",
             }}
           >
