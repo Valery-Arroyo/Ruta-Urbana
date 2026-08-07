@@ -3,7 +3,6 @@ class CategoriaModel
 {
     public $enlace;
 
-    // CORRECCIÓN: El constructor de PHP requiere doble guion bajo (__construct)
     public function __construct()
     {
         $this->enlace = new MySqlConnect();
@@ -29,7 +28,7 @@ class CategoriaModel
         try {
             $sql = "SELECT IdCategoria, Nombre FROM Categoria";
             if ($id !== null) {
-                // CORRECCIÓN: Se agregó un espacio antes del WHERE para evitar que se pegue con el texto de arriba
+               
                 $sql .= " WHERE IdCategoria = $id";
             }
             $resultado = $this->enlace->ExecuteSQL($sql);
