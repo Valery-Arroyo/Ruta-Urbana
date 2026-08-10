@@ -325,7 +325,7 @@
     "subtotal": "Subtotal",
     "tax": "Impuesto",
     "observations": "Observaciones",
-    "subtotalWithoutTax": "Subtotal sin impuesto",
+    "subtotalWithoutTax": "Total sin impuesto",
     "shippingCost": "Costo de envío",
     "totalWithTax": "Total con impuesto",
     "selectClient": "Seleccione un cliente",

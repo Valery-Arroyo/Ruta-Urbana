@@ -325,7 +325,7 @@
     "subtotal": "Subtotal",
     "tax": "Tax",
     "observations": "Observations",
-    "subtotalWithoutTax": "Subtotal without tax",
+    "subtotalWithoutTax": "Total without tax",
     "shippingCost": "Shipping cost",
     "totalWithTax": "Total with tax",
     "selectClient": "Select a client",
