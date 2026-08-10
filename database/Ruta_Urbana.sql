@@ -242,7 +242,7 @@ INSERT INTO EstadoPedido (Nombre, Orden) VALUES
     ('Entregada',         5);
 
 INSERT INTO MetodoEntrega (Descripcion) VALUES
-    ('Recogida en tienda'),
+    ('Recogida en local'),
     ('Entrega a domicilio');
 
 INSERT INTO MetodoPago (Nombre) VALUES
@@ -602,14 +602,14 @@ INSERT INTO Usuario (NombreCompleto, Correo, ContrasenaHash, Direccion, Activo, 
 INSERT INTO Pedido (CodigoOrden, FechaPedido, OrigenPedido, Subtotal, Impuesto, CostoEnvio, Total, DireccionEntrega, IdEstado, IdCliente, IdEmpleado, IdMetodoEntrega) VALUES
     ('PED-000001', DATE_SUB(NOW(), INTERVAL 4 DAY), 'cliente_web', 7000.00, 910.00, 0.00, 7910.00, NULL,
         5, (SELECT IdUsuario FROM Usuario WHERE Correo = 'fernanda.solano@gmail.com'), NULL,
-        (SELECT IdMetodoEntrega FROM MetodoEntrega WHERE Descripcion = 'Recogida en tienda')),
+        (SELECT IdMetodoEntrega FROM MetodoEntrega WHERE Descripcion = 'Recogida en local')),
     ('PED-000002', DATE_SUB(NOW(), INTERVAL 3 DAY), 'cliente_web', 4200.00, 546.00, 1500.00, 6246.00, 'Heredia, Costa Rica',
         4, (SELECT IdUsuario FROM Usuario WHERE Correo = 'jose.ramirez@gmail.com'), NULL,
         (SELECT IdMetodoEntrega FROM MetodoEntrega WHERE Descripcion = 'Entrega a domicilio')),
     ('PED-000003', DATE_SUB(NOW(), INTERVAL 1 DAY), 'empleado', 8900.00, 1157.00, 0.00, 10057.00, NULL,
         3, (SELECT IdUsuario FROM Usuario WHERE Correo = 'maria.fernandez@gmail.com'),
         (SELECT IdUsuario FROM Usuario WHERE Correo = 'carlos.mendez@rutaurbana.com'),
-        (SELECT IdMetodoEntrega FROM MetodoEntrega WHERE Descripcion = 'Recogida en tienda')),
+        (SELECT IdMetodoEntrega FROM MetodoEntrega WHERE Descripcion = 'Recogida en local')),
     ('PED-000004', NOW(), 'cliente_web', 6000.00, 780.00, 1500.00, 8280.00, 'Cartago, Costa Rica',
         2, (SELECT IdUsuario FROM Usuario WHERE Correo = 'luis.castro@gmail.com'), NULL,
         (SELECT IdMetodoEntrega FROM MetodoEntrega WHERE Descripcion = 'Entrega a domicilio'));

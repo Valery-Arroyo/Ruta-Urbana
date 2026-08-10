@@ -106,6 +106,11 @@ class Usuario
 
             $data = json_decode(file_get_contents("php://input"), true);
 
+            if (empty($data['Contrasena']) || strlen($data['Contrasena']) < 8) {
+                $response->status(400)->toJSON(['result' => 'La contraseña es requerida y debe tener al menos 8 caracteres']);
+                return;
+            }
+
             if ($usuarioModel->existeCorreo($data['Correo'] ?? '')) {
                 $response->status(409)->toJSON(['result' => 'Ya existe un usuario con ese correo']);
                 return;

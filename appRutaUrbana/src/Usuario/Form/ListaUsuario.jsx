@@ -308,6 +308,7 @@ export default function ListaUsuario() {
                 fullWidth
                 margin="dense"
                 type="password"
+                autoComplete="new-password"
                 label={
                   usuarioSeleccionado
                     ? t("users.fieldPasswordEdit")
