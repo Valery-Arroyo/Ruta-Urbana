@@ -65,9 +65,10 @@
     "confirmDeleteMessage": "¿Está seguro que desea eliminar el producto",
     "selectIngredient": "Seleccionar ingrediente",
     "chooseIngredient": "Elija un ingrediente",
-    "imagePath": "Ruta de la imagen",
-    "enterImagePath": "Ejemplo: imagenes/hamburguesa.jpg",
-    "keepCurrentImage": "Deje el campo igual para mantener la imagen actual",
+    "selectImage": "Seleccionar imagen",
+    "changeImage": "Cambiar imagen",
+    "uploadingImage": "Subiendo imagen...",
+    "keepCurrentImage": "Seleccione una imagen nueva solo si desea reemplazar la actual",
     "messages": {
       "loadError": "No se pudieron cargar los productos",
       "created": "Producto creado correctamente",
@@ -75,7 +76,9 @@
       "saveError": "Error al guardar el producto",
       "deleted": "Producto eliminado correctamente",
       "deleteError": "No se pudo eliminar el producto",
-      "imageRequired": "Debe ingresar una ruta de imagen",
+      "imageRequired": "Debe seleccionar una imagen",
+      "invalidImage": "Seleccione una imagen válida (jpg, png o webp, máximo 5MB)",
+      "uploadImageError": "Error subiendo la imagen",
       "selectIngredient": "Seleccione un ingrediente",
       "duplicateIngredient": "El ingrediente ya está agregado"
     }
@@ -91,8 +94,9 @@
     "selectProduct": "Seleccionar producto",
     "quantity": "Cantidad",
     "specialPrice": "Precio especial",
-    "imagePath": "Ruta imagen",
-    "imagePathExample": "Ejemplo: imagenes/combo1.jpg",
+    "selectImage": "Seleccionar imagen",
+    "changeImage": "Cambiar imagen",
+    "uploadingImage": "Subiendo imagen...",
     "messages": {
       "loadError": "Error cargando combos",
       "created": "Combo creado correctamente",
@@ -101,7 +105,9 @@
       "deleted": "Combo eliminado correctamente",
       "deleteError": "Error eliminando combo",
       "selectProduct": "Seleccione un producto",
-      "duplicateProduct": "El producto ya está agregado"
+      "duplicateProduct": "El producto ya está agregado",
+      "invalidImage": "Seleccione una imagen válida (jpg, png o webp, máximo 5MB)",
+      "uploadImageError": "Error subiendo la imagen"
     },
     "detail": {
       "notFound": "Combo no encontrado.",

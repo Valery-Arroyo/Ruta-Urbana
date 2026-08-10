@@ -104,7 +104,7 @@ class Combo
         try {
             $response = new Response();
             $combo = new ComboModel();
-            
+
             $result = $combo->delete($id);
             $response->toJSON(['success' => $result]);
         } catch (Exception $e) {
@@ -112,5 +112,47 @@ class Combo
         }
     }
 
+    // Subir la imagen de un combo (se usa desde el formulario de crear/editar)
+    public function subirImagen()
+    {
+        try {
+            $response = new Response();
+
+            if (!isset($_FILES['imagen']) || $_FILES['imagen']['error'] !== UPLOAD_ERR_OK) {
+                $response->status(400)->toJSON([], "No se recibió ninguna imagen válida");
+                return;
+            }
+
+            $archivo = $_FILES['imagen'];
+            $extension = strtolower(pathinfo($archivo['name'], PATHINFO_EXTENSION));
+            $extensionesPermitidas = ['jpg', 'jpeg', 'png', 'webp'];
+
+            if (!in_array($extension, $extensionesPermitidas)) {
+                $response->status(400)->toJSON([], "Formato de imagen no permitido. Use jpg, png o webp");
+                return;
+            }
+
+            if ($archivo['size'] > 5 * 1024 * 1024) {
+                $response->status(400)->toJSON([], "La imagen no debe superar los 5MB");
+                return;
+            }
+
+            $carpetaDestino = __DIR__ . "/../uploads/imagenes-combos/";
+            if (!is_dir($carpetaDestino)) {
+                mkdir($carpetaDestino, 0755, true);
+            }
+
+            $nombreArchivo = "combo_" . uniqid() . "." . $extension;
+
+            if (!move_uploaded_file($archivo['tmp_name'], $carpetaDestino . $nombreArchivo)) {
+                $response->status(500)->toJSON([], "No se pudo guardar la imagen");
+                return;
+            }
+
+            $response->toJSON(['ruta' => "uploads/imagenes-combos/" . $nombreArchivo]);
+        } catch (Exception $e) {
+            handleException($e);
+        }
+    }
 
 }

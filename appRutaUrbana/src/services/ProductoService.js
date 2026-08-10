@@ -30,6 +30,16 @@ class ProductoService {
     return axios.post(`${BASE_URL}/create`, data);
   }
 
+  // Subir la imagen de un producto y obtener la ruta guardada en el servidor
+  uploadImagen(archivo) {
+    const formData = new FormData();
+    formData.append("imagen", archivo);
+
+    // No se fija el Content-Type manualmente: el navegador debe generar
+    // el boundary del multipart/form-data automáticamente.
+    return axios.post(`${BASE_URL}/subirImagen`, formData);
+  }
+
   update(id, data) {
     return axios.put(`${BASE_URL}/update/${id}`, data);
   }

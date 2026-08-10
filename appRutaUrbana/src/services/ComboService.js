@@ -23,6 +23,16 @@ class ComboService {
     return axios.post(`${BASE_URL}/create`, data);
   }
 
+  // Subir la imagen de un combo y obtener la ruta guardada en el servidor
+  uploadImagen(archivo) {
+    const formData = new FormData();
+    formData.append("imagen", archivo);
+
+    // No se fija el Content-Type manualmente: el navegador debe generar
+    // el boundary del multipart/form-data automáticamente.
+    return axios.post(`${BASE_URL}/subirImagen`, formData);
+  }
+
   // Eliminar un combo
   delete(id) {
     return axios.delete(`${BASE_URL}/delete/${id}`);

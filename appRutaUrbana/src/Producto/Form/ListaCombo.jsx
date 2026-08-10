@@ -21,6 +21,7 @@ import AddIcon from "@mui/icons-material/Add";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -82,6 +83,8 @@ export default function ListCombosAdmin() {
   const [cantidadProducto, setCantidadProducto] = useState(1);
   const [openDelete, setOpenDelete] = useState(false);
   const [comboEliminar, setComboEliminar] = useState(null);
+  const [previewImagen, setPreviewImagen] = useState("");
+  const [subiendoImagen, setSubiendoImagen] = useState(false);
 
   const {
     handleSubmit,
@@ -164,6 +167,8 @@ export default function ListCombosAdmin() {
   };
 
   const handleEdit = (combo) => {
+    setPreviewImagen("");
+
     if (combo) {
       setComboSeleccionado(combo);
 
@@ -218,6 +223,35 @@ export default function ListCombosAdmin() {
     } catch (error) {
       console.error(error);
       toast.error(t("combos.messages.saveError"));
+    }
+  };
+
+  const handleImagenChange = async (e) => {
+    const archivo = e.target.files?.[0];
+    if (!archivo) return;
+
+    const tiposPermitidos = ["image/jpeg", "image/png", "image/webp"];
+    const tamanoMaximo = 5 * 1024 * 1024;
+
+    if (!tiposPermitidos.includes(archivo.type) || archivo.size > tamanoMaximo) {
+      toast.error(t("combos.messages.invalidImage"));
+      e.target.value = "";
+      return;
+    }
+
+    setPreviewImagen(URL.createObjectURL(archivo));
+
+    try {
+      setSubiendoImagen(true);
+      const response = await ComboService.uploadImagen(archivo);
+      setValue("RutaImagen", response.data.ruta, { shouldValidate: true });
+    } catch (error) {
+      console.error(error);
+      toast.error(t("combos.messages.uploadImageError"));
+      setPreviewImagen("");
+    } finally {
+      setSubiendoImagen(false);
+      e.target.value = "";
     }
   };
 
@@ -481,15 +515,59 @@ export default function ListCombosAdmin() {
             helperText={errors.Descripcion?.message}
           />
 
-          <TextField
-            fullWidth
-            margin="dense"
-            label={t("combos.imagePath")}
-            placeholder="imagenes/combo.jpg"
-            value={watch("RutaImagen")}
-            onChange={(e) => setValue("RutaImagen", e.target.value)}
-            helperText={t("combos.imagePathExample")}
-          />
+          <Typography sx={{ mt: 2, mb: 1, fontWeight: "bold" }}>
+            {t("fields.image")}
+          </Typography>
+
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 2,
+            }}
+          >
+            <Box
+              component="img"
+              src={
+                previewImagen ||
+                (watch("RutaImagen")
+                  ? `http://localhost:81/apirutaurbana/${watch("RutaImagen")}`
+                  : "/no-image.png")
+              }
+              alt="preview"
+              sx={{
+                width: 90,
+                height: 90,
+                objectFit: "cover",
+                borderRadius: 2,
+                border: "1px solid #ddd",
+              }}
+            />
+
+            <Button
+              component="label"
+              variant="outlined"
+              startIcon={<AddPhotoAlternateIcon />}
+              disabled={subiendoImagen}
+              sx={{
+                color: "#FF8C00",
+                borderColor: "#FF8C00",
+              }}
+            >
+              {subiendoImagen
+                ? t("combos.uploadingImage")
+                : watch("RutaImagen")
+                  ? t("combos.changeImage")
+                  : t("combos.selectImage")}
+
+              <input
+                type="file"
+                hidden
+                accept="image/png,image/jpeg,image/webp"
+                onChange={handleImagenChange}
+              />
+            </Button>
+          </Box>
 
           <TextField
             select
@@ -662,6 +740,7 @@ export default function ListCombosAdmin() {
           <Button
             variant="contained"
             onClick={handleSubmit(handleSave)}
+            disabled={subiendoImagen}
             sx={{
               bgcolor: "#FF8C00",
 

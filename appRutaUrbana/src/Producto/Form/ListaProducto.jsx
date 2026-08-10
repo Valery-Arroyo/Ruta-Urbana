@@ -21,6 +21,7 @@ import AddIcon from "@mui/icons-material/Add";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -88,6 +89,8 @@ export default function GestionProductos() {
   const [productoEliminar, setProductoEliminar] = useState(null);
 
   const [errorIngrediente, setErrorIngrediente] = useState("");
+  const [previewImagen, setPreviewImagen] = useState("");
+  const [subiendoImagen, setSubiendoImagen] = useState(false);
 
   const navigate = useNavigate();
 
@@ -203,6 +206,8 @@ export default function GestionProductos() {
   };
 
   const handleEdit = (producto) => {
+    setPreviewImagen("");
+
     if (producto) {
       setProductoSeleccionado(producto);
 
@@ -237,6 +242,35 @@ export default function GestionProductos() {
     }
 
     setOpen(true);
+  };
+
+  const handleImagenChange = async (e) => {
+    const archivo = e.target.files?.[0];
+    if (!archivo) return;
+
+    const tiposPermitidos = ["image/jpeg", "image/png", "image/webp"];
+    const tamanoMaximo = 5 * 1024 * 1024;
+
+    if (!tiposPermitidos.includes(archivo.type) || archivo.size > tamanoMaximo) {
+      toast.error(t("products.messages.invalidImage"));
+      e.target.value = "";
+      return;
+    }
+
+    setPreviewImagen(URL.createObjectURL(archivo));
+
+    try {
+      setSubiendoImagen(true);
+      const response = await ProductoService.uploadImagen(archivo);
+      setValue("Imagen", response.data.ruta, { shouldValidate: true });
+    } catch (error) {
+      console.error(error);
+      toast.error(t("products.messages.uploadImageError"));
+      setPreviewImagen("");
+    } finally {
+      setSubiendoImagen(false);
+      e.target.value = "";
+    }
   };
 
   const handleSave = async (formData) => {
@@ -835,24 +869,67 @@ export default function GestionProductos() {
             })}
           </Box>
 
-          <Controller
-            name="Imagen"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                fullWidth
-                margin="dense"
-                label={t("products.imagePath")}
-                placeholder="imagenes/hamburguesa.jpg"
-                helperText={
-                  productoSeleccionado
-                    ? t("products.keepCurrentImage")
-                    : t("products.enterImagePath")
-                }
-              />
-            )}
-          />
+          <Typography sx={{ mt: 2, mb: 1, fontWeight: "bold" }}>
+            {t("fields.image")}
+          </Typography>
+
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 2,
+            }}
+          >
+            <Box
+              component="img"
+              src={
+                previewImagen ||
+                (watch("Imagen")
+                  ? `http://localhost:81/apirutaurbana/${watch("Imagen")}`
+                  : "/no-image.png")
+              }
+              alt="preview"
+              sx={{
+                width: 90,
+                height: 90,
+                objectFit: "cover",
+                borderRadius: 2,
+                border: "1px solid #ddd",
+              }}
+            />
+
+            <Box>
+              <Button
+                component="label"
+                variant="outlined"
+                startIcon={<AddPhotoAlternateIcon />}
+                disabled={subiendoImagen}
+                sx={{
+                  color: "#FF8C00",
+                  borderColor: "#FF8C00",
+                }}
+              >
+                {subiendoImagen
+                  ? t("products.uploadingImage")
+                  : watch("Imagen")
+                    ? t("products.changeImage")
+                    : t("products.selectImage")}
+
+                <input
+                  type="file"
+                  hidden
+                  accept="image/png,image/jpeg,image/webp"
+                  onChange={handleImagenChange}
+                />
+              </Button>
+
+              {productoSeleccionado && (
+                <Typography variant="caption" sx={{ display: "block", mt: 0.5 }}>
+                  {t("products.keepCurrentImage")}
+                </Typography>
+              )}
+            </Box>
+          </Box>
         </DialogContent>
 
         <DialogActions>
@@ -861,6 +938,7 @@ export default function GestionProductos() {
           <Button
             variant="contained"
             onClick={handleSubmit(handleSave)}
+            disabled={subiendoImagen}
             sx={{
               bgcolor: "#FF8C00",
 

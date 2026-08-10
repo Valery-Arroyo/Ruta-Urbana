@@ -65,9 +65,10 @@
     "confirmDeleteMessage": "Are you sure you want to delete the product",
     "selectIngredient": "Select ingredient",
     "chooseIngredient": "Choose an ingredient",
-    "imagePath": "Image path",
-    "enterImagePath": "Example: imagenes/hamburguesa.jpg",
-    "keepCurrentImage": "Leave the field unchanged to keep the current image",
+    "selectImage": "Select image",
+    "changeImage": "Change image",
+    "uploadingImage": "Uploading image...",
+    "keepCurrentImage": "Select a new image only if you want to replace the current one",
     "messages": {
       "loadError": "Products could not be loaded",
       "created": "Product created successfully",
@@ -75,7 +76,9 @@
       "saveError": "Error saving the product",
       "deleted": "Product deleted successfully",
       "deleteError": "The product could not be deleted",
-      "imageRequired": "You must enter an image path",
+      "imageRequired": "You must select an image",
+      "invalidImage": "Select a valid image (jpg, png or webp, max 5MB)",
+      "uploadImageError": "Error uploading the image",
       "selectIngredient": "Select an ingredient",
       "duplicateIngredient": "The ingredient is already added"
     }
@@ -91,8 +94,9 @@
     "selectProduct": "Select product",
     "quantity": "Quantity",
     "specialPrice": "Special price",
-    "imagePath": "Image path",
-    "imagePathExample": "Example: imagenes/combo1.jpg",
+    "selectImage": "Select image",
+    "changeImage": "Change image",
+    "uploadingImage": "Uploading image...",
     "messages": {
       "loadError": "Error loading combos",
       "created": "Combo created successfully",
@@ -101,7 +105,9 @@
       "deleted": "Combo deleted successfully",
       "deleteError": "Error deleting combo",
       "selectProduct": "Select a product",
-      "duplicateProduct": "The product is already added"
+      "duplicateProduct": "The product is already added",
+      "invalidImage": "Select a valid image (jpg, png or webp, max 5MB)",
+      "uploadImageError": "Error uploading the image"
     },
     "detail": {
       "notFound": "Combo not found.",
