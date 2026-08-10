@@ -338,6 +338,7 @@
     "paymentTitle": "Pago del pedido",
     "totalToPay": "Total a pagar",
     "cash": "Efectivo",
+    "card": "Tarjeta",
     "creditCard": "Tarjeta de crédito",
     "debitCard": "Tarjeta de débito",
     "cashGiven": "Monto recibido",

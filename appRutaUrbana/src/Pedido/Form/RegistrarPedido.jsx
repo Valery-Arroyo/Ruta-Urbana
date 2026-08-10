@@ -275,7 +275,11 @@ export default function RegistrarPedido() {
         toast.error(t("orders.messages.insufficientCash"));
         return;
       }
-    } else {
+    } else if (tipoPago !== "tarjeta") {
+      // "tarjeta" es la opción genérica que usa el encargado/administrador:
+      // no se piden los datos de la tarjeta porque esa información es
+      // privada del cliente. Solo el cliente, pagando su propio pedido,
+      // llega a este bloque con los datos de crédito/débito.
       if (!/^\d{16}$/.test(numeroTarjeta)) {
         toast.error(t("orders.messages.invalidCard"));
         return;
@@ -302,7 +306,9 @@ export default function RegistrarPedido() {
         ? "efectivo"
         : tipoPago === "credito"
           ? "crédito"
-          : "débito";
+          : tipoPago === "debito"
+            ? "débito"
+            : "tarjeta"; // caso genérico del gestor: cualquier método con tarjeta sirve
 
     const metodoPago = metodosPago.find((m) =>
       m.Nombre.toLowerCase().includes(nombreBuscado),
@@ -334,7 +340,9 @@ export default function RegistrarPedido() {
           tipoPago === "efectivo" ? parseFloat(montoEfectivo) : total,
         Vuelto: tipoPago === "efectivo" ? vuelto : null,
         UltimosDigitos:
-          tipoPago !== "efectivo" ? numeroTarjeta.slice(-4) : null,
+          tipoPago === "credito" || tipoPago === "debito"
+            ? numeroTarjeta.slice(-4)
+            : null,
       },
     };
 
@@ -693,19 +701,33 @@ export default function RegistrarPedido() {
               control={<Radio />}
               label={t("orders.cash")}
             />
-            <FormControlLabel
-              value="credito"
-              control={<Radio />}
-              label={t("orders.creditCard")}
-            />
-            <FormControlLabel
-              value="debito"
-              control={<Radio />}
-              label={t("orders.debitCard")}
-            />
+
+            {esGestor ? (
+              // El encargado/administrador solo marca que el cliente pagó
+              // con tarjeta; no se le pide el número ni otros datos porque
+              // esa información es privada del cliente.
+              <FormControlLabel
+                value="tarjeta"
+                control={<Radio />}
+                label={t("orders.card")}
+              />
+            ) : (
+              <>
+                <FormControlLabel
+                  value="credito"
+                  control={<Radio />}
+                  label={t("orders.creditCard")}
+                />
+                <FormControlLabel
+                  value="debito"
+                  control={<Radio />}
+                  label={t("orders.debitCard")}
+                />
+              </>
+            )}
           </RadioGroup>
 
-          {tipoPago === "efectivo" ? (
+          {tipoPago === "efectivo" && (
             <>
               <TextField
                 fullWidth
@@ -721,7 +743,9 @@ export default function RegistrarPedido() {
                 {t("orders.change")}: {formatCurrency(vuelto, i18n.language)}
               </Typography>
             </>
-          ) : (
+          )}
+
+          {!esGestor && (tipoPago === "credito" || tipoPago === "debito") && (
             <>
               <TextField
                 fullWidth

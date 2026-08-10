@@ -338,6 +338,7 @@
     "paymentTitle": "Order payment",
     "totalToPay": "Total to pay",
     "cash": "Cash",
+    "card": "Card",
     "creditCard": "Credit card",
     "debitCard": "Debit card",
     "cashGiven": "Amount received",
