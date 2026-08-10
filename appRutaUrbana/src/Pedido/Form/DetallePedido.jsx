@@ -12,24 +12,33 @@ import {
   TableBody,
   TableRow,
   TableCell,
+  TextField,
+  MenuItem,
   Chip,
   Button,
   CircularProgress,
   Grid,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import toast from "react-hot-toast";
 
 import PedidoService from "../../services/PedidoService";
 import { formatCurrency, formatDateTime } from "../../utils/format";
+import { useAuth } from "../../context/AuthContext";
+import { ROLES } from "../../utils/constants";
 
 export default function DetallePedidoFactura() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
+  const { rol } = useAuth();
+  const esGestor = rol === ROLES.ADMINISTRADOR || rol === ROLES.ENCARGADO;
 
   const [pedido, setPedido] = useState(null);
   const [detalle, setDetalle] = useState([]);
   const [cargando, setCargando] = useState(true);
+  const [estados, setEstados] = useState([]);
+  const [actualizandoEstado, setActualizandoEstado] = useState(false);
 
   useEffect(() => {
     PedidoService.getDetalle(id)
@@ -42,6 +51,40 @@ export default function DetallePedidoFactura() {
       })
       .finally(() => setCargando(false));
   }, [id]);
+
+  useEffect(() => {
+    if (!esGestor) return;
+
+    PedidoService.getEstados()
+      .then((response) => setEstados(response.data?.estados || []))
+      .catch((error) => console.error("Error al obtener los estados:", error));
+  }, [esGestor]);
+
+  const handleCambiarEstado = async (event) => {
+    const nuevoIdEstado = Number(event.target.value);
+
+    try {
+      setActualizandoEstado(true);
+      await PedidoService.cambiarEstado(id, nuevoIdEstado);
+
+      const nuevoEstado = estados.find(
+        (e) => Number(e.IdEstado) === nuevoIdEstado,
+      );
+
+      setPedido((prev) => ({
+        ...prev,
+        IdEstado: nuevoIdEstado,
+        NombreEstado: nuevoEstado?.Nombre || prev.NombreEstado,
+      }));
+
+      toast.success(t("orders.messages.statusUpdated"));
+    } catch (error) {
+      console.error("Error al actualizar el estado del pedido:", error);
+      toast.error(t("orders.messages.statusUpdateError"));
+    } finally {
+      setActualizandoEstado(false);
+    }
+  };
 
   if (cargando) {
     return (
@@ -150,7 +193,30 @@ export default function DetallePedidoFactura() {
             t("orders.paymentMethod"),
             pedido.NombreMetodoPago || t("orders.paymentPending"),
           )}
-          {filaEncabezado(t("orders.status"), pedido.NombreEstado)}
+          {esGestor ? (
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <Typography sx={{ fontSize: 13, color: "text.secondary" }}>
+                {t("orders.status")}
+              </Typography>
+
+              <TextField
+                select
+                size="small"
+                value={pedido.IdEstado || ""}
+                onChange={handleCambiarEstado}
+                disabled={actualizandoEstado || estados.length === 0}
+                sx={{ mt: 0.5, minWidth: 220 }}
+              >
+                {estados.map((estado) => (
+                  <MenuItem key={estado.IdEstado} value={estado.IdEstado}>
+                    {estado.Nombre}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+          ) : (
+            filaEncabezado(t("orders.status"), pedido.NombreEstado)
+          )}
           {pedido.DireccionEntrega &&
             filaEncabezado(
               t("orders.deliveryAddress"),

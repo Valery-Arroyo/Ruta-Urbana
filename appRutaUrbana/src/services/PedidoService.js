@@ -43,6 +43,11 @@ class PedidoService {
   create(data) {
     return axios.post(`${BASE_URL}/create`, data);
   }
+
+  /* Cambia el estado general del pedido (solo Administrador/Encargado) */
+  cambiarEstado(idPedido, idEstado) {
+    return axios.put(`${BASE_URL}/update/${idPedido}`, { IdEstado: idEstado });
+  }
 }
 
 export default new PedidoService();

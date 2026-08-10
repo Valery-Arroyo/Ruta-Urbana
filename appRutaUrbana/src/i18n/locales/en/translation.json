@@ -367,7 +367,9 @@
       "invalidExpiry": "Enter the expiry date as MM/YY",
       "invalidCvv": "Enter a valid CVV",
       "created": "Order registered successfully",
-      "createError": "The order could not be registered"
+      "createError": "The order could not be registered",
+      "statusUpdated": "Order status updated",
+      "statusUpdateError": "The order status could not be updated"
     }
   },
   "users": {

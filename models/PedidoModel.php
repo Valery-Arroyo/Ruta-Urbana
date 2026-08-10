@@ -271,6 +271,28 @@ class PedidoModel
         }
     }
 
+    /*
+     * Cambia el estado de un pedido "en general" (no por estación),
+     * usado por el combo box que ven Encargado/Administrador en el
+     * Detalle del Pedido. Deja registro en el historial de estados.
+     */
+    public function cambiarEstado($idPedido, $idEstado, $idUsuarioToken)
+    {
+        try {
+            $idPedido = intval($idPedido);
+            $idEstado = intval($idEstado);
+
+            $sql = "UPDATE Pedido SET IdEstado = $idEstado WHERE IdPedido = $idPedido";
+            $this->enlace->executeSQL_DML($sql);
+
+            $this->registrarHistorial($idPedido, $idEstado, $idUsuarioToken, 'Estado actualizado manualmente');
+
+            return true;
+        } catch (Exception $e) {
+            handleException($e);
+        }
+    }
+
     private function registrarHistorial($idPedido, $idEstado, $idUsuario, $observacion)
     {
         $observacion = addslashes($observacion);

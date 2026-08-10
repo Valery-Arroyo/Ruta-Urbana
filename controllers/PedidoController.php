@@ -135,4 +135,28 @@ class Pedido
             handleException($e);
         }
     }
+
+    // Cambiar el estado general de un pedido (combo box de Encargado/Administrador)
+    public function update($id)
+    {
+        try {
+            $tokenData = AuthMiddleware::verificar(['Administrador', 'Encargado']);
+
+            $response = new Response();
+            $pedidoModel = new PedidoModel();
+
+            $data = json_decode(file_get_contents("php://input"), true);
+
+            if (empty($data['IdEstado'])) {
+                $response->status(400)->toJSON(['result' => 'Debe indicar el nuevo estado']);
+                return;
+            }
+
+            $resultado = $pedidoModel->cambiarEstado($id, $data['IdEstado'], $tokenData->IdUsuario);
+
+            $response->toJSON(['success' => $resultado ? 1 : 0]);
+        } catch (Exception $e) {
+            handleException($e);
+        }
+    }
 }

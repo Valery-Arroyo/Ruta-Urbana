@@ -367,7 +367,9 @@
       "invalidExpiry": "Ingrese el vencimiento en formato MM/AA",
       "invalidCvv": "Ingrese un CVV válido",
       "created": "Pedido registrado correctamente",
-      "createError": "No se pudo registrar el pedido"
+      "createError": "No se pudo registrar el pedido",
+      "statusUpdated": "Estado del pedido actualizado",
+      "statusUpdateError": "No se pudo actualizar el estado del pedido"
     }
   },
   "users": {
