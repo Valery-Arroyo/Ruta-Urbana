@@ -16,6 +16,11 @@ import TablaProducto from "./Producto/Form/TablaProducto";
 import ListaPreparacion from "./Producto/Form/ListaPreparacion";
 import DetallePreparacion from "./Producto/Form/DetallePreparacion";
 import Ingrediente from "./Producto/Form/Ingrediente";
+import Login from "./Pedido/Form/Login";
+import RegistrarPedido from "./Pedido/Form/RegistrarPedido";
+import HistorialPedidos from "./Pedido/Form/HistorialPedido";
+import DetallePedidoFactura from "./Pedido/Form/DetallePedido";
+import ListaUsuario from "./Usuario/Form/ListaUsuario";
 import "./i18n/i18n";
 
 const rutas = createBrowserRouter([
@@ -69,6 +74,26 @@ const rutas = createBrowserRouter([
       {
         path: "/home",
         element: <Home />,
+      },
+      {
+        path: "/login",
+        element: <Login />,
+      },
+      {
+        path: "/pedidos/nuevo",
+        element: <RegistrarPedido />,
+      },
+      {
+        path: "/pedidos/historial",
+        element: <HistorialPedidos />,
+      },
+      {
+        path: "/pedidos/:id",
+        element: <DetallePedidoFactura />,
+      },
+      {
+        path: "/usuarios",
+        element: <ListaUsuario />,
       },
       {
         path: "*",

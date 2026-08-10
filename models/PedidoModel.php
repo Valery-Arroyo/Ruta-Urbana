@@ -118,6 +118,7 @@ class PedidoModel
                         p.Total,
                         p.DireccionEntrega,
                         p.IdEstado,
+                        p.IdCliente,
                         est.Nombre AS NombreEstado,
                         me.Descripcion AS NombreMetodoEntrega,
                         cli.NombreCompleto AS NombreCliente,

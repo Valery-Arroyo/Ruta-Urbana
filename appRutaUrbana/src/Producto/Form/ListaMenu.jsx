@@ -39,6 +39,9 @@ import * as yup from "yup";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 
+import { useAuth } from "../../context/AuthContext";
+import { ROLES } from "../../utils/constants";
+
 const HORA_REGEX = /^([01]\d|2[0-3]):([0-5]\d)(:([0-5]\d))?$/;
 
 const formatearHoraNormal = (hora) => {
@@ -178,6 +181,8 @@ const menuSchema = yup.object({
 
 export default function ListMenusAdmin() {
   const { t } = useTranslation();
+  const { rol } = useAuth();
+  const esGestor = rol === ROLES.ADMINISTRADOR || rol === ROLES.ENCARGADO;
   const [menus, setMenus] = useState([]);
   const [productos, setProductos] = useState([]);
   const [combos, setCombos] = useState([]);
@@ -828,28 +833,30 @@ export default function ListMenusAdmin() {
         {t("menus.title")}
       </Typography>
 
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "flex-end",
-          mb: 4,
-        }}
-      >
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => handleEdit(null)}
+      {esGestor && (
+        <Box
           sx={{
-            bgcolor: "#FF8C00",
-
-            "&:hover": {
-              bgcolor: "#E67E00",
-            },
+            display: "flex",
+            justifyContent: "flex-end",
+            mb: 4,
           }}
         >
-          {t("menus.new")}
-        </Button>
-      </Box>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => handleEdit(null)}
+            sx={{
+              bgcolor: "#FF8C00",
+
+              "&:hover": {
+                bgcolor: "#E67E00",
+              },
+            }}
+          >
+            {t("menus.new")}
+          </Button>
+        </Box>
+      )}
 
       <Box
         sx={{
@@ -865,17 +872,29 @@ export default function ListMenusAdmin() {
           },
         }}
       >
-        {menus.length === 0 ? (
-          <Typography
-            sx={{
-              gridColumn: "1/-1",
-              textAlign: "center",
-            }}
-          >
-            {t("menus.noMenus")}
-          </Typography>
-        ) : (
-          menus.map((menu) => {
+        {(() => {
+          // Un cliente (o alguien sin sesión) solo debe ver los menús que
+          // realmente están disponibles en este momento; el personal ve
+          // todos, incluidos los inactivos o fuera de horario, para poder
+          // administrarlos.
+          const menusVisibles = esGestor
+            ? menus
+            : menus.filter((menu) => isDisponibleAhora(menu));
+
+          if (menusVisibles.length === 0) {
+            return (
+              <Typography
+                sx={{
+                  gridColumn: "1/-1",
+                  textAlign: "center",
+                }}
+              >
+                {t("menus.noMenus")}
+              </Typography>
+            );
+          }
+
+          return menusVisibles.map((menu) => {
             const disponible = isDisponibleAhora(menu);
 
             return (
@@ -934,21 +953,25 @@ export default function ListMenusAdmin() {
                     <ZoomInIcon />
                   </IconButton>
 
-                  <IconButton onClick={() => handleEdit(menu)}>
-                    <EditIcon />
-                  </IconButton>
+                  {esGestor && (
+                    <>
+                      <IconButton onClick={() => handleEdit(menu)}>
+                        <EditIcon />
+                      </IconButton>
 
-                  <IconButton
-                    color="error"
-                    onClick={() => confirmarEliminar(menu)}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
+                      <IconButton
+                        color="error"
+                        onClick={() => confirmarEliminar(menu)}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </>
+                  )}
                 </CardActions>
               </Card>
             );
-          })
-        )}
+          });
+        })()}
       </Box>
 
       {/* CONFIRMAR ELIMINACIÓN */}

@@ -1001,3 +1001,95 @@ USE RutaUrbana;
 ALTER TABLE Producto
 ADD COLUMN EsProductoDelDia TINYINT(1) NOT NULL DEFAULT 0,
 ADD COLUMN FechaProductoDelDia DATE NULL;
+
+-- ==========================================
+-- MÓDULO GESTIÓN DE PEDIDO Y MANTENIMIENTO DE USUARIOS
+-- ==========================================
+
+USE RutaUrbana;
+
+-- El detalle del pedido también necesita guardar el impuesto de cada línea
+ALTER TABLE DetallePedido
+ADD COLUMN Impuesto DECIMAL(10,2) NOT NULL DEFAULT 0 AFTER Subtotal;
+
+-- Usuarios de prueba (contraseñas: Admin123* / Encargado123* / Cliente123*)
+INSERT INTO Usuario (NombreCompleto, Correo, ContrasenaHash, Direccion, Activo, IdRol) VALUES
+('Administrador Sistema', 'admin@rutaurbana.com', '$2y$10$TkD/2cCz3vlQz3CCsds8y.4MkaSEnNHSXIUOi1KSjNMFwxWX.3RAK', NULL, 1,
+    (SELECT IdRol FROM Rol WHERE NombreRol = 'Administrador')),
+('Carlos Méndez', 'carlos.mendez@rutaurbana.com', '$2y$10$dM8OwRR.oHvZz7cwpGnE0OYuqC35DaO7ioBBzj8kzYvXyu//W.7hy', NULL, 1,
+    (SELECT IdRol FROM Rol WHERE NombreRol = 'Encargado')),
+('Daniela Rojas', 'daniela.rojas@rutaurbana.com', '$2y$10$dM8OwRR.oHvZz7cwpGnE0OYuqC35DaO7ioBBzj8kzYvXyu//W.7hy', NULL, 1,
+    (SELECT IdRol FROM Rol WHERE NombreRol = 'Encargado')),
+('Fernanda Solano', 'fernanda.solano@gmail.com', '$2y$10$Q6QQr.p4yW2WuIt9chf4l.XheHVqx05CHH3tpItMtGuHuyzuVn1zu', 'San José, Costa Rica', 1,
+    (SELECT IdRol FROM Rol WHERE NombreRol = 'Cliente')),
+('José Ramírez', 'jose.ramirez@gmail.com', '$2y$10$Q6QQr.p4yW2WuIt9chf4l.XheHVqx05CHH3tpItMtGuHuyzuVn1zu', 'Heredia, Costa Rica', 1,
+    (SELECT IdRol FROM Rol WHERE NombreRol = 'Cliente')),
+('María Fernández', 'maria.fernandez@gmail.com', '$2y$10$Q6QQr.p4yW2WuIt9chf4l.XheHVqx05CHH3tpItMtGuHuyzuVn1zu', 'Alajuela, Costa Rica', 1,
+    (SELECT IdRol FROM Rol WHERE NombreRol = 'Cliente')),
+('Luis Castro', 'luis.castro@gmail.com', '$2y$10$Q6QQr.p4yW2WuIt9chf4l.XheHVqx05CHH3tpItMtGuHuyzuVn1zu', 'Cartago, Costa Rica', 1,
+    (SELECT IdRol FROM Rol WHERE NombreRol = 'Cliente'));
+
+-- Pedidos de prueba, para que el historial y el detalle tengan datos reales que mostrar
+INSERT INTO Pedido (CodigoOrden, FechaPedido, OrigenPedido, Subtotal, Impuesto, CostoEnvio, Total, DireccionEntrega, IdEstado, IdCliente, IdEmpleado, IdMetodoEntrega) VALUES
+('PED-000001', DATE_SUB(NOW(), INTERVAL 4 DAY), 'cliente_web', 7000.00, 910.00, 0.00, 7910.00, NULL,
+    5, (SELECT IdUsuario FROM Usuario WHERE Correo = 'fernanda.solano@gmail.com'), NULL,
+    (SELECT IdMetodoEntrega FROM MetodoEntrega WHERE Descripcion = 'Recogida en tienda')),
+('PED-000002', DATE_SUB(NOW(), INTERVAL 3 DAY), 'cliente_web', 4200.00, 546.00, 1500.00, 6246.00, 'Heredia, Costa Rica',
+    4, (SELECT IdUsuario FROM Usuario WHERE Correo = 'jose.ramirez@gmail.com'), NULL,
+    (SELECT IdMetodoEntrega FROM MetodoEntrega WHERE Descripcion = 'Entrega a domicilio')),
+('PED-000003', DATE_SUB(NOW(), INTERVAL 1 DAY), 'empleado', 8900.00, 1157.00, 0.00, 10057.00, NULL,
+    3, (SELECT IdUsuario FROM Usuario WHERE Correo = 'maria.fernandez@gmail.com'),
+    (SELECT IdUsuario FROM Usuario WHERE Correo = 'carlos.mendez@rutaurbana.com'),
+    (SELECT IdMetodoEntrega FROM MetodoEntrega WHERE Descripcion = 'Recogida en tienda')),
+('PED-000004', NOW(), 'cliente_web', 6000.00, 780.00, 1500.00, 8280.00, 'Cartago, Costa Rica',
+    2, (SELECT IdUsuario FROM Usuario WHERE Correo = 'luis.castro@gmail.com'), NULL,
+    (SELECT IdMetodoEntrega FROM MetodoEntrega WHERE Descripcion = 'Entrega a domicilio'));
+
+-- Líneas de detalle: se usan los primeros productos y combos ya existentes en el catálogo
+INSERT INTO DetallePedido (Cantidad, PrecioUnitario, Subtotal, Impuesto, Observaciones, IdPedido, IdProducto, IdCombo) VALUES
+(2, 3500.00, 7000.00, 910.00, NULL,
+    (SELECT IdPedido FROM Pedido WHERE CodigoOrden = 'PED-000001'),
+    (SELECT IdProducto FROM Producto ORDER BY IdProducto LIMIT 1), NULL),
+(1, 4200.00, 4200.00, 546.00, 'Sin cebolla',
+    (SELECT IdPedido FROM Pedido WHERE CodigoOrden = 'PED-000002'),
+    (SELECT IdProducto FROM Producto ORDER BY IdProducto LIMIT 1 OFFSET 1), NULL),
+(1, 3500.00, 3500.00, 455.00, NULL,
+    (SELECT IdPedido FROM Pedido WHERE CodigoOrden = 'PED-000003'),
+    (SELECT IdProducto FROM Producto ORDER BY IdProducto LIMIT 1), NULL),
+(1, 5400.00, 5400.00, 702.00, 'Extra queso',
+    (SELECT IdPedido FROM Pedido WHERE CodigoOrden = 'PED-000003'),
+    (SELECT IdProducto FROM Producto ORDER BY IdProducto LIMIT 1 OFFSET 2), NULL),
+(1, 6000.00, 6000.00, 780.00, NULL,
+    (SELECT IdPedido FROM Pedido WHERE CodigoOrden = 'PED-000004'),
+    NULL, (SELECT IdCombo FROM Combo ORDER BY IdCombo LIMIT 1));
+
+-- Pagos ya registrados para los pedidos que están en un estado posterior a "Pendiente de pago"
+INSERT INTO Pago (MontoPagado, Vuelto, TipoPago, UltimosDigitos, FechaPago, IdPedido, IdMetodoPago) VALUES
+(10000.00, 2090.00, 'efectivo', NULL, DATE_SUB(NOW(), INTERVAL 4 DAY),
+    (SELECT IdPedido FROM Pedido WHERE CodigoOrden = 'PED-000001'),
+    (SELECT IdMetodoPago FROM MetodoPago WHERE Nombre = 'Efectivo')),
+(6246.00, NULL, 'credito', '1111', DATE_SUB(NOW(), INTERVAL 3 DAY),
+    (SELECT IdPedido FROM Pedido WHERE CodigoOrden = 'PED-000002'),
+    (SELECT IdMetodoPago FROM MetodoPago WHERE Nombre = 'Tarjeta de crédito')),
+(10057.00, NULL, 'debito', '2222', DATE_SUB(NOW(), INTERVAL 1 DAY),
+    (SELECT IdPedido FROM Pedido WHERE CodigoOrden = 'PED-000003'),
+    (SELECT IdMetodoPago FROM MetodoPago WHERE Nombre = 'Tarjeta de débito'));
+
+-- Historial de cambios de estado de cada pedido
+INSERT INTO HistorialEstadoPedido (IdPedido, IdEstado, FechaHora, IdUsuario, Observacion) VALUES
+((SELECT IdPedido FROM Pedido WHERE CodigoOrden = 'PED-000001'), 1, DATE_SUB(NOW(), INTERVAL 4 DAY),
+    (SELECT IdUsuario FROM Usuario WHERE Correo = 'fernanda.solano@gmail.com'), 'Pedido creado'),
+((SELECT IdPedido FROM Pedido WHERE CodigoOrden = 'PED-000001'), 5, DATE_SUB(NOW(), INTERVAL 4 DAY),
+    (SELECT IdUsuario FROM Usuario WHERE Correo = 'fernanda.solano@gmail.com'), 'Pago recibido y pedido entregado'),
+((SELECT IdPedido FROM Pedido WHERE CodigoOrden = 'PED-000002'), 1, DATE_SUB(NOW(), INTERVAL 3 DAY),
+    (SELECT IdUsuario FROM Usuario WHERE Correo = 'jose.ramirez@gmail.com'), 'Pedido creado'),
+((SELECT IdPedido FROM Pedido WHERE CodigoOrden = 'PED-000002'), 4, DATE_SUB(NOW(), INTERVAL 3 DAY),
+    (SELECT IdUsuario FROM Usuario WHERE Correo = 'jose.ramirez@gmail.com'), 'Pago recibido, pedido en proceso'),
+((SELECT IdPedido FROM Pedido WHERE CodigoOrden = 'PED-000003'), 1, DATE_SUB(NOW(), INTERVAL 1 DAY),
+    (SELECT IdUsuario FROM Usuario WHERE Correo = 'carlos.mendez@rutaurbana.com'), 'Pedido creado por encargado'),
+((SELECT IdPedido FROM Pedido WHERE CodigoOrden = 'PED-000003'), 3, DATE_SUB(NOW(), INTERVAL 1 DAY),
+    (SELECT IdUsuario FROM Usuario WHERE Correo = 'carlos.mendez@rutaurbana.com'), 'Pago recibido, en preparación'),
+((SELECT IdPedido FROM Pedido WHERE CodigoOrden = 'PED-000004'), 1, NOW(),
+    (SELECT IdUsuario FROM Usuario WHERE Correo = 'luis.castro@gmail.com'), 'Pedido creado'),
+((SELECT IdPedido FROM Pedido WHERE CodigoOrden = 'PED-000004'), 2, NOW(),
+    (SELECT IdUsuario FROM Usuario WHERE Correo = 'luis.castro@gmail.com'), 'Pago recibido, pedido aceptado');

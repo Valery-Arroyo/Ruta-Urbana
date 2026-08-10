@@ -15,6 +15,7 @@ require_once "controllers/core/Logger.php";
 require_once "controllers/core/MySqlConnect.php";
 require_once "controllers/core/Request.php";
 require_once "controllers/core/Response.php";
+require_once "controllers/core/AuthMiddleware.php";
 
 /***--- Agregar todos los modelos*/
 require_once "models/ProductoModel.php";
@@ -25,6 +26,7 @@ require_once "models/IngredienteModel.php";
 require_once "models/CategoriaModel.php";
 require_once "models/EstacionModel.php";
 require_once "models/PedidoModel.php";
+require_once "models/UsuarioModel.php";
 
 
 /***--- Agregar todos los controladores*/
@@ -36,6 +38,7 @@ require_once "controllers/IngredienteController.php";
 require_once "controllers/CategoriaController.php";
 require_once "controllers/EstacionController.php";
 require_once "controllers/PedidoController.php";
+require_once "controllers/UsuarioController.php";
 
 
 //Enrutador

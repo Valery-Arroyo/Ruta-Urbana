@@ -548,7 +548,9 @@ export default function RegistrarPedido() {
             onChange={(event) =>
               setCantidadNueva(event.target.value.replace(/[^0-9]/g, ""))
             }
-            inputProps={{ inputMode: "numeric", style: { width: 60 } }}
+            slotProps={{
+              htmlInput: { inputMode: "numeric", style: { width: 60 } },
+            }}
           />
 
           <Button

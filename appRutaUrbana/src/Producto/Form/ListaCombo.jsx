@@ -36,6 +36,9 @@ import { yupResolver } from "@hookform/resolvers/yup";
 
 import * as yup from "yup";
 
+import { useAuth } from "../../context/AuthContext";
+import { ROLES } from "../../utils/constants";
+
 const comboSchema = yup.object().shape({
   Nombre: yup
     .string()
@@ -67,6 +70,8 @@ const comboSchema = yup.object().shape({
 export default function ListCombosAdmin() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { rol } = useAuth();
+  const esGestor = rol === ROLES.ADMINISTRADOR || rol === ROLES.ENCARGADO;
 
   const [data, setData] = useState([]);
   const [productos, setProductos] = useState([]);
@@ -243,28 +248,30 @@ export default function ListCombosAdmin() {
         {t("combos.title")}
       </Typography>
 
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "flex-end",
-          mb: 4,
-        }}
-      >
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => handleEdit(null)}
+      {esGestor && (
+        <Box
           sx={{
-            bgcolor: "#FF8C00",
-
-            "&:hover": {
-              bgcolor: "#E67E00",
-            },
+            display: "flex",
+            justifyContent: "flex-end",
+            mb: 4,
           }}
         >
-          {t("combos.new")}
-        </Button>
-      </Box>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => handleEdit(null)}
+            sx={{
+              bgcolor: "#FF8C00",
+
+              "&:hover": {
+                bgcolor: "#E67E00",
+              },
+            }}
+          >
+            {t("combos.new")}
+          </Button>
+        </Box>
+      )}
 
       <Box
         sx={{
@@ -363,19 +370,23 @@ export default function ListCombosAdmin() {
                   <ZoomInIcon />
                 </IconButton>
 
-                <IconButton onClick={() => handleEdit(combo)}>
-                  <EditIcon />
-                </IconButton>
+                {esGestor && (
+                  <>
+                    <IconButton onClick={() => handleEdit(combo)}>
+                      <EditIcon />
+                    </IconButton>
 
-                <IconButton
-                  color="error"
-                  onClick={() => {
-                    setComboEliminar(combo);
-                    setOpenDelete(true);
-                  }}
-                >
-                  <DeleteIcon />
-                </IconButton>
+                    <IconButton
+                      color="error"
+                      onClick={() => {
+                        setComboEliminar(combo);
+                        setOpenDelete(true);
+                      }}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </>
+                )}
               </CardActions>
             </Card>
           ))

@@ -140,10 +140,8 @@ export default function DetallePedidoFactura() {
               ? `${pedido.NombreCliente} — ${pedido.CorreoCliente}`
               : t("orders.walkInClient"),
           )}
-          {filaEncabezado(
-            t("orders.manager"),
-            pedido.NombreEmpleado || t("orders.selfService"),
-          )}
+          {pedido.NombreEmpleado &&
+            filaEncabezado(t("orders.manager"), pedido.NombreEmpleado)}
           {filaEncabezado(
             t("orders.deliveryMethod"),
             pedido.NombreMetodoEntrega,

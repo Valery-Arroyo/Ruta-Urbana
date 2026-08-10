@@ -35,6 +35,9 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import toast from "react-hot-toast";
 
+import { useAuth } from "../../context/AuthContext";
+import { ROLES } from "../../utils/constants";
+
 const productoSchema = yup.object().shape({
   Nombre: yup
     .string()
@@ -67,6 +70,8 @@ const productoSchema = yup.object().shape({
 
 export default function GestionProductos() {
   const { t, i18n } = useTranslation();
+  const { rol } = useAuth();
+  const esGestor = rol === ROLES.ADMINISTRADOR || rol === ROLES.ENCARGADO;
 
   const [data, setData] = useState([]);
   const [productoDelDiaId, setProductoDelDiaId] = useState(null);
@@ -316,28 +321,30 @@ export default function GestionProductos() {
         {t("products.title")}
       </Typography>
 
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "flex-end",
-          mb: 4,
-        }}
-      >
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => handleEdit(null)}
+      {esGestor && (
+        <Box
           sx={{
-            bgcolor: "#FF8C00",
-
-            "&:hover": {
-              bgcolor: "#E67E00",
-            },
+            display: "flex",
+            justifyContent: "flex-end",
+            mb: 4,
           }}
         >
-          {t("products.new")}
-        </Button>
-      </Box>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => handleEdit(null)}
+            sx={{
+              bgcolor: "#FF8C00",
+
+              "&:hover": {
+                bgcolor: "#E67E00",
+              },
+            }}
+          >
+            {t("products.new")}
+          </Button>
+        </Box>
+      )}
 
       <Box
         sx={{
@@ -541,36 +548,40 @@ export default function GestionProductos() {
                     <ZoomInIcon />
                   </IconButton>
 
-                  <IconButton
-                    aria-label={`${t("actions.edit")} ${prod.Nombre}`}
-                    onClick={() => handleEdit(prod)}
-                    sx={{
-                      color: esProductoDelDia ? "#FFFFFF" : "inherit",
+                  {esGestor && (
+                    <>
+                      <IconButton
+                        aria-label={`${t("actions.edit")} ${prod.Nombre}`}
+                        onClick={() => handleEdit(prod)}
+                        sx={{
+                          color: esProductoDelDia ? "#FFFFFF" : "inherit",
 
-                      "&:hover": {
-                        bgcolor: esProductoDelDia
-                          ? "rgba(255,255,255,.12)"
-                          : "rgba(0,0,0,.04)",
-                      },
-                    }}
-                  >
-                    <EditIcon />
-                  </IconButton>
+                          "&:hover": {
+                            bgcolor: esProductoDelDia
+                              ? "rgba(255,255,255,.12)"
+                              : "rgba(0,0,0,.04)",
+                          },
+                        }}
+                      >
+                        <EditIcon />
+                      </IconButton>
 
-                  <IconButton
-                    aria-label={`${t("actions.delete")} ${prod.Nombre}`}
-                    color="error"
-                    onClick={() => confirmarEliminar(prod)}
-                    sx={{
-                      "&:hover": {
-                        bgcolor: esProductoDelDia
-                          ? "rgba(211,47,47,.18)"
-                          : "rgba(211,47,47,.08)",
-                      },
-                    }}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
+                      <IconButton
+                        aria-label={`${t("actions.delete")} ${prod.Nombre}`}
+                        color="error"
+                        onClick={() => confirmarEliminar(prod)}
+                        sx={{
+                          "&:hover": {
+                            bgcolor: esProductoDelDia
+                              ? "rgba(211,47,47,.18)"
+                              : "rgba(211,47,47,.08)",
+                          },
+                        }}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </>
+                  )}
                 </CardActions>
               </Card>
             );

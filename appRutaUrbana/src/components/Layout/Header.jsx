@@ -8,9 +8,10 @@ import {
   Button,
   Typography,
   Divider,
+  Badge,
 } from "@mui/material";
 
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import LunchDiningOutlinedIcon from "@mui/icons-material/LunchDiningOutlined";
@@ -21,12 +22,28 @@ import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import PersonIcon from "@mui/icons-material/Person";
 import EggAltOutlinedIcon from "@mui/icons-material/EggAltOutlined";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
+import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
+import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
+import ManageAccountsOutlinedIcon from "@mui/icons-material/ManageAccountsOutlined";
+import LogoutIcon from "@mui/icons-material/Logout";
 
 import LanguageSelector from "../LanguageSelector";
+import { useAuth } from "../../context/AuthContext";
+import { usePedidoEnCurso } from "../../context/PedidoEnCursoContext";
+import { ROLES } from "../../utils/constants";
 
 export default function Header() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { usuario, rol, isAuthenticated, logout } = useAuth();
+  const { cantidadTotal } = usePedidoEnCurso();
 
+  const esAdministrador = rol === ROLES.ADMINISTRADOR;
+  const esGestor = rol === ROLES.ADMINISTRADOR || rol === ROLES.ENCARGADO;
+
+  // El catálogo (Productos, Combos, Menús) lo ve cualquiera, incluso sin
+  // iniciar sesión. Las herramientas de administración de cocina/inventario
+  // (Tabla de productos, Procesos, Ingredientes) solo las ve el personal.
   const menu = [
     {
       nombre: t("navigation.products"),
@@ -43,27 +60,65 @@ export default function Header() {
       ruta: "/menu",
       icono: <MenuBookOutlinedIcon />,
     },
-    {
-      nombre: t("navigation.productTable"),
-      ruta: "/tabla",
-      icono: <AssignmentOutlinedIcon />,
-    },
-    {
-      nombre: t("navigation.processes"),
-      ruta: "/preparacion",
-      icono: <SettingsOutlinedIcon />,
-    },
-    {
-      nombre: t("navigation.ingredients"),
-      ruta: "/ingrediente",
-      icono: <EggAltOutlinedIcon />,
-    },
-    {
-      nombre: t("navigation.home"),
-      ruta: "/home",
-      icono: <HomeOutlinedIcon />,
-    },
   ];
+
+  if (esGestor) {
+    menu.push(
+      {
+        nombre: t("navigation.productTable"),
+        ruta: "/tabla",
+        icono: <AssignmentOutlinedIcon />,
+      },
+      {
+        nombre: t("navigation.processes"),
+        ruta: "/preparacion",
+        icono: <SettingsOutlinedIcon />,
+      },
+      {
+        nombre: t("navigation.ingredients"),
+        ruta: "/ingrediente",
+        icono: <EggAltOutlinedIcon />,
+      },
+    );
+  }
+
+  menu.push({
+    nombre: t("navigation.home"),
+    ruta: "/home",
+    icono: <HomeOutlinedIcon />,
+  });
+
+  if (isAuthenticated) {
+    menu.push(
+      {
+        nombre: t("navigation.newOrder"),
+        ruta: "/pedidos/nuevo",
+        icono: (
+          <Badge badgeContent={cantidadTotal} color="error">
+            <ShoppingCartOutlinedIcon />
+          </Badge>
+        ),
+      },
+      {
+        nombre: t("navigation.orderHistory"),
+        ruta: "/pedidos/historial",
+        icono: <ReceiptLongOutlinedIcon />,
+      },
+    );
+  }
+
+  if (esAdministrador) {
+    menu.push({
+      nombre: t("navigation.userManagement"),
+      ruta: "/usuarios",
+      icono: <ManageAccountsOutlinedIcon />,
+    });
+  }
+
+  const cerrarSesion = () => {
+    logout();
+    navigate("/home");
+  };
 
   return (
     <AppBar
@@ -238,30 +293,62 @@ export default function Header() {
           <LanguageSelector />
         </Box>
 
-        <Button
-          component={Link}
-          to="/login"
-          startIcon={<PersonIcon />}
-          variant="contained"
-          sx={{
-            bgcolor: "#ff7a00",
-            color: "white",
-            borderRadius: "30px",
-            px: 4,
-            py: 1.2,
-            fontWeight: "bold",
-            boxShadow: "0 5px 18px rgba(255,122,0,.4)",
-            whiteSpace: "nowrap",
+        {isAuthenticated ? (
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+            <Typography
+              sx={{ color: "white", fontWeight: 600, whiteSpace: "nowrap" }}
+            >
+              {usuario?.NombreCompleto}
+            </Typography>
 
-            "&:hover": {
-              bgcolor: "#ff8c1a",
-              transform: "translateY(-2px)",
-              transition: ".3s",
-            },
-          }}
-        >
-          {t("actions.login")}
-        </Button>
+            <Button
+              onClick={cerrarSesion}
+              startIcon={<LogoutIcon />}
+              variant="outlined"
+              sx={{
+                borderColor: "#ff7a00",
+                color: "#ff7a00",
+                borderRadius: "30px",
+                px: 3,
+                py: 1,
+                fontWeight: "bold",
+                whiteSpace: "nowrap",
+
+                "&:hover": {
+                  borderColor: "#ff8c1a",
+                  backgroundColor: "rgba(255,122,0,.1)",
+                },
+              }}
+            >
+              {t("actions.logout")}
+            </Button>
+          </Box>
+        ) : (
+          <Button
+            component={Link}
+            to="/login"
+            startIcon={<PersonIcon />}
+            variant="contained"
+            sx={{
+              bgcolor: "#ff7a00",
+              color: "white",
+              borderRadius: "30px",
+              px: 4,
+              py: 1.2,
+              fontWeight: "bold",
+              boxShadow: "0 5px 18px rgba(255,122,0,.4)",
+              whiteSpace: "nowrap",
+
+              "&:hover": {
+                bgcolor: "#ff8c1a",
+                transform: "translateY(-2px)",
+                transition: ".3s",
+              },
+            }}
+          >
+            {t("actions.login")}
+          </Button>
+        )}
       </Toolbar>
     </AppBar>
   );

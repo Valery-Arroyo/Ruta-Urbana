@@ -96,8 +96,10 @@ class Pedido
             }
 
             // Un cliente solo puede ver el detalle de sus propios pedidos
+            // (se castean ambos lados a entero: el token trae el Id como
+            // vino en el JSON del JWT y puede no coincidir el tipo exacto)
             if ($tokenData->NombreRol === 'Cliente' &&
-                intval($result['encabezado']['IdCliente'] ?? 0) !== $tokenData->IdUsuario
+                intval($result['encabezado']['IdCliente'] ?? 0) !== intval($tokenData->IdUsuario)
             ) {
                 $response->status(403)->toJSON(['result' => 'No tiene acceso a este pedido']);
                 return;

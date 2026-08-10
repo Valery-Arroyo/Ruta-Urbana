@@ -54,9 +54,11 @@ export default function LineaPedidoRow({
           onChange={manejarCambioCantidad}
           onBlur={manejarBlurCantidad}
           size="small"
-          inputProps={{
-            inputMode: "numeric",
-            style: { textAlign: "right", width: 50 },
+          slotProps={{
+            htmlInput: {
+              inputMode: "numeric",
+              style: { textAlign: "right", width: 50 },
+            },
           }}
         />
       </TableCell>
