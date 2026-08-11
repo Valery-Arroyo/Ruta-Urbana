@@ -16,7 +16,9 @@
     "newOrder": "New Order",
     "orderHistory": "Order History",
     "userManagement": "Users",
-    "stations": "Stations"
+    "stations": "Stations",
+    "catalog": "Catalog",
+    "management": "Management"
   },
   "actions": {
     "view": "View",

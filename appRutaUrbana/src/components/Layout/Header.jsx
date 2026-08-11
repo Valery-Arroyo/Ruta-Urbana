@@ -1,5 +1,6 @@
 // eslint-disable-next-line no-unused-vars
 import * as React from "react";
+import { useState } from "react";
 
 import {
   AppBar,
@@ -9,6 +10,10 @@ import {
   Typography,
   Divider,
   Badge,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
 } from "@mui/material";
 
 import { Link, useNavigate } from "react-router-dom";
@@ -27,6 +32,7 @@ import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import ManageAccountsOutlinedIcon from "@mui/icons-material/ManageAccountsOutlined";
 import LogoutIcon from "@mui/icons-material/Logout";
 import SoupKitchenOutlinedIcon from "@mui/icons-material/SoupKitchenOutlined";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 
 import LanguageSelector from "../LanguageSelector";
 import { useAuth } from "../../context/AuthContext";
@@ -38,14 +44,18 @@ export default function Header() {
   const navigate = useNavigate();
   const { usuario, rol, isAuthenticated, logout } = useAuth();
   const { cantidadTotal } = usePedidoEnCurso();
+  const [catalogoAnchor, setCatalogoAnchor] = useState(null);
+  const [gestionAnchor, setGestionAnchor] = useState(null);
 
   const esAdministrador = rol === ROLES.ADMINISTRADOR;
   const esGestor = rol === ROLES.ADMINISTRADOR || rol === ROLES.ENCARGADO;
 
-  // El catálogo (Productos, Combos, Menús) lo ve cualquiera, incluso sin
-  // iniciar sesión. Las herramientas de administración de cocina/inventario
-  // (Tabla de productos, Procesos, Ingredientes) solo las ve el personal.
-  const menu = [
+  // Mismas condiciones de antes (esGestor / esAdministrador / isAuthenticated),
+  // solo que ahora se agrupan en 3 listas en vez de una sola, para poder
+  // mostrarlas como menús desplegables y que la barra no se sature.
+
+  // El catálogo lo ve cualquiera, incluso sin iniciar sesión.
+  const catalogoItems = [
     {
       nombre: t("navigation.products"),
       ruta: "/productos",
@@ -63,8 +73,11 @@ export default function Header() {
     },
   ];
 
+  // Herramientas de administración de cocina/inventario/usuarios: solo personal.
+  const gestionItems = [];
+
   if (esGestor) {
-    menu.push(
+    gestionItems.push(
       {
         nombre: t("navigation.productTable"),
         ruta: "/tabla",
@@ -88,14 +101,25 @@ export default function Header() {
     );
   }
 
-  menu.push({
-    nombre: t("navigation.home"),
-    ruta: "/home",
-    icono: <HomeOutlinedIcon />,
-  });
+  if (esAdministrador) {
+    gestionItems.push({
+      nombre: t("navigation.userManagement"),
+      ruta: "/usuarios",
+      icono: <ManageAccountsOutlinedIcon />,
+    });
+  }
+
+  // Los de uso diario quedan sueltos, visibles siempre en la barra.
+  const itemsDirectos = [
+    {
+      nombre: t("navigation.home"),
+      ruta: "/home",
+      icono: <HomeOutlinedIcon />,
+    },
+  ];
 
   if (isAuthenticated) {
-    menu.push(
+    itemsDirectos.push(
       {
         nombre: t("navigation.newOrder"),
         ruta: "/pedidos/nuevo",
@@ -111,14 +135,6 @@ export default function Header() {
         icono: <ReceiptLongOutlinedIcon />,
       },
     );
-  }
-
-  if (esAdministrador) {
-    menu.push({
-      nombre: t("navigation.userManagement"),
-      ruta: "/usuarios",
-      icono: <ManageAccountsOutlinedIcon />,
-    });
   }
 
   const cerrarSesion = () => {
@@ -184,73 +200,138 @@ export default function Header() {
             flexGrow: 1,
           }}
         >
-          {menu.map((item, index) => (
-            <React.Fragment key={item.ruta}>
-              <Button
-                component={Link}
-                to={item.ruta}
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  color: "white",
-                  textTransform: "none",
-                  minWidth: 120,
-                  px: 3,
-                  py: 1,
+          {/*
+           * Estilo compartido por los botones sueltos y por los botones que
+           * abren un desplegable (Catálogo / Gestión). Se separó del JSX de
+           * abajo para no repetirlo dos veces.
+           */}
+          {(() => {
+            const estiloBoton = {
+              display: "flex",
+              flexDirection: "column",
+              color: "white",
+              textTransform: "none",
+              minWidth: 120,
+              px: 3,
+              py: 1,
 
-                  "& .MuiSvgIcon-root": {
-                    color: "#ff7a00",
-                    fontSize: 34,
-                    mb: 0.5,
-                  },
+              "& .MuiSvgIcon-root": {
+                color: "#ff7a00",
+                fontSize: 34,
+                mb: 0.5,
+              },
 
-                  "&:hover": {
-                    backgroundColor: "transparent",
-                  },
+              "&:hover": {
+                backgroundColor: "transparent",
+              },
 
-                  "&:hover .MuiSvgIcon-root": {
-                    transform: "translateY(-3px)",
-                    transition: ".3s",
-                  },
+              "&:hover .MuiSvgIcon-root": {
+                transform: "translateY(-3px)",
+                transition: ".3s",
+              },
 
-                  "&::after": {
-                    content: '""',
-                    marginTop: "8px",
-                    width: 0,
-                    height: "3px",
-                    background: "#ff7a00",
-                    transition: ".3s",
-                  },
+              "&::after": {
+                content: '""',
+                marginTop: "8px",
+                width: 0,
+                height: "3px",
+                background: "#ff7a00",
+                transition: ".3s",
+              },
 
-                  "&:hover::after": {
-                    width: "75%",
-                  },
-                }}
-              >
-                {item.icono}
+              "&:hover::after": {
+                width: "75%",
+              },
+            };
 
-                <Typography
-                  sx={{
-                    fontWeight: 600,
-                    fontSize: 15,
-                  }}
-                >
-                  {item.nombre}
-                </Typography>
-              </Button>
+            // Los items sueltos van directo a su ruta. Los desplegables
+            // (Catálogo, Gestión) agrupan varias rutas bajo un solo botón.
+            const bloques = [
+              {
+                tipo: "desplegable",
+                key: "catalogo",
+                nombre: t("navigation.catalog"),
+                icono: <MenuBookOutlinedIcon />,
+                items: catalogoItems,
+                anchor: catalogoAnchor,
+                abrir: (e) => setCatalogoAnchor(e.currentTarget),
+                cerrar: () => setCatalogoAnchor(null),
+              },
+              ...itemsDirectos.map((item) => ({
+                tipo: "link",
+                key: item.ruta,
+                ...item,
+              })),
+              gestionItems.length > 0 && {
+                tipo: "desplegable",
+                key: "gestion",
+                nombre: t("navigation.management"),
+                icono: <SettingsOutlinedIcon />,
+                items: gestionItems,
+                anchor: gestionAnchor,
+                abrir: (e) => setGestionAnchor(e.currentTarget),
+                cerrar: () => setGestionAnchor(null),
+              },
+            ].filter(Boolean);
 
-              {index !== menu.length - 1 && (
-                <Divider
-                  orientation="vertical"
-                  flexItem
-                  sx={{
-                    mx: 1.5,
-                    borderColor: "#3b3b3b",
-                  }}
-                />
-              )}
-            </React.Fragment>
-          ))}
+            return bloques.map((bloque, index) => (
+              <React.Fragment key={bloque.key}>
+                {bloque.tipo === "link" ? (
+                  <Button component={Link} to={bloque.ruta} sx={estiloBoton}>
+                    {bloque.icono}
+                    <Typography sx={{ fontWeight: 600, fontSize: 15 }}>
+                      {bloque.nombre}
+                    </Typography>
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      onClick={bloque.abrir}
+                      sx={estiloBoton}
+                      endIcon={
+                        <KeyboardArrowDownIcon
+                          sx={{ fontSize: "20px !important", mb: "4px !important" }}
+                        />
+                      }
+                    >
+                      {bloque.icono}
+                      <Typography sx={{ fontWeight: 600, fontSize: 15 }}>
+                        {bloque.nombre}
+                      </Typography>
+                    </Button>
+
+                    <Menu
+                      anchorEl={bloque.anchor}
+                      open={Boolean(bloque.anchor)}
+                      onClose={bloque.cerrar}
+                    >
+                      {bloque.items.map((item) => (
+                        <MenuItem
+                          key={item.ruta}
+                          component={Link}
+                          to={item.ruta}
+                          onClick={bloque.cerrar}
+                        >
+                          <ListItemIcon sx={{ color: "#ff7a00" }}>
+                            {item.icono}
+                          </ListItemIcon>
+                          <ListItemText>{item.nombre}</ListItemText>
+                        </MenuItem>
+                      ))}
+                    </Menu>
+                  </>
+                )}
+
+                {index !== bloques.length - 1 && (
+                  <Divider
+                    orientation="vertical"
+                    flexItem
+                    sx={{ mx: 1.5, borderColor: "#3b3b3b" }}
+                  />
+                )}
+              </React.Fragment>
+            ));
+          })()}
         </Box>
 
         <Box

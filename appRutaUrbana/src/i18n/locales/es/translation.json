@@ -16,7 +16,9 @@
     "newOrder": "Nuevo Pedido",
     "orderHistory": "Historial de Pedidos",
     "userManagement": "Usuarios",
-    "stations": "Estaciones"
+    "stations": "Estaciones",
+    "catalog": "Catálogo",
+    "management": "Gestión"
   },
   "actions": {
     "view": "Ver",

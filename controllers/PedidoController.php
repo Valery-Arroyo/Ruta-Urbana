@@ -123,7 +123,6 @@ class Pedido
             $data = json_decode(file_get_contents("php://input"), true);
 
             // Si quien registra es el cliente, el cliente del pedido
-            // es él mismo: no se confía en lo que venga del frontend.
             if ($tokenData->NombreRol === 'Cliente') {
                 $data['IdCliente'] = $tokenData->IdUsuario;
             }

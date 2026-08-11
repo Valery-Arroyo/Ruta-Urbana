@@ -101,7 +101,6 @@ class PedidoModel
                 LEFT JOIN Usuario emp ON p.IdEmpleado = emp.IdUsuario";
     }
 
-    /* Detalle completo de un pedido, en formato de factura (encabezado + líneas) */
     public function detalle($idPedido)
     {
         try {
