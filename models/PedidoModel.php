@@ -293,6 +293,100 @@ class PedidoModel
         }
     }
 
+    /*
+     * Todas las líneas de los pedidos que todavía no están "Entregada"
+     * (IdEstado <> 5), cada una con su propio Completado (0/1) y la
+     * estación que le corresponde según su primer paso en
+     * ProcesoPreparacion. Se usa en la pantalla de Estaciones: ahí se
+     * marca cada línea como Pendiente/Finalizada, y cuando ya no queda
+     * ninguna pendiente en un pedido, ese pedido pasa solo a "Entregada"
+     * (ver cambiarEstadoLinea) y sus líneas dejan de aparecer aquí.
+     */
+    public function estaciones()
+    {
+        try {
+            $sql = "SELECT
+                        d.IdDetalle,
+                        d.IdPedido,
+                        p.CodigoOrden,
+                        p.IdEstado,
+                        est.Nombre AS NombreEstadoPedido,
+                        d.Cantidad,
+                        d.Completado,
+                        d.Observaciones,
+                        COALESCE(pr.Nombre, c.Nombre) AS NombreItem,
+                        cli.NombreCompleto AS NombreCliente,
+                        (
+                            SELECT e.Nombre
+                            FROM ProcesoPreparacion pp
+                            INNER JOIN Estacion e ON pp.IdEstacion = e.IdEstacion
+                            WHERE (d.IdProducto IS NOT NULL AND pp.IdProducto = d.IdProducto)
+                               OR (d.IdCombo IS NOT NULL AND pp.IdCombo = d.IdCombo)
+                            ORDER BY pp.OrdenPaso ASC
+                            LIMIT 1
+                        ) AS NombreEstacion
+                    FROM DetallePedido d
+                    INNER JOIN Pedido p ON d.IdPedido = p.IdPedido
+                    INNER JOIN EstadoPedido est ON p.IdEstado = est.IdEstado
+                    LEFT JOIN Producto pr ON d.IdProducto = pr.IdProducto
+                    LEFT JOIN Combo c ON d.IdCombo = c.IdCombo
+                    LEFT JOIN Usuario cli ON p.IdCliente = cli.IdUsuario
+                    WHERE p.IdEstado <> 5
+                    ORDER BY NombreEstacion, d.Completado ASC, p.FechaPedido";
+
+            return $this->enlace->executeSQL($sql, "asoc");
+        } catch (Exception $e) {
+            handleException($e);
+        }
+    }
+
+    /*
+     * Marca una línea del pedido como completada (o la regresa a
+     * pendiente) y revisa el resto de líneas de ese mismo pedido:
+     * si ya no queda ninguna pendiente, el pedido pasa a "Entregada"
+     * automáticamente; si se reactiva una línea de un pedido que ya
+     * estaba "Entregada", el pedido regresa a "Procesando".
+     */
+    public function cambiarEstadoLinea($idDetalle, $completado, $idUsuarioToken)
+    {
+        try {
+            $idDetalle = intval($idDetalle);
+            $completado = intval($completado) ? 1 : 0;
+
+            $sqlUpdate = "UPDATE DetallePedido SET Completado = $completado WHERE IdDetalle = $idDetalle";
+            $this->enlace->executeSQL_DML($sqlUpdate);
+
+            $sqlPedido = "SELECT p.IdPedido, p.IdEstado FROM DetallePedido d
+                          INNER JOIN Pedido p ON d.IdPedido = p.IdPedido
+                          WHERE d.IdDetalle = $idDetalle";
+            $resultado = $this->enlace->executeSQL($sqlPedido, "asoc");
+
+            if (empty($resultado)) {
+                return false;
+            }
+
+            $idPedido = intval($resultado[0]['IdPedido']);
+            $idEstadoActual = intval($resultado[0]['IdEstado']);
+
+            $sqlPendientes = "SELECT COUNT(*) AS Pendientes FROM DetallePedido
+                               WHERE IdPedido = $idPedido AND Completado = 0";
+            $pendientes = $this->enlace->executeSQL($sqlPendientes, "asoc");
+            $cantidadPendientes = intval($pendientes[0]['Pendientes'] ?? 0);
+
+            if ($cantidadPendientes === 0 && $idEstadoActual !== 5) {
+                $this->enlace->executeSQL_DML("UPDATE Pedido SET IdEstado = 5 WHERE IdPedido = $idPedido");
+                $this->registrarHistorial($idPedido, 5, $idUsuarioToken, 'Todas las líneas completadas en cocina, pedido entregado');
+            } elseif ($cantidadPendientes > 0 && $idEstadoActual === 5) {
+                $this->enlace->executeSQL_DML("UPDATE Pedido SET IdEstado = 4 WHERE IdPedido = $idPedido");
+                $this->registrarHistorial($idPedido, 4, $idUsuarioToken, 'Se reactivó una línea, pedido vuelve a procesamiento');
+            }
+
+            return true;
+        } catch (Exception $e) {
+            handleException($e);
+        }
+    }
+
     private function registrarHistorial($idPedido, $idEstado, $idUsuario, $observacion)
     {
         $observacion = addslashes($observacion);

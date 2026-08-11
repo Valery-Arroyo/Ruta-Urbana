@@ -20,6 +20,7 @@ import Login from "./Pedido/Form/Login";
 import RegistrarPedido from "./Pedido/Form/RegistrarPedido";
 import HistorialPedidos from "./Pedido/Form/HistorialPedido";
 import DetallePedidoFactura from "./Pedido/Form/DetallePedido";
+import Estaciones from "./Pedido/Form/Estaciones";
 import ListaUsuario from "./Usuario/Form/ListaUsuario";
 import "./i18n/i18n";
 
@@ -86,6 +87,10 @@ const rutas = createBrowserRouter([
       {
         path: "/pedidos/historial",
         element: <HistorialPedidos />,
+      },
+      {
+        path: "/pedidos/estaciones",
+        element: <Estaciones />,
       },
       {
         path: "/pedidos/:id",

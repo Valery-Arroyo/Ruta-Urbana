@@ -15,7 +15,8 @@
     "administration": "Administración",
     "newOrder": "Nuevo Pedido",
     "orderHistory": "Historial de Pedidos",
-    "userManagement": "Usuarios"
+    "userManagement": "Usuarios",
+    "stations": "Estaciones"
   },
   "actions": {
     "view": "Ver",
@@ -371,6 +372,15 @@
       "statusUpdated": "Estado del pedido actualizado",
       "statusUpdateError": "No se pudo actualizar el estado del pedido"
     }
+  },
+  "stations": {
+    "title": "Estaciones de Cocina",
+    "subtitle": "Líneas de pedidos activos, agrupadas por la estación que las prepara",
+    "noStation": "Sin estación asignada",
+    "noLines": "No hay líneas de pedido pendientes en este momento.",
+    "viewOrder": "Ver pedido completo",
+    "pending": "Pendiente",
+    "done": "Finalizado"
   },
   "users": {
     "title": "Mantenimiento de Usuarios",

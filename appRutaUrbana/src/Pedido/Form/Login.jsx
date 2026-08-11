@@ -13,6 +13,7 @@ import { ROLES } from "../../utils/constants";
 const loginSchema = yup.object().shape({
   Correo: yup
     .string()
+    .transform((value) => value?.trim())
     .email("Correo inválido")
     .required("El correo es requerido"),
   Contrasena: yup.string().required("La contraseña es requerida"),

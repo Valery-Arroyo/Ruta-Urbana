@@ -48,6 +48,19 @@ class PedidoService {
   cambiarEstado(idPedido, idEstado) {
     return axios.put(`${BASE_URL}/update/${idPedido}`, { IdEstado: idEstado });
   }
+
+  /* Líneas de pedido pendientes, para la pantalla de Estaciones */
+  getEstaciones() {
+    return axios.get(`${BASE_URL}/estaciones`);
+  }
+
+  /* Marca una línea del pedido como completada (o pendiente de nuevo) */
+  cambiarEstadoLinea(idDetalle, completado) {
+    return axios.post(`${BASE_URL}/cambiarEstadoLinea`, {
+      IdDetalle: idDetalle,
+      Completado: completado,
+    });
+  }
 }
 
 export default new PedidoService();

@@ -8,7 +8,6 @@ class UsuarioModel
         $this->enlace = new MySqlConnect();
     }
 
-    /* Buscar un usuario activo por correo, junto con el nombre de su rol */
     public function getPorCorreo($correo)
     {
         try {
@@ -35,7 +34,6 @@ class UsuarioModel
         }
     }
 
-    /* Obtener un usuario por su Id (para mostrar sus datos en el pedido) */
     public function getPorId($id)
     {
         try {
@@ -60,10 +58,6 @@ class UsuarioModel
         }
     }
 
-    /*
-     * Lista de clientes activos, para que el encargado los pueda
-     * seleccionar al registrar un pedido a nombre de un cliente.
-     */
     public function getClientes()
     {
         try {
@@ -83,7 +77,6 @@ class UsuarioModel
         }
     }
 
-    /* Mantenimiento de usuarios: lista completa, para la pantalla de administración */
     public function all()
     {
         try {
@@ -105,7 +98,6 @@ class UsuarioModel
         }
     }
 
-    /* Catálogo de roles disponibles, para el formulario de mantenimiento */
     public function getRoles()
     {
         try {
@@ -116,7 +108,6 @@ class UsuarioModel
         }
     }
 
-    /* Verifica si ya existe otro usuario con el mismo correo (para create/update) */
     public function existeCorreo($correo, $idUsuarioExcluir = null)
     {
         try {
@@ -135,7 +126,6 @@ class UsuarioModel
         }
     }
 
-    /* Crear un nuevo usuario desde el mantenimiento de usuarios */
     public function create($data)
     {
         try {
@@ -159,10 +149,6 @@ class UsuarioModel
         }
     }
 
-    /*
-     * Actualizar un usuario existente. La contraseña solo se cambia si
-     * viene un valor nuevo en $data['Contrasena']; si no, se conserva la actual.
-     */
     public function update($id, $data)
     {
         try {

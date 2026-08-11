@@ -15,7 +15,8 @@
     "administration": "Administration",
     "newOrder": "New Order",
     "orderHistory": "Order History",
-    "userManagement": "Users"
+    "userManagement": "Users",
+    "stations": "Stations"
   },
   "actions": {
     "view": "View",
@@ -371,6 +372,15 @@
       "statusUpdated": "Order status updated",
       "statusUpdateError": "The order status could not be updated"
     }
+  },
+  "stations": {
+    "title": "Kitchen Stations",
+    "subtitle": "Active order lines, grouped by the station preparing them",
+    "noStation": "No station assigned",
+    "noLines": "There are no pending order lines right now.",
+    "viewOrder": "View full order",
+    "pending": "Pending",
+    "done": "Done"
   },
   "users": {
     "title": "User Management",

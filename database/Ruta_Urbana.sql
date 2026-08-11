@@ -192,6 +192,7 @@ CREATE TABLE DetallePedido (
     Subtotal       DECIMAL(10,2) NOT NULL,
     Impuesto       DECIMAL(10,2) NOT NULL DEFAULT 0,
     Observaciones  VARCHAR(200)  NULL,
+    Completado     TINYINT(1)    NOT NULL DEFAULT 0,
     IdPedido       INT NOT NULL,
     IdProducto     INT NULL,
     IdCombo        INT NULL,
@@ -238,8 +239,8 @@ INSERT INTO EstadoPedido (Nombre, Orden) VALUES
     ('Pendiente de pago', 1),
     ('Aceptada',          2),
     ('Preparación',       3),
-    ('Procesando',        4),
-    ('Entregada',         5);
+    ('Preparación',       4),
+    ('Finalizada',        5);
 
 INSERT INTO MetodoEntrega (Descripcion) VALUES
     ('Recogida en local'),
@@ -615,20 +616,20 @@ INSERT INTO Pedido (CodigoOrden, FechaPedido, OrigenPedido, Subtotal, Impuesto, 
         (SELECT IdMetodoEntrega FROM MetodoEntrega WHERE Descripcion = 'Entrega a domicilio'));
 
 -- Líneas de detalle: se usan los primeros productos y combos ya existentes en el catálogo
-INSERT INTO DetallePedido (Cantidad, PrecioUnitario, Subtotal, Impuesto, Observaciones, IdPedido, IdProducto, IdCombo) VALUES
-    (2, 3500.00, 7000.00, 910.00, NULL,
+INSERT INTO DetallePedido (Cantidad, PrecioUnitario, Subtotal, Impuesto, Observaciones, Completado, IdPedido, IdProducto, IdCombo) VALUES
+    (2, 3500.00, 7000.00, 910.00, NULL, 1,
         (SELECT IdPedido FROM Pedido WHERE CodigoOrden = 'PED-000001'),
         (SELECT IdProducto FROM Producto ORDER BY IdProducto LIMIT 1), NULL),
-    (1, 4200.00, 4200.00, 546.00, 'Sin cebolla',
+    (1, 4200.00, 4200.00, 546.00, 'Sin cebolla', 0,
         (SELECT IdPedido FROM Pedido WHERE CodigoOrden = 'PED-000002'),
         (SELECT IdProducto FROM Producto ORDER BY IdProducto LIMIT 1 OFFSET 1), NULL),
-    (1, 3500.00, 3500.00, 455.00, NULL,
+    (1, 3500.00, 3500.00, 455.00, NULL, 0,
         (SELECT IdPedido FROM Pedido WHERE CodigoOrden = 'PED-000003'),
         (SELECT IdProducto FROM Producto ORDER BY IdProducto LIMIT 1), NULL),
-    (1, 5400.00, 5400.00, 702.00, 'Extra queso',
+    (1, 5400.00, 5400.00, 702.00, 'Extra queso', 0,
         (SELECT IdPedido FROM Pedido WHERE CodigoOrden = 'PED-000003'),
         (SELECT IdProducto FROM Producto ORDER BY IdProducto LIMIT 1 OFFSET 2), NULL),
-    (1, 6000.00, 6000.00, 780.00, NULL,
+    (1, 6000.00, 6000.00, 780.00, NULL, 0,
         (SELECT IdPedido FROM Pedido WHERE CodigoOrden = 'PED-000004'),
         NULL, (SELECT IdCombo FROM Combo ORDER BY IdCombo LIMIT 1));
 

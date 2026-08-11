@@ -275,9 +275,9 @@ export default function RegistrarPedido() {
         toast.error(t("orders.messages.insufficientCash"));
         return;
       }
-    } else if (tipoPago !== "tarjeta") {
-      // "tarjeta" es la opción genérica que usa el encargado/administrador:
-      // no se piden los datos de la tarjeta porque esa información es
+    } else if (!esGestor) {
+      // El encargado/administrador puede elegir crédito o débito, pero no
+      // se le piden los datos de la tarjeta porque esa información es
       // privada del cliente. Solo el cliente, pagando su propio pedido,
       // llega a este bloque con los datos de crédito/débito.
       if (!/^\d{16}$/.test(numeroTarjeta)) {
@@ -306,9 +306,7 @@ export default function RegistrarPedido() {
         ? "efectivo"
         : tipoPago === "credito"
           ? "crédito"
-          : tipoPago === "debito"
-            ? "débito"
-            : "tarjeta"; // caso genérico del gestor: cualquier método con tarjeta sirve
+          : "débito";
 
     const metodoPago = metodosPago.find((m) =>
       m.Nombre.toLowerCase().includes(nombreBuscado),
@@ -340,7 +338,7 @@ export default function RegistrarPedido() {
           tipoPago === "efectivo" ? parseFloat(montoEfectivo) : total,
         Vuelto: tipoPago === "efectivo" ? vuelto : null,
         UltimosDigitos:
-          tipoPago === "credito" || tipoPago === "debito"
+          !esGestor && (tipoPago === "credito" || tipoPago === "debito")
             ? numeroTarjeta.slice(-4)
             : null,
       },
@@ -702,29 +700,19 @@ export default function RegistrarPedido() {
               label={t("orders.cash")}
             />
 
-            {esGestor ? (
-              // El encargado/administrador solo marca que el cliente pagó
-              // con tarjeta; no se le pide el número ni otros datos porque
-              // esa información es privada del cliente.
-              <FormControlLabel
-                value="tarjeta"
-                control={<Radio />}
-                label={t("orders.card")}
-              />
-            ) : (
-              <>
-                <FormControlLabel
-                  value="credito"
-                  control={<Radio />}
-                  label={t("orders.creditCard")}
-                />
-                <FormControlLabel
-                  value="debito"
-                  control={<Radio />}
-                  label={t("orders.debitCard")}
-                />
-              </>
-            )}
+            <FormControlLabel
+              value="credito"
+              control={<Radio />}
+              label={t("orders.creditCard")}
+            />
+            <FormControlLabel
+              value="debito"
+              control={<Radio />}
+              label={t("orders.debitCard")}
+            />
+            {/* El encargado/administrador solo marca que el cliente pagó
+                con crédito o débito; no se le piden los datos de la
+                tarjeta porque esa información es privada del cliente. */}
           </RadioGroup>
 
           {tipoPago === "efectivo" && (

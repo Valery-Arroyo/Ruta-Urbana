@@ -159,4 +159,47 @@ class Pedido
             handleException($e);
         }
     }
+
+    // Líneas de pedido pendientes, agrupadas por estación (pantalla de Estaciones)
+    public function estaciones()
+    {
+        try {
+            AuthMiddleware::verificar(['Administrador', 'Encargado']);
+
+            $response = new Response();
+            $pedido = new PedidoModel();
+
+            $response->toJSON(['lineas' => $pedido->estaciones() ?: []]);
+        } catch (Exception $e) {
+            handleException($e);
+        }
+    }
+
+    // Marcar una línea del pedido como completada/pendiente desde la pantalla de Estaciones
+    public function cambiarEstadoLinea()
+    {
+        try {
+            $tokenData = AuthMiddleware::verificar(['Administrador', 'Encargado']);
+
+            $response = new Response();
+            $pedidoModel = new PedidoModel();
+
+            $data = json_decode(file_get_contents("php://input"), true);
+
+            if (!isset($data['IdDetalle'])) {
+                $response->status(400)->toJSON(['result' => 'Debe indicar la línea del pedido']);
+                return;
+            }
+
+            $resultado = $pedidoModel->cambiarEstadoLinea(
+                $data['IdDetalle'],
+                $data['Completado'] ?? 1,
+                $tokenData->IdUsuario
+            );
+
+            $response->toJSON(['success' => $resultado ? 1 : 0]);
+        } catch (Exception $e) {
+            handleException($e);
+        }
+    }
 }

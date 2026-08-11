@@ -26,6 +26,7 @@ import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
 import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import ManageAccountsOutlinedIcon from "@mui/icons-material/ManageAccountsOutlined";
 import LogoutIcon from "@mui/icons-material/Logout";
+import SoupKitchenOutlinedIcon from "@mui/icons-material/SoupKitchenOutlined";
 
 import LanguageSelector from "../LanguageSelector";
 import { useAuth } from "../../context/AuthContext";
@@ -78,6 +79,11 @@ export default function Header() {
         nombre: t("navigation.ingredients"),
         ruta: "/ingrediente",
         icono: <EggAltOutlinedIcon />,
+      },
+      {
+        nombre: t("navigation.stations"),
+        ruta: "/pedidos/estaciones",
+        icono: <SoupKitchenOutlinedIcon />,
       },
     );
   }
