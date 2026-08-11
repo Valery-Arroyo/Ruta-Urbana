@@ -12,6 +12,8 @@ namespace RutaUrbana.TareaProgramada.Data
 
         public DbSet<Producto> Productos => Set<Producto>();
         public DbSet<Categoria> Categorias => Set<Categoria>();
+        public DbSet<Usuario> Usuarios => Set<Usuario>();
+        public DbSet<Rol> Roles => Set<Rol>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -28,6 +30,21 @@ namespace RutaUrbana.TareaProgramada.Data
                 e.HasOne(p => p.Categoria)
                     .WithMany(c => c.Productos)
                     .HasForeignKey(p => p.IdCategoria);
+            });
+
+            modelBuilder.Entity<Rol>(e =>
+            {
+                e.ToTable("Rol");
+                e.HasKey(r => r.IdRol);
+            });
+
+            modelBuilder.Entity<Usuario>(e =>
+            {
+                e.ToTable("Usuario");
+                e.HasKey(u => u.IdUsuario);
+                e.HasOne(u => u.Rol)
+                    .WithMany(r => r.Usuarios)
+                    .HasForeignKey(u => u.IdRol);
             });
         }
     }

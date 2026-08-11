@@ -261,7 +261,6 @@ export default function DetallePedidoFactura() {
 
         <Divider sx={{ my: 2 }} />
 
-        {/* Totales */}
         <Box sx={{ ml: "auto", maxWidth: 320 }}>
           <Box
             sx={{ display: "flex", justifyContent: "space-between", mb: 0.5 }}

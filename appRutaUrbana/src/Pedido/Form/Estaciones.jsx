@@ -24,10 +24,6 @@ export default function Estaciones() {
 
   const [lineas, setLineas] = useState([]);
   const [cargando, setCargando] = useState(true);
-  // Se bloquean TODAS las tarjetas mientras se guarda un cambio (no solo la
-  // que se está editando), para que no se puedan disparar dos cambios de
-  // estado casi al mismo tiempo y se pierda la revisión de "¿ya terminó
-  // todo el pedido?" por una condición de carrera.
   const [guardando, setGuardando] = useState(false);
 
   const cargarLineas = useCallback(async () => {

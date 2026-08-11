@@ -4,13 +4,6 @@ import DeleteIcon from "@mui/icons-material/Delete";
 
 import { formatCurrency } from "../../utils/format";
 
-/*
- * Fila editable de una línea del pedido. Se separó del formulario
- * principal porque maneja su propio estado local para la cantidad:
- * el usuario debe poder borrar los dígitos de la caja de texto (dejarla
- * vacía momentáneamente) sin que eso elimine la línea. La línea solo
- * se elimina cuando el valor confirmado es 0, o con el botón de borrar.
- */
 export default function LineaPedidoRow({
   linea,
   idioma,

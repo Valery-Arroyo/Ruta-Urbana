@@ -1,6 +1,3 @@
-// Funciones de formato compartidas por las pantallas del módulo de pedidos.
-// Se mantiene el mismo criterio que ya se usaba en Productos: colones
-// costarricenses con el símbolo ₡ y el idioma actual de la aplicación.
 
 export function formatCurrency(valor, idioma) {
   const numero = Number(valor) || 0;

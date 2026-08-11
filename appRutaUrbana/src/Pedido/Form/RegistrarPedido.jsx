@@ -199,8 +199,6 @@ export default function RegistrarPedido() {
   const costoEnvio = esDomicilio ? SHIPPING_COST : 0;
   const total = subtotal + impuesto + costoEnvio;
 
-  // Cuando el encargado elige un cliente con dirección guardada, se
-  // precarga (pero se puede seguir editando)
   useEffect(() => {
     if (esGestor && clienteElegido && esDomicilio) {
       setValue("DireccionEntrega", clienteElegido.Direccion || "");
@@ -276,10 +274,7 @@ export default function RegistrarPedido() {
         return;
       }
     } else if (!esGestor) {
-      // El encargado/administrador puede elegir crédito o débito, pero no
-      // se le piden los datos de la tarjeta porque esa información es
-      // privada del cliente. Solo el cliente, pagando su propio pedido,
-      // llega a este bloque con los datos de crédito/débito.
+
       if (!/^\d{16}$/.test(numeroTarjeta)) {
         toast.error(t("orders.messages.invalidCard"));
         return;
@@ -445,7 +440,6 @@ export default function RegistrarPedido() {
             )}
           </Grid>
 
-          {/* Encargado */}
           {esGestor && (
             <Grid size={{ xs: 12, md: 6 }}>
               <Typography sx={{ fontWeight: 700, mb: 1 }}>
@@ -460,7 +454,6 @@ export default function RegistrarPedido() {
             </Grid>
           )}
 
-          {/* Método de entrega */}
           <Grid size={{ xs: 12, md: 6 }}>
             <Controller
               name="IdMetodoEntrega"
@@ -508,7 +501,6 @@ export default function RegistrarPedido() {
 
         <Divider sx={{ mb: 3 }} />
 
-        {/* Agregar línea de detalle */}
         <Typography sx={{ fontWeight: 700, mb: 1 }}>
           {t("orders.addItem")}
         </Typography>
@@ -675,7 +667,6 @@ export default function RegistrarPedido() {
         </Typography>
       </Card>
 
-      {/* Diálogo de simulación de pago */}
       <Dialog
         open={dialogoPagoAbierto}
         onClose={cerrarDialogoPago}
@@ -710,9 +701,7 @@ export default function RegistrarPedido() {
               control={<Radio />}
               label={t("orders.debitCard")}
             />
-            {/* El encargado/administrador solo marca que el cliente pagó
-                con crédito o débito; no se le piden los datos de la
-                tarjeta porque esa información es privada del cliente. */}
+            
           </RadioGroup>
 
           {tipoPago === "efectivo" && (

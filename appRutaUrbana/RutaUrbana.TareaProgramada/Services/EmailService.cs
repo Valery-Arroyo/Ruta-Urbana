@@ -16,20 +16,25 @@ namespace RutaUrbana.TareaProgramada.Services
             _logger = logger;
         }
 
-        public async Task EnviarResumenCambiosAsync(List<string> cambios, DateTime fechaHora)
+        public async Task EnviarResumenCambiosAsync(List<string> destinatarios, List<string> cambios, DateTime fechaHora)
         {
-            if (string.IsNullOrWhiteSpace(_settings.CorreoAdministrador))
+            if (destinatarios == null || destinatarios.Count == 0)
             {
-                _logger.LogWarning("No hay CorreoAdministrador configurado; se omite el envío de correo.");
+                _logger.LogWarning("No se encontró ningún Administrador activo en la base de datos; se omite el envío de correo.");
                 return;
             }
 
             var mensaje = new MimeMessage();
             mensaje.From.Add(new MailboxAddress(_settings.RemitenteNombre, _settings.RemitenteCorreo));
-            mensaje.To.Add(MailboxAddress.Parse(_settings.CorreoAdministrador));
+
+            foreach (var correo in destinatarios)
+            {
+                mensaje.To.Add(MailboxAddress.Parse(correo));
+            }
+
             mensaje.Subject = $"[Ruta Urbana] Producto del día - {fechaHora:dd/MM/yyyy}";
 
-            var cuerpo = "La tarea programada actualizó lo siguiente:\n\n"
+            var cuerpo = "Ruta Urbana Notifica 🌆🍔:\n\n"
                 + string.Join("\n", cambios.Select(c => $"- {c}"))
                 + $"\n\nEjecutado el {fechaHora:dd/MM/yyyy} a las {fechaHora:HH:mm}.";
 
@@ -41,7 +46,7 @@ namespace RutaUrbana.TareaProgramada.Services
                 await cliente.ConnectAsync(_settings.SmtpHost, _settings.SmtpPort, SecureSocketOptions.StartTls);
                 await cliente.AuthenticateAsync(_settings.RemitenteCorreo, _settings.RemitenteContrasena);
                 await cliente.SendAsync(mensaje);
-                _logger.LogInformation("Correo enviado a {Correo}", _settings.CorreoAdministrador);
+                _logger.LogInformation("Correo enviado a {Correos}", string.Join(", ", destinatarios));
             }
             finally
             {

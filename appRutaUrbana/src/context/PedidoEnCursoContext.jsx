@@ -1,12 +1,7 @@
 import { createContext, useContext, useMemo, useState, useCallback } from "react";
 import { TAX_RATE } from "../utils/constants";
 
-/*
- * Contexto del pedido que el usuario está armando. Vive en memoria (no se
- * recarga la página en ningún momento del proceso) y es lo que alimenta
- * tanto el formulario de Registrar Pedido como el contador de compra
- * que se muestra en el encabezado de la aplicación.
- */
+
 const PedidoEnCursoContext = createContext(null);
 
 function redondear(numero) {
@@ -22,8 +17,6 @@ function calcularLinea(precioUnitario, cantidad) {
 export function PedidoEnCursoProvider({ children }) {
   const [lineas, setLineas] = useState([]);
 
-  // Agrega una línea nueva; si el mismo producto/combo ya estaba en el
-  // pedido, simplemente se suma la cantidad en vez de duplicar la fila
   const agregarLinea = useCallback(({ tipo, idItem, nombre, precioUnitario, cantidad }) => {
     setLineas((actuales) => {
       const existente = actuales.find(
@@ -60,8 +53,6 @@ export function PedidoEnCursoProvider({ children }) {
     });
   }, []);
 
-  // Recalcula subtotal/impuesto de una línea al cambiar la cantidad.
-  // Si la cantidad confirmada es 0, la línea se elimina.
   const actualizarCantidad = useCallback((key, cantidad) => {
     if (cantidad <= 0) {
       setLineas((actuales) => actuales.filter((linea) => linea.key !== key));

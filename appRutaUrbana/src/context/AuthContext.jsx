@@ -3,23 +3,8 @@ import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import AuthService from "../services/AuthService";
 
-/*
- * Contexto de autenticación. Guarda el usuario y el token de sesión,
- * y expone el rol por separado (esta es la variable que el resto de
- * la aplicación debe usar para decidir qué mostrar según el rol,
- * en vez de tomar esa decisión directamente en los componentes visuales).
- */
 const AuthContext = createContext(null);
 
-/*
- * La sesión guardada se restaura aquí, al evaluarse el módulo, y no
- * dentro de un useEffect del proveedor. Esto es importante: los efectos
- * de un componente hijo (por ejemplo, la pantalla de detalle de un
- * pedido pidiendo sus datos apenas se monta) se ejecutan ANTES que el
- * efecto del proveedor que envuelve a toda la aplicación, así que si el
- * encabezado de autorización se fijara en un useEffect, esas primeras
- * peticiones saldrían sin token y el backend respondería 401.
- */
 function leerSesionGuardada() {
   const tokenGuardado = localStorage.getItem("ru_token");
   const usuarioGuardado = localStorage.getItem("ru_usuario");

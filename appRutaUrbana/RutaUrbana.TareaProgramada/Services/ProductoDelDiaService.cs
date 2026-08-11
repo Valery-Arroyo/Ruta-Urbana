@@ -10,8 +10,6 @@ namespace RutaUrbana.TareaProgramada.Services
         private readonly ILogger<ProductoDelDiaService> _logger;
         private static readonly Random _random = new();
 
-        // Cada cuánto REVISA si ya toca cambiar (no cambia cada minuto:
-        // solo cambia una vez al día, aunque revise seguido).
         private static readonly TimeSpan IntervaloRevision = TimeSpan.FromMinutes(1);
 
         public ProductoDelDiaService(IServiceProvider serviceProvider, ILogger<ProductoDelDiaService> logger)
@@ -47,7 +45,6 @@ namespace RutaUrbana.TareaProgramada.Services
 
             var hoy = DateTime.Today;
 
-            // 1) CONSULTA LA BD: ¿ya hay un producto marcado como "del día" hoy?
             bool yaHayProductoDeHoy = await context.Productos
                 .AnyAsync(p => p.EsProductoDelDia && p.FechaProductoDelDia == hoy, stoppingToken);
 
@@ -57,7 +54,6 @@ namespace RutaUrbana.TareaProgramada.Services
                 return;
             }
 
-            // 2) EJECUTA LA TAREA: elige un producto activo al azar.
             var productosActivos = await context.Productos
                 .Where(p => p.Activo)
                 .ToListAsync(stoppingToken);
@@ -80,8 +76,19 @@ namespace RutaUrbana.TareaProgramada.Services
             await context.SaveChangesAsync(stoppingToken);
             _logger.LogInformation("Nuevo producto del día: {Producto}", elegido.Nombre);
 
-            // 3) MUESTRA EL RESULTADO FUERA DE LA BD: correo al administrador.
+            var correosAdministradores = await context.Usuarios
+                .Where(u => u.Activo && u.Rol != null && u.Rol.NombreRol == "Administrador")
+                .Select(u => u.Correo)
+                .ToListAsync(stoppingToken);
+
+            if (correosAdministradores.Count == 0)
+            {
+                _logger.LogWarning("No hay ningún Administrador activo registrado; no se envía el correo del producto del día.");
+                return;
+            }
+
             await emailService.EnviarResumenCambiosAsync(
+                correosAdministradores,
                 new List<string> { $"Producto del día: {elegido.Nombre}" },
                 DateTime.Now);
         }

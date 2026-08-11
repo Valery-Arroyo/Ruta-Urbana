@@ -2,6 +2,6 @@ namespace RutaUrbana.TareaProgramada.Services
 {
     public interface IEmailService
     {
-        Task EnviarResumenCambiosAsync(List<string> cambios, DateTime fechaHora);
+        Task EnviarResumenCambiosAsync(List<string> destinatarios, List<string> cambios, DateTime fechaHora);
     }
 }
