@@ -17,6 +17,17 @@ class PedidoService {
     return axios.get(`${BASE_URL}/estados`);
   }
 
+  /*
+   * Tipo de cambio USD -> CRC. Se le pide a NUESTRO backend (no al
+   * servicio externo directamente), porque ese servicio externo no
+   * permite llamadas desde el navegador (CORS). El backend sí puede
+   * llamarlo sin problema, ya que esa restricción solo aplica a
+   * peticiones hechas desde un navegador.
+   */
+  getTipoCambio() {
+    return axios.get(`${BASE_URL}/tipoCambio`);
+  }
+
   /* Historial del cliente autenticado (el backend valida quién es por el token) */
   getHistorialCliente() {
     return axios.get(`${BASE_URL}/historialCliente`);

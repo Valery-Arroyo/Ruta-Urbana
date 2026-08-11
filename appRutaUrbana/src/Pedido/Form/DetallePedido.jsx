@@ -40,6 +40,18 @@ export default function DetallePedidoFactura() {
   const [estados, setEstados] = useState([]);
   const [actualizandoEstado, setActualizandoEstado] = useState(false);
 
+  // Tipo de cambio USD -> CRC, obtenido de un Web Service externo
+  // (frankfurter.app), solo para mostrar el total también en dólares.
+  const [tipoCambio, setTipoCambio] = useState(null);
+
+  useEffect(() => {
+    PedidoService.getTipoCambio()
+      .then((response) => setTipoCambio(response.data?.tipoCambio || null))
+      .catch((error) =>
+        console.error("Error obteniendo el tipo de cambio", error),
+      );
+  }, []);
+
   useEffect(() => {
     PedidoService.getDetalle(id)
       .then((response) => {
@@ -303,6 +315,14 @@ export default function DetallePedidoFactura() {
               {formatCurrency(pedido.Total, i18n.language)}
             </Typography>
           </Box>
+
+          {tipoCambio && (
+            <Typography
+              sx={{ textAlign: "right", color: "text.secondary", fontSize: 13, mt: 0.3 }}
+            >
+              ≈ ${(Number(pedido.Total) / tipoCambio).toFixed(2)} USD
+            </Typography>
+          )}
         </Box>
       </Card>
     </Box>

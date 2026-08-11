@@ -16,6 +16,30 @@ class Pedido
         }
     }
 
+    // Tipo de cambio USD -> CRC (Web Service externo, consumido aquí en
+    // el servidor y no desde el navegador, porque el servicio externo no
+    // permite llamadas directas desde el navegador por política CORS).
+    public function tipoCambio()
+    {
+        try {
+            AuthMiddleware::verificar();
+
+            $response = new Response();
+            $pedido = new PedidoModel();
+
+            $valor = $pedido->tipoCambioUsdACrc();
+
+            if ($valor === null) {
+                $response->status(502)->toJSON(['result' => 'No se pudo obtener el tipo de cambio en este momento']);
+                return;
+            }
+
+            $response->toJSON(['tipoCambio' => $valor]);
+        } catch (Exception $e) {
+            handleException($e);
+        }
+    }
+
     public function metodosEntrega()
     {
         try {

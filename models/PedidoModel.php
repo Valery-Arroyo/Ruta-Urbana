@@ -8,6 +8,33 @@ class PedidoModel
         $this->enlace = new MySqlConnect();
     }
 
+    /*
+     * Consumo de un Web Service EXTERNO: open.er-api.com (ExchangeRate-API,
+     * modo "open access"), gratuito y sin necesidad de llave (API key).
+     * Se hace desde el servidor (no desde el navegador) porque ese
+     * servicio no envía el encabezado CORS necesario para que un
+     * navegador lo llame directamente.
+     * Devuelve cuántos colones equivalen a 1 dólar, o null si el
+     * servicio externo no responde (para no romper la pantalla).
+     */
+    public function tipoCambioUsdACrc()
+    {
+        try {
+            $contexto = stream_context_create(['http' => ['timeout' => 5]]);
+            $respuesta = @file_get_contents('https://open.er-api.com/v6/latest/USD', false, $contexto);
+
+            if ($respuesta === false) {
+                return null;
+            }
+
+            $datos = json_decode($respuesta, true);
+
+            return $datos['rates']['CRC'] ?? null;
+        } catch (Exception $e) {
+            return null;
+        }
+    }
+
     /* Catálogos usados por el formulario de registro de pedido */
     public function metodosPago()
     {

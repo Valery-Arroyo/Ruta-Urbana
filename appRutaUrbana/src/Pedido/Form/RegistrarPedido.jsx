@@ -73,6 +73,10 @@ export default function RegistrarPedido() {
   const [metodosEntrega, setMetodosEntrega] = useState([]);
   const [metodosPago, setMetodosPago] = useState([]);
 
+  // Tipo de cambio USD -> CRC, obtenido de un Web Service externo
+  // (frankfurter.app), solo para mostrar el total también en dólares.
+  const [tipoCambio, setTipoCambio] = useState(null);
+
   const [itemSeleccionado, setItemSeleccionado] = useState("");
   const [cantidadNueva, setCantidadNueva] = useState("1");
 
@@ -148,6 +152,15 @@ export default function RegistrarPedido() {
         .then((response) => setClientes(response.data?.clientes || []))
         .catch((error) => console.error("Error cargando clientes", error));
     }
+
+      // Tipo de cambio (lo obtiene nuestro backend de un Web Service
+      // externo). Si falla, simplemente no se muestra el equivalente
+      // en dólares; no debe romper la pantalla.
+    PedidoService.getTipoCambio()
+      .then((response) => setTipoCambio(response.data?.tipoCambio || null))
+      .catch((error) =>
+        console.error("Error obteniendo el tipo de cambio", error),
+      );
   }, [esGestor]);
 
   const itemsDisponibles = useMemo(() => {
@@ -198,6 +211,7 @@ export default function RegistrarPedido() {
     /domicilio/i.test(metodoEntregaElegido.Descripcion);
   const costoEnvio = esDomicilio ? SHIPPING_COST : 0;
   const total = subtotal + impuesto + costoEnvio;
+  const totalUsd = tipoCambio ? total / tipoCambio : null;
 
   useEffect(() => {
     if (esGestor && clienteElegido && esDomicilio) {
@@ -634,6 +648,14 @@ export default function RegistrarPedido() {
               {formatCurrency(total, i18n.language)}
             </Typography>
           </Box>
+
+          {totalUsd !== null && (
+            <Typography
+              sx={{ textAlign: "right", color: "text.secondary", fontSize: 13, mt: 0.3 }}
+            >
+              ≈ ${totalUsd.toFixed(2)} USD
+            </Typography>
+          )}
         </Box>
 
         <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
