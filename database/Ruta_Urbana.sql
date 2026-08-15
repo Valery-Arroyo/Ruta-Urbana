@@ -192,7 +192,6 @@ CREATE TABLE DetallePedido (
     Subtotal       DECIMAL(10,2) NOT NULL,
     Impuesto       DECIMAL(10,2) NOT NULL DEFAULT 0,
     Observaciones  VARCHAR(200)  NULL,
-    Completado     TINYINT(1)    NOT NULL DEFAULT 0,
     IdPedido       INT NOT NULL,
     IdProducto     INT NULL,
     IdCombo        INT NULL,
@@ -239,8 +238,8 @@ INSERT INTO EstadoPedido (Nombre, Orden) VALUES
     ('Pendiente de pago', 1),
     ('Aceptada',          2),
     ('Preparación',       3),
-    ('Preparación',       4),
-    ('Finalizada',        5);
+    ('Procesando',        4),
+    ('Entregada',         5);
 
 INSERT INTO MetodoEntrega (Descripcion) VALUES
     ('Recogida en local'),
@@ -410,12 +409,12 @@ INSERT INTO ProductoImagen (Imagen, EsPrincipal, IdProducto) VALUES
 -- COMBOS
 -- ==========================================
 INSERT INTO Combo (Nombre, Descripcion, PrecioEspecial, Activo, IdCategoria, RutaImagen) VALUES
-    ('Combo Clásico', 'El sabor tradicional con papas crujientes y refresco natural.', 9500.00, 1, 7, 'uploads/imagenes-combos/combo-clasico.png'),
-    ('Combo Doble', 'Doble hamburguesa para los más hambrientos, con papas y limonada frozen.', 12500.00, 1, 7, 'uploads/imagenes-combos/combo-doble.png'),
-    ('Combo Pollo', 'Pollo crujiente acompañado de aros de cebolla y refresco natural.', 10000.00, 1, 7, 'uploads/imagenes-combos/combo-pollo.png'),
-    ('Combo Postre', 'Un dulce final: brownie de chocolate con café americano.', 4200.00, 1, 9, 'uploads/imagenes-combos/combo-postre.png'),
-    ('Combo Barbacoa', 'Perfecto para compartir: hamburguesas BBQ, aguacate fresco, papas y limonadas.', 28000.00, 1, 6, 'uploads/imagenes-combos/combo-bbq-familiar.png'),
-    ('Combo Goloso', 'Para los amantes del dulce: hamburguesa clásica, papas y brownie de chocolate.', 11500.00, 1, 9, 'uploads/imagenes-combos/combo-goloso.png');
+    ('Combo Clásico', 'El sabor tradicional con papas crujientes y refresco natural.', 9500.00, 1, 7, 'uploads/ImagenesRutaUrbana/combo-clasico.png'),
+    ('Combo Doble', 'Doble hamburguesa para los más hambrientos, con papas y limonada frozen.', 12500.00, 1, 7, 'uploads/ImagenesRutaUrbana/combo-doble.png'),
+    ('Combo Pollo', 'Pollo crujiente acompañado de aros de cebolla y refresco natural.', 10000.00, 1, 7, 'uploads/ImagenesRutaUrbana/combo-pollo.png'),
+    ('Combo Postre', 'Un dulce final: brownie de chocolate con café americano.', 4200.00, 1, 9, 'uploads/ImagenesRutaUrbana/combo-postre.png'),
+    ('Combo Barbacoa', 'Perfecto para compartir: hamburguesas BBQ, aguacate fresco, papas y limonadas.', 28000.00, 1, 6, 'uploads/ImagenesRutaUrbana/combo-bbq-familiar.png'),
+    ('Combo Goloso', 'Para los amantes del dulce: hamburguesa clásica, papas y brownie de chocolate.', 11500.00, 1, 9, 'uploads/ImagenesRutaUrbana/combo-goloso.png');
 
 -- ==========================================
 -- COMBO - PRODUCTOS
@@ -616,6 +615,8 @@ INSERT INTO Pedido (CodigoOrden, FechaPedido, OrigenPedido, Subtotal, Impuesto, 
         (SELECT IdMetodoEntrega FROM MetodoEntrega WHERE Descripcion = 'Entrega a domicilio'));
 
 -- Líneas de detalle: se usan los primeros productos y combos ya existentes en el catálogo
+USE RutaUrbana;
+
 INSERT INTO DetallePedido (Cantidad, PrecioUnitario, Subtotal, Impuesto, Observaciones, Completado, IdPedido, IdProducto, IdCombo) VALUES
     (2, 3500.00, 7000.00, 910.00, NULL, 1,
         (SELECT IdPedido FROM Pedido WHERE CodigoOrden = 'PED-000001'),
@@ -663,3 +664,27 @@ INSERT INTO HistorialEstadoPedido (IdPedido, IdEstado, FechaHora, IdUsuario, Obs
         (SELECT IdUsuario FROM Usuario WHERE Correo = 'luis.castro@gmail.com'), 'Pedido creado'),
     ((SELECT IdPedido FROM Pedido WHERE CodigoOrden = 'PED-000004'), 2, NOW(),
         (SELECT IdUsuario FROM Usuario WHERE Correo = 'luis.castro@gmail.com'), 'Pago recibido, pedido aceptado');
+        
+	USE RutaUrbana;
+	UPDATE Combo SET RutaImagen = REPLACE(RutaImagen, 'ImagenesRutaUrbana', 'imagenes-combos');
+
+ALTER TABLE DetallePedido ADD COLUMN Completado TINYINT(1) NOT NULL DEFAULT 0;
+
+SELECT p.CodigoOrden, COUNT(d.IdDetalle) AS CantidadLineas
+FROM Pedido p
+LEFT JOIN DetallePedido d ON d.IdPedido = p.IdPedido
+GROUP BY p.CodigoOrden
+ORDER BY p.CodigoOrden;
+
+UPDATE Pedido
+SET IdEstado = 5
+WHERE CodigoOrden = 'PED-000009'
+  AND NOT EXISTS (
+    SELECT 1 FROM DetallePedido d
+    WHERE d.IdPedido = Pedido.IdPedido AND d.Completado = 0
+  );
+    
+SELECT d.IdDetalle, d.Completado, d.IdProducto, d.IdCombo
+FROM DetallePedido d
+INNER JOIN Pedido p ON d.IdPedido = p.IdPedido
+WHERE p.CodigoOrden = 'PED-000009';

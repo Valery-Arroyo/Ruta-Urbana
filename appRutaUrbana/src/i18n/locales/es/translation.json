@@ -22,6 +22,7 @@
   },
   "actions": {
     "view": "Ver",
+    "viewDetail": "Ver detalle",
     "create": "Crear",
     "edit": "Editar",
     "save": "Guardar",

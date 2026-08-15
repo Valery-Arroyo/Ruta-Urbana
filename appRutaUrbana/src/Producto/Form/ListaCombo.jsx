@@ -15,10 +15,10 @@ import {
   DialogActions,
   TextField,
   MenuItem,
+  Chip,
 } from "@mui/material";
 
 import AddIcon from "@mui/icons-material/Add";
-import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
@@ -341,23 +341,44 @@ export default function ListCombosAdmin() {
                 boxShadow: "0 4px 12px rgba(0,0,0,.12)",
               }}
             >
-              <CardMedia
-                component="img"
-                height="170"
-                image={
-                  combo.RutaImagen
-                    ? `http://localhost:81/apirutaurbana/${combo.RutaImagen}`
-                    : "/no-image.png"
-                }
-                alt={combo.NombreCombo}
-                sx={{
-                  objectFit: "cover",
-                }}
-              />
+              <Box sx={{ position: "relative" }}>
+                <CardMedia
+                  component="img"
+                  height="170"
+                  image={
+                    combo.RutaImagen
+                      ? `http://localhost:81/apirutaurbana/${combo.RutaImagen}`
+                      : "/no-image.png"
+                  }
+                  alt={combo.NombreCombo}
+                  sx={{
+                    objectFit: "cover",
+                  }}
+                />
+
+                <Chip
+                  label={`₡${Number(combo.PrecioEspecial).toLocaleString("es-CR", {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0,
+                  })}`}
+                  sx={{
+                    position: "absolute",
+                    top: 10,
+                    right: 10,
+                    bgcolor: "#FF8C00",
+                    color: "#111111",
+                    fontWeight: "bold",
+                    fontSize: "0.9rem",
+                    boxShadow: "0 3px 10px rgba(0,0,0,.35)",
+                  }}
+                />
+              </Box>
 
               <CardContent
                 sx={{
                   flexGrow: 1,
+                  display: "flex",
+                  flexDirection: "column",
                 }}
               >
                 <Typography
@@ -373,36 +394,25 @@ export default function ListCombosAdmin() {
                 <Typography align="center" color="text.secondary">
                   {combo.Descripcion}
                 </Typography>
-
-                <Typography
-                  align="center"
-                  sx={{
-                    mt: 1,
-                    fontWeight: "bold",
-                    color: "#FF8C00",
-                  }}
-                >
-                  ₡
-                  {Number(combo.PrecioEspecial).toLocaleString("es-CR", {
-                    minimumFractionDigits: 0,
-                    maximumFractionDigits: 0,
-                  })}
-                </Typography>
               </CardContent>
 
               <CardActions
                 sx={{
-                  justifyContent: "center",
+                  justifyContent: "space-between",
+                  borderTop: "1px solid #eee",
                 }}
               >
-                <IconButton
+                <Button
+                  size="small"
                   sx={{
-                    color: "#FF8C00",
+                    color: "#000000",
+                    fontWeight: "bold",
+                    textTransform: "none",
                   }}
                   onClick={() => navigate(`/combos/${combo.IdCombo}`)}
                 >
-                  <ZoomInIcon />
-                </IconButton>
+                  {t("actions.viewDetail")}
+                </Button>
 
                 {esGestor && (
                   <>

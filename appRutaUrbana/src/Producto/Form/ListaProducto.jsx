@@ -15,10 +15,10 @@ import {
   DialogActions,
   TextField,
   MenuItem,
+  Chip,
 } from "@mui/material";
 
 import AddIcon from "@mui/icons-material/Add";
-import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
@@ -472,31 +472,55 @@ export default function GestionProductos() {
                   </Box>
                 )}
 
-                <CardMedia
-                  component="img"
-                  height="170"
-                  image={obtenerImagenProducto(prod)}
-                  alt={prod.Nombre}
-                  onError={(event) => {
-                    console.error(
-                      "No se pudo cargar la imagen:",
-                      event.currentTarget.src,
-                    );
+                <Box sx={{ position: "relative" }}>
+                  <CardMedia
+                    component="img"
+                    height="170"
+                    image={obtenerImagenProducto(prod)}
+                    alt={prod.Nombre}
+                    onError={(event) => {
+                      console.error(
+                        "No se pudo cargar la imagen:",
+                        event.currentTarget.src,
+                      );
 
-                    console.log("Producto relacionado:", prod);
+                      console.log("Producto relacionado:", prod);
 
-                    event.currentTarget.onerror = null;
-                    event.currentTarget.src = "/no-image.png";
-                  }}
-                  sx={{
-                    objectFit: "cover",
-                    width: "100%",
-                  }}
-                />
+                      event.currentTarget.onerror = null;
+                      event.currentTarget.src = "/no-image.png";
+                    }}
+                    sx={{
+                      objectFit: "cover",
+                      width: "100%",
+                    }}
+                  />
+
+                  <Chip
+                    label={`₡${Number(prod.Precio).toLocaleString(
+                      i18n.language === "en" ? "en-US" : "es-CR",
+                      {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0,
+                      },
+                    )}`}
+                    sx={{
+                      position: "absolute",
+                      top: 10,
+                      right: 10,
+                      bgcolor: "#FF8C00",
+                      color: "#111111",
+                      fontWeight: "bold",
+                      fontSize: "0.9rem",
+                      boxShadow: "0 3px 10px rgba(0,0,0,.35)",
+                    }}
+                  />
+                </Box>
 
                 <CardContent
                   sx={{
                     flexGrow: 1,
+                    display: "flex",
+                    flexDirection: "column",
                   }}
                 >
                   <Typography
@@ -523,25 +547,6 @@ export default function GestionProductos() {
                     {prod.Descripcion}
                   </Typography>
 
-                  <Typography
-                    align="center"
-                    sx={{
-                      fontWeight: "bold",
-                      color: "#FF8C00",
-                      mt: 1,
-                      fontSize: esProductoDelDia ? "1.25rem" : "1rem",
-                    }}
-                  >
-                    ₡
-                    {Number(prod.Precio).toLocaleString(
-                      i18n.language === "en" ? "en-US" : "es-CR",
-                      {
-                        minimumFractionDigits: 0,
-                        maximumFractionDigits: 0,
-                      },
-                    )}
-                  </Typography>
-
                   {esProductoDelDia && (
                     <Typography
                       align="center"
@@ -559,17 +564,20 @@ export default function GestionProductos() {
 
                 <CardActions
                   sx={{
-                    justifyContent: "center",
+                    justifyContent: "space-between",
 
                     borderTop: esProductoDelDia
                       ? "1px solid rgba(255,255,255,.12)"
-                      : "none",
+                      : "1px solid #eee",
                   }}
                 >
-                  <IconButton
-                    aria-label={`${t("actions.view")} ${prod.Nombre}`}
+                  <Button
+                    size="small"
+                    onClick={() => navigate(`/productos/${prod.IdProducto}`)}
                     sx={{
-                      color: "#FF8C00",
+                      color: esProductoDelDia ? "#FFFFFF" : "#000000",
+                      fontWeight: "bold",
+                      textTransform: "none",
 
                       "&:hover": {
                         bgcolor: esProductoDelDia
@@ -577,10 +585,9 @@ export default function GestionProductos() {
                           : "rgba(255,140,0,.1)",
                       },
                     }}
-                    onClick={() => navigate(`/productos/${prod.IdProducto}`)}
                   >
-                    <ZoomInIcon />
-                  </IconButton>
+                    {t("actions.viewDetail")}
+                  </Button>
 
                   {esGestor && (
                     <>

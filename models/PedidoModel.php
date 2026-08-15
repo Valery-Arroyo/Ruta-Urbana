@@ -8,15 +8,6 @@ class PedidoModel
         $this->enlace = new MySqlConnect();
     }
 
-    /*
-     * Consumo de un Web Service EXTERNO: open.er-api.com (ExchangeRate-API,
-     * modo "open access"), gratuito y sin necesidad de llave (API key).
-     * Se hace desde el servidor (no desde el navegador) porque ese
-     * servicio no envía el encabezado CORS necesario para que un
-     * navegador lo llame directamente.
-     * Devuelve cuántos colones equivalen a 1 dólar, o null si el
-     * servicio externo no responde (para no romper la pantalla).
-     */
     public function tipoCambioUsdACrc()
     {
         try {
@@ -35,7 +26,6 @@ class PedidoModel
         }
     }
 
-    /* Catálogos usados por el formulario de registro de pedido */
     public function metodosPago()
     {
         try {
@@ -80,12 +70,6 @@ class PedidoModel
         }
     }
 
-    /*
-     * Historial de todos los pedidos, para encargados y administrador,
-     * con filtro opcional por fecha y por estado. El enrutador de este
-     * proyecto pasa los filtros como segmentos de la URL, por lo que el
-     * frontend envía el texto "todos" cuando un filtro no aplica.
-     */
     public function historialTodos($fecha = null, $estado = null)
     {
         try {
@@ -193,13 +177,6 @@ class PedidoModel
         }
     }
 
-    /*
-     * Registra un pedido completo: encabezado, líneas de detalle, el
-     * pago simulado y el historial de estados. No se usa una
-     * transacción de base de datos porque MySqlConnect abre y cierra
-     * la conexión en cada sentencia (igual que en ComboModel::create);
-     * se mantiene ese mismo estilo para el resto del proyecto.
-     */
     public function create($data, $idUsuarioToken, $nombreRolToken)
     {
         try {
@@ -297,11 +274,6 @@ class PedidoModel
         }
     }
 
-    /*
-     * Cambia el estado de un pedido "en general" (no por estación),
-     * usado por el combo box que ven Encargado/Administrador en el
-     * Detalle del Pedido. Deja registro en el historial de estados.
-     */
     public function cambiarEstado($idPedido, $idEstado, $idUsuarioToken)
     {
         try {
@@ -319,15 +291,6 @@ class PedidoModel
         }
     }
 
-    /*
-     * Todas las líneas de los pedidos que todavía no están "Entregada"
-     * (IdEstado <> 5), cada una con su propio Completado (0/1) y la
-     * estación que le corresponde según su primer paso en
-     * ProcesoPreparacion. Se usa en la pantalla de Estaciones: ahí se
-     * marca cada línea como Pendiente/Finalizada, y cuando ya no queda
-     * ninguna pendiente en un pedido, ese pedido pasa solo a "Entregada"
-     * (ver cambiarEstadoLinea) y sus líneas dejan de aparecer aquí.
-     */
     public function estaciones()
     {
         try {
@@ -366,13 +329,7 @@ class PedidoModel
         }
     }
 
-    /*
-     * Marca una línea del pedido como completada (o la regresa a
-     * pendiente) y revisa el resto de líneas de ese mismo pedido:
-     * si ya no queda ninguna pendiente, el pedido pasa a "Entregada"
-     * automáticamente; si se reactiva una línea de un pedido que ya
-     * estaba "Entregada", el pedido regresa a "Procesando".
-     */
+
     public function cambiarEstadoLinea($idDetalle, $completado, $idUsuarioToken)
     {
         try {
