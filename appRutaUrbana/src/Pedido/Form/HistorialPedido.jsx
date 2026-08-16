@@ -35,7 +35,14 @@ export default function HistorialPedidos() {
   const { t, i18n } = useTranslation();
   const { usuario, rol, isAuthenticated } = useAuth();
 
-  const esGestor = rol === ROLES.ADMINISTRADOR || rol === ROLES.ENCARGADO;
+  // Administrador, Encargado y Cocina ven el historial completo de
+  // pedidos (con filtros y columna de cliente); el Cliente solo ve los
+  // suyos. Cocina nunca registra pedidos, solo los consulta y los
+  // trabaja desde Estaciones.
+  const esGestor =
+    rol === ROLES.ADMINISTRADOR ||
+    rol === ROLES.ENCARGADO ||
+    rol === ROLES.COCINA;
 
   const [pedidos, setPedidos] = useState([]);
   const [estados, setEstados] = useState([]);

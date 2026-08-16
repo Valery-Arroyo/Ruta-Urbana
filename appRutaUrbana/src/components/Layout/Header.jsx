@@ -49,6 +49,7 @@ export default function Header() {
 
   const esAdministrador = rol === ROLES.ADMINISTRADOR;
   const esGestor = rol === ROLES.ADMINISTRADOR || rol === ROLES.ENCARGADO;
+  const esCocina = rol === ROLES.COCINA;
 
   // Mismas condiciones de antes (esGestor / esAdministrador / isAuthenticated),
   // solo que ahora se agrupan en 3 listas en vez de una sola, para poder
@@ -93,11 +94,6 @@ export default function Header() {
         ruta: "/ingrediente",
         icono: <EggAltOutlinedIcon />,
       },
-      {
-        nombre: t("navigation.stations"),
-        ruta: "/pedidos/estaciones",
-        icono: <SoupKitchenOutlinedIcon />,
-      },
     );
   }
 
@@ -118,23 +114,35 @@ export default function Header() {
     },
   ];
 
+  // Cocina nunca registra pedidos ("Nuevo pedido" no aplica), pero sí
+  // debe poder ver los que ya existen ("Historial") y trabajar sus
+  // líneas ("Estaciones"), su única herramienta del día a día.
+  if (isAuthenticated && !esCocina) {
+    itemsDirectos.push({
+      nombre: t("navigation.newOrder"),
+      ruta: "/pedidos/nuevo",
+      icono: (
+        <Badge badgeContent={cantidadTotal} color="error">
+          <ShoppingCartOutlinedIcon />
+        </Badge>
+      ),
+    });
+  }
+
+  if (esCocina) {
+    itemsDirectos.push({
+      nombre: t("navigation.stations"),
+      ruta: "/pedidos/estaciones",
+      icono: <SoupKitchenOutlinedIcon />,
+    });
+  }
+
   if (isAuthenticated) {
-    itemsDirectos.push(
-      {
-        nombre: t("navigation.newOrder"),
-        ruta: "/pedidos/nuevo",
-        icono: (
-          <Badge badgeContent={cantidadTotal} color="error">
-            <ShoppingCartOutlinedIcon />
-          </Badge>
-        ),
-      },
-      {
-        nombre: t("navigation.orderHistory"),
-        ruta: "/pedidos/historial",
-        icono: <ReceiptLongOutlinedIcon />,
-      },
-    );
+    itemsDirectos.push({
+      nombre: t("navigation.orderHistory"),
+      ruta: "/pedidos/historial",
+      icono: <ReceiptLongOutlinedIcon />,
+    });
   }
 
   const cerrarSesion = () => {
@@ -246,8 +254,10 @@ export default function Header() {
 
             // Los items sueltos van directo a su ruta. Los desplegables
             // (Catálogo, Gestión) agrupan varias rutas bajo un solo botón.
+            // Cocina no vende ni atiende catálogo: su barra queda en
+            // Inicio, Estaciones e Historial únicamente.
             const bloques = [
-              {
+              !esCocina && {
                 tipo: "desplegable",
                 key: "catalogo",
                 nombre: t("navigation.catalog"),

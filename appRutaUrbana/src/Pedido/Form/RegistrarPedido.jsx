@@ -54,6 +54,7 @@ export default function RegistrarPedido() {
   const { usuario, rol } = useAuth();
 
   const esGestor = rol === ROLES.ADMINISTRADOR || rol === ROLES.ENCARGADO;
+  const esCocina = rol === ROLES.COCINA;
 
   const {
     lineas,
@@ -371,6 +372,17 @@ export default function RegistrarPedido() {
       setEnviando(false);
     }
   };
+
+  // Cocina nunca registra pedidos: solo los ve y los trabaja en Estaciones.
+  // Se corta aquí (después de todos los hooks) por si alguien entra a esta
+  // ruta escribiéndola directo, sin pasar por el menú.
+  if (esCocina) {
+    return (
+      <Box sx={{ p: 4, textAlign: "center" }}>
+        <Typography>{t("stations.onlyKitchen")}</Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ p: { xs: 2, md: 4 }, maxWidth: 1000, mx: "auto" }}>

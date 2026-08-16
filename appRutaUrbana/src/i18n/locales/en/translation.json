@@ -378,12 +378,20 @@
   },
   "stations": {
     "title": "Kitchen Stations",
-    "subtitle": "Active order lines, grouped by the station preparing them",
+    "subtitle": "Real-time kitchen display. Check what's left to prepare and mark each item as it moves forward.",
     "noStation": "No station assigned",
     "noLines": "There are no pending order lines right now.",
     "viewOrder": "View full order",
     "pending": "Pending",
-    "done": "Done"
+    "done": "Done",
+    "onlyKitchen": "This screen is exclusive to kitchen staff.",
+    "filterByOrder": "Filter by order",
+    "allOrders": "All orders",
+    "allStations": "All stations",
+    "pendingColumn": "Pending",
+    "doneColumn": "Done",
+    "emptyColumn": "No items here.",
+    "orderFinished": "Order finished"
   },
   "users": {
     "title": "User Management",

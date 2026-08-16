@@ -291,6 +291,19 @@ class PedidoModel
         }
     }
 
+    // Una línea puede aparecer más de una vez aquí (una fila por cada
+    // estación que le corresponde). Un producto normalmente tiene una
+    // sola estación, pero un combo puede tener varias: se usan las
+    // estaciones de CADA producto que lo compone (no una propia del
+    // combo, que casi nunca está cargada), así cada estación ve su
+    // parte del combo por separado.
+    //
+    // El WHERE deja ver: (a) cualquier pedido que todavía no esté
+    // Entregado, sin importar el día, y (b) los pedidos de HOY aunque ya
+    // estén Entregados, para que se sigan viendo en la columna
+    // "Finalizados" el resto del día en vez de desaparecer de golpe en
+    // cuanto se completa la última línea. Los entregados de días
+    // anteriores ya no se traen (para no acumular historial aquí).
     public function estaciones()
     {
         try {
@@ -305,23 +318,31 @@ class PedidoModel
                         d.Observaciones,
                         COALESCE(pr.Nombre, c.Nombre) AS NombreItem,
                         cli.NombreCompleto AS NombreCliente,
-                        (
-                            SELECT e.Nombre
-                            FROM ProcesoPreparacion pp
-                            INNER JOIN Estacion e ON pp.IdEstacion = e.IdEstacion
-                            WHERE (d.IdProducto IS NOT NULL AND pp.IdProducto = d.IdProducto)
-                               OR (d.IdCombo IS NOT NULL AND pp.IdCombo = d.IdCombo)
-                            ORDER BY pp.OrdenPaso ASC
-                            LIMIT 1
-                        ) AS NombreEstacion
+                        lineaEst.NombreEstacion
                     FROM DetallePedido d
                     INNER JOIN Pedido p ON d.IdPedido = p.IdPedido
                     INNER JOIN EstadoPedido est ON p.IdEstado = est.IdEstado
                     LEFT JOIN Producto pr ON d.IdProducto = pr.IdProducto
                     LEFT JOIN Combo c ON d.IdCombo = c.IdCombo
                     LEFT JOIN Usuario cli ON p.IdCliente = cli.IdUsuario
-                    WHERE p.IdEstado <> 5
-                    ORDER BY NombreEstacion, d.Completado ASC, p.FechaPedido";
+                    LEFT JOIN (
+                        -- Estación propia de cada producto individual
+                        SELECT pp.IdProducto AS IdProductoLinea, NULL AS IdComboLinea, e.Nombre AS NombreEstacion
+                        FROM ProcesoPreparacion pp
+                        INNER JOIN Estacion e ON pp.IdEstacion = e.IdEstacion
+                        WHERE pp.IdProducto IS NOT NULL
+
+                        UNION
+
+                        -- Estaciones de un combo: las de cada producto que lo compone
+                        SELECT NULL AS IdProductoLinea, cp.IdCombo AS IdComboLinea, e.Nombre AS NombreEstacion
+                        FROM ComboProducto cp
+                        INNER JOIN ProcesoPreparacion pp ON pp.IdProducto = cp.IdProducto
+                        INNER JOIN Estacion e ON pp.IdEstacion = e.IdEstacion
+                    ) lineaEst ON (d.IdProducto IS NOT NULL AND lineaEst.IdProductoLinea = d.IdProducto)
+                                OR (d.IdCombo IS NOT NULL AND lineaEst.IdComboLinea = d.IdCombo)
+                    WHERE p.IdEstado <> 5 OR DATE(p.FechaPedido) = CURDATE()
+                    ORDER BY lineaEst.NombreEstacion, d.Completado ASC, p.FechaPedido";
 
             return $this->enlace->executeSQL($sql, "asoc");
         } catch (Exception $e) {
@@ -351,6 +372,15 @@ class PedidoModel
             $idPedido = intval($resultado[0]['IdPedido']);
             $idEstadoActual = intval($resultado[0]['IdEstado']);
 
+            // En cuanto la Cocina toca una línea (marca o desmarca un producto/combo)
+            // el pedido pasa de "Aceptada" a "Preparación", para que se sepa que ya
+            // se está trabajando en él. Si ya está más avanzado, no se toca aquí.
+            if ($idEstadoActual < 3) {
+                $this->enlace->executeSQL_DML("UPDATE Pedido SET IdEstado = 3 WHERE IdPedido = $idPedido");
+                $this->registrarHistorial($idPedido, 3, $idUsuarioToken, 'La cocina empezó a preparar el pedido');
+                $idEstadoActual = 3;
+            }
+
             $sqlPendientes = "SELECT COUNT(*) AS Pendientes FROM DetallePedido
                                WHERE IdPedido = $idPedido AND Completado = 0";
             $pendientes = $this->enlace->executeSQL($sqlPendientes, "asoc");
@@ -360,8 +390,8 @@ class PedidoModel
                 $this->enlace->executeSQL_DML("UPDATE Pedido SET IdEstado = 5 WHERE IdPedido = $idPedido");
                 $this->registrarHistorial($idPedido, 5, $idUsuarioToken, 'Todas las líneas completadas en cocina, pedido entregado');
             } elseif ($cantidadPendientes > 0 && $idEstadoActual === 5) {
-                $this->enlace->executeSQL_DML("UPDATE Pedido SET IdEstado = 4 WHERE IdPedido = $idPedido");
-                $this->registrarHistorial($idPedido, 4, $idUsuarioToken, 'Se reactivó una línea, pedido vuelve a procesamiento');
+                $this->enlace->executeSQL_DML("UPDATE Pedido SET IdEstado = 3 WHERE IdPedido = $idPedido");
+                $this->registrarHistorial($idPedido, 3, $idUsuarioToken, 'Se reactivó una línea, pedido vuelve a preparación');
             }
 
             return true;

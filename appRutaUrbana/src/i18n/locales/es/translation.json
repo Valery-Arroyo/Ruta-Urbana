@@ -378,12 +378,20 @@
   },
   "stations": {
     "title": "Estaciones de Cocina",
-    "subtitle": "Líneas de pedidos activos, agrupadas por la estación que las prepara",
+    "subtitle": "Panel de cocina en tiempo real. Consulta lo que falta por preparar y marca cada producto conforme avanza.",
     "noStation": "Sin estación asignada",
     "noLines": "No hay líneas de pedido pendientes en este momento.",
     "viewOrder": "Ver pedido completo",
     "pending": "Pendiente",
-    "done": "Finalizado"
+    "done": "Finalizado",
+    "onlyKitchen": "Esta pantalla es exclusiva del personal de cocina.",
+    "filterByOrder": "Filtrar por pedido",
+    "allOrders": "Todos los pedidos",
+    "allStations": "Todas las estaciones",
+    "pendingColumn": "Pendientes",
+    "doneColumn": "Finalizados",
+    "emptyColumn": "No hay productos aquí.",
+    "orderFinished": "Pedido finalizado"
   },
   "users": {
     "title": "Mantenimiento de Usuarios",

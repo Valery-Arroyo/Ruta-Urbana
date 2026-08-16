@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import toast from "react-hot-toast";
 
 import {
   Box,
@@ -20,7 +21,6 @@ import {
   Grid,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import toast from "react-hot-toast";
 
 import PedidoService from "../../services/PedidoService";
 import { formatCurrency, formatDateTime } from "../../utils/format";
@@ -32,7 +32,7 @@ export default function DetallePedidoFactura() {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const { rol } = useAuth();
-  const esGestor = rol === ROLES.ADMINISTRADOR || rol === ROLES.ENCARGADO;
+  const esCocina = rol === ROLES.COCINA;
 
   const [pedido, setPedido] = useState(null);
   const [detalle, setDetalle] = useState([]);
@@ -64,13 +64,15 @@ export default function DetallePedidoFactura() {
       .finally(() => setCargando(false));
   }, [id]);
 
+  // Solo Cocina edita el estado general a mano; para los demás roles
+  // avanza solo desde la pantalla de Estaciones.
   useEffect(() => {
-    if (!esGestor) return;
+    if (!esCocina) return;
 
     PedidoService.getEstados()
       .then((response) => setEstados(response.data?.estados || []))
       .catch((error) => console.error("Error al obtener los estados:", error));
-  }, [esGestor]);
+  }, [esCocina]);
 
   const handleCambiarEstado = async (event) => {
     const nuevoIdEstado = Number(event.target.value);
@@ -205,7 +207,7 @@ export default function DetallePedidoFactura() {
             t("orders.paymentMethod"),
             pedido.NombreMetodoPago || t("orders.paymentPending"),
           )}
-          {esGestor ? (
+          {esCocina ? (
             <Grid size={{ xs: 12, sm: 6 }}>
               <Typography sx={{ fontSize: 13, color: "text.secondary" }}>
                 {t("orders.status")}

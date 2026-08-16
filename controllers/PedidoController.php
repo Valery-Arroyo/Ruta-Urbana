@@ -86,11 +86,12 @@ class Pedido
         }
     }
 
-    // Historial completo, solo para encargados y administrador
+    // Historial completo: Administrador, Encargado y Cocina (Cocina lo
+    // necesita para ver los pedidos existentes, aunque nunca registra uno)
     public function historialTodos($fecha = null, $estado = null)
     {
         try {
-            AuthMiddleware::verificar(['Administrador', 'Encargado']);
+            AuthMiddleware::verificar(['Administrador', 'Encargado', 'Cocina']);
 
             $response = new Response();
             $pedido = new PedidoModel();
@@ -159,11 +160,12 @@ class Pedido
         }
     }
 
-    // Cambiar el estado general de un pedido (combo box de Encargado/Administrador)
+    // Cambiar el estado general de un pedido a mano (uso excepcional; en la
+    // práctica el estado avanza solo cuando la Cocina trabaja las líneas)
     public function update($id)
     {
         try {
-            $tokenData = AuthMiddleware::verificar(['Administrador', 'Encargado']);
+            $tokenData = AuthMiddleware::verificar(['Cocina']);
 
             $response = new Response();
             $pedidoModel = new PedidoModel();
@@ -183,11 +185,12 @@ class Pedido
         }
     }
 
-    // Líneas de pedido pendientes, agrupadas por estación (pantalla de Estaciones)
+    // Líneas de pedido pendientes, agrupadas por estación (pantalla de Estaciones,
+    // uso exclusivo del rol Cocina)
     public function estaciones()
     {
         try {
-            AuthMiddleware::verificar(['Administrador', 'Encargado']);
+            AuthMiddleware::verificar(['Cocina']);
 
             $response = new Response();
             $pedido = new PedidoModel();
@@ -202,7 +205,7 @@ class Pedido
     public function cambiarEstadoLinea()
     {
         try {
-            $tokenData = AuthMiddleware::verificar(['Administrador', 'Encargado']);
+            $tokenData = AuthMiddleware::verificar(['Cocina']);
 
             $response = new Response();
             $pedidoModel = new PedidoModel();
