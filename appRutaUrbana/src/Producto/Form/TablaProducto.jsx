@@ -93,7 +93,7 @@ export default function TablaProductosAdmin() {
                 sx={{
                   "& td": {
                     py: 1,
-                    fontSize: "14.5px", // 👈 aquí sube todo el texto
+                    fontSize: "14.5px", // aquí sube todo el texto
                   },
                 }}
               >
