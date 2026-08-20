@@ -72,6 +72,10 @@ class PedidoService {
       Completado: completado,
     });
   }
+
+  getDashboard() {
+    return axios.get(`${BASE_URL}/dashboard`);
+  }
 }
 
 export default new PedidoService();

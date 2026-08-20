@@ -291,19 +291,6 @@ class PedidoModel
         }
     }
 
-    // Una línea puede aparecer más de una vez aquí (una fila por cada
-    // estación que le corresponde). Un producto normalmente tiene una
-    // sola estación, pero un combo puede tener varias: se usan las
-    // estaciones de CADA producto que lo compone (no una propia del
-    // combo, que casi nunca está cargada), así cada estación ve su
-    // parte del combo por separado.
-    //
-    // El WHERE deja ver: (a) cualquier pedido que todavía no esté
-    // Entregado, sin importar el día, y (b) los pedidos de HOY aunque ya
-    // estén Entregados, para que se sigan viendo en la columna
-    // "Finalizados" el resto del día en vez de desaparecer de golpe en
-    // cuanto se completa la última línea. Los entregados de días
-    // anteriores ya no se traen (para no acumular historial aquí).
     public function estaciones()
     {
         try {
@@ -334,7 +321,6 @@ class PedidoModel
 
                         UNION
 
-                        -- Estaciones de un combo: las de cada producto que lo compone
                         SELECT NULL AS IdProductoLinea, cp.IdCombo AS IdComboLinea, e.Nombre AS NombreEstacion
                         FROM ComboProducto cp
                         INNER JOIN ProcesoPreparacion pp ON pp.IdProducto = cp.IdProducto
@@ -372,9 +358,6 @@ class PedidoModel
             $idPedido = intval($resultado[0]['IdPedido']);
             $idEstadoActual = intval($resultado[0]['IdEstado']);
 
-            // En cuanto la Cocina toca una línea (marca o desmarca un producto/combo)
-            // el pedido pasa de "Aceptada" a "Preparación", para que se sepa que ya
-            // se está trabajando en él. Si ya está más avanzado, no se toca aquí.
             if ($idEstadoActual < 3) {
                 $this->enlace->executeSQL_DML("UPDATE Pedido SET IdEstado = 3 WHERE IdPedido = $idPedido");
                 $this->registrarHistorial($idPedido, 3, $idUsuarioToken, 'La cocina empezó a preparar el pedido');
@@ -409,5 +392,48 @@ class PedidoModel
                 VALUES ($idPedido, $idEstado, NOW(), $idUsuario, '$observacion')";
 
         $this->enlace->executeSQL_DML($sql);
+    }
+
+    public function dashboard()
+    {
+        try {
+            // Top 3 productos con mayor cantidad pedida durante el día actual
+            $sqlProductos = "SELECT
+                            p.IdProducto,
+                            p.Nombre,
+                            SUM(dp.Cantidad) AS CantidadPedidos
+                         FROM DetallePedido dp
+                         INNER JOIN Pedido pe
+                            ON dp.IdPedido = pe.IdPedido
+                         INNER JOIN Producto p
+                            ON dp.IdProducto = p.IdProducto
+                         WHERE DATE(pe.FechaPedido) = CURDATE()
+                           AND dp.IdProducto IS NOT NULL
+                         GROUP BY p.IdProducto, p.Nombre
+                         ORDER BY CantidadPedidos DESC
+                         LIMIT 3";
+
+            $productos = $this->enlace->executeSQL($sqlProductos, "asoc");
+
+            $sqlEstados = "SELECT
+                           e.IdEstado,
+                           e.Nombre,
+                           COUNT(p.IdPedido) AS CantidadPedidos
+                       FROM EstadoPedido e
+                       LEFT JOIN Pedido p
+                           ON p.IdEstado = e.IdEstado
+                           AND DATE(p.FechaPedido) = CURDATE()
+                       GROUP BY e.IdEstado, e.Nombre, e.Orden
+                       ORDER BY e.Orden";
+
+            $estados = $this->enlace->executeSQL($sqlEstados, "asoc");
+
+            return [
+                'productosMasPedidos' => $productos ?: [],
+                'pedidosPorEstado' => $estados ?: []
+            ];
+        } catch (Exception $e) {
+            handleException($e);
+        }
     }
 }

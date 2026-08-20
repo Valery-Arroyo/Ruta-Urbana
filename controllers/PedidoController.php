@@ -123,7 +123,8 @@ class Pedido
             // Un cliente solo puede ver el detalle de sus propios pedidos
             // (se castean ambos lados a entero: el token trae el Id como
             // vino en el JSON del JWT y puede no coincidir el tipo exacto)
-            if ($tokenData->NombreRol === 'Cliente' &&
+            if (
+                $tokenData->NombreRol === 'Cliente' &&
                 intval($result['encabezado']['IdCliente'] ?? 0) !== intval($tokenData->IdUsuario)
             ) {
                 $response->status(403)->toJSON(['result' => 'No tiene acceso a este pedido']);
@@ -224,6 +225,25 @@ class Pedido
             );
 
             $response->toJSON(['success' => $resultado ? 1 : 0]);
+        } catch (Exception $e) {
+            handleException($e);
+        }
+    }
+
+    public function dashboard()
+    {
+        try {
+            AuthMiddleware::verificar(['Administrador', 'Encargado']);
+
+            $response = new Response();
+            $pedido = new PedidoModel();
+
+            $resultado = $pedido->dashboard();
+
+            $response->toJSON([
+                'productosMasPedidos' => $resultado['productosMasPedidos'] ?? [],
+                'pedidosPorEstado' => $resultado['pedidosPorEstado'] ?? []
+            ]);
         } catch (Exception $e) {
             handleException($e);
         }
