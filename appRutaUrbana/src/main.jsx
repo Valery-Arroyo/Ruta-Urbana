@@ -22,6 +22,7 @@ import HistorialPedidos from "./Pedido/Form/HistorialPedido";
 import DetallePedidoFactura from "./Pedido/Form/DetallePedido";
 import Estaciones from "./Pedido/Form/Estaciones";
 import ListaUsuario from "./Usuario/Form/ListaUsuario";
+import Dashboard from "./Dashboard/Form/Dashboard";
 import "./i18n/i18n";
 
 const rutas = createBrowserRouter([
@@ -99,6 +100,10 @@ const rutas = createBrowserRouter([
       {
         path: "/usuarios",
         element: <ListaUsuario />,
+      },
+      {
+        path: "/dashboard",
+        element: <Dashboard />,
       },
       {
         path: "*",

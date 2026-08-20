@@ -38,6 +38,7 @@ import LanguageSelector from "../LanguageSelector";
 import { useAuth } from "../../context/AuthContext";
 import { usePedidoEnCurso } from "../../context/PedidoEnCursoContext";
 import { ROLES } from "../../utils/constants";
+import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 
 export default function Header() {
   const { t } = useTranslation();
@@ -79,6 +80,11 @@ export default function Header() {
 
   if (esGestor) {
     gestionItems.push(
+      {
+        nombre: "Dashboard",
+        ruta: "/dashboard",
+        icono: <DashboardOutlinedIcon />,
+      },
       {
         nombre: t("navigation.productTable"),
         ruta: "/tabla",
@@ -300,7 +306,10 @@ export default function Header() {
                       sx={estiloBoton}
                       endIcon={
                         <KeyboardArrowDownIcon
-                          sx={{ fontSize: "20px !important", mb: "4px !important" }}
+                          sx={{
+                            fontSize: "20px !important",
+                            mb: "4px !important",
+                          }}
                         />
                       }
                     >
