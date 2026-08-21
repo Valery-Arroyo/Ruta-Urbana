@@ -2,6 +2,8 @@ import * as React from "react";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import IngredienteService from "../../services/IngredienteService";
+import { useAuth } from "../../context/AuthContext";
+import { ROLES } from "../../utils/constants";
 
 import {
   Box,
@@ -30,6 +32,8 @@ import toast from "react-hot-toast";
 
 export default function ListIngredientesAdmin() {
   const { t } = useTranslation();
+  const { rol } = useAuth();
+  const esAdministrador = rol === ROLES.ADMINISTRADOR;
   const [data, setData] = useState([]);
   const [open, setOpen] = useState(false);
   const [ingredienteSeleccionado, setIngredienteSeleccionado] = useState(null);
@@ -118,6 +122,14 @@ export default function ListIngredientesAdmin() {
       );
     }
   };
+
+  if (!esAdministrador) {
+    return (
+      <Box sx={{ p: 4, textAlign: "center" }}>
+        <Typography>{t("access.onlyAdministrator")}</Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ p: 3 }}>

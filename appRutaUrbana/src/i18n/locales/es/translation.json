@@ -3,6 +3,10 @@
     "name": "Ruta Urbana",
     "slogan": "El sabor de la ciudad"
   },
+  "access": {
+    "onlyAdministrator": "Esta pantalla es exclusiva del rol Administrador.",
+    "onlyAdminOrKitchen": "Esta pantalla es exclusiva de Administrador o Cocina."
+  },
   "navigation": {
     "home": "Inicio",
     "products": "Productos",

@@ -22,6 +22,7 @@ import HistorialPedidos from "./Pedido/Form/HistorialPedido";
 import DetallePedidoFactura from "./Pedido/Form/DetallePedido";
 import Estaciones from "./Pedido/Form/Estaciones";
 import ListaUsuario from "./Usuario/Form/ListaUsuario";
+import RegistroCliente from "./Usuario/Form/RegistroCliente";
 import Dashboard from "./Dashboard/Form/Dashboard";
 import "./i18n/i18n";
 
@@ -104,6 +105,10 @@ const rutas = createBrowserRouter([
       {
         path: "/dashboard",
         element: <Dashboard />,
+      },
+      {
+        path: "/registro",
+        element: <RegistroCliente />,
       },
       {
         path: "*",

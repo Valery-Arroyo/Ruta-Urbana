@@ -34,6 +34,9 @@ import PreparacionService from "../../services/PreparacionService";
 import EstacionService from "../../services/EstacionService";
 import ProductoService from "../../services/ProductoService";
 
+import { useAuth } from "../../context/AuthContext";
+import { ROLES } from "../../utils/constants";
+
 const orangeIcon = {
   color: "#FF8C00",
 };
@@ -48,6 +51,9 @@ const pasoVacio = () => ({
 export default function ListPreparacionPublic() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { rol } = useAuth();
+  const esAdministrador = rol === ROLES.ADMINISTRADOR;
+  const esCocina = rol === ROLES.COCINA;
 
   const [data, setData] = useState([]);
   const [estaciones, setEstaciones] = useState([]);
@@ -449,6 +455,14 @@ export default function ListPreparacionPublic() {
   const grayIcon = {
     color: "#616161",
   };
+
+  if (!esAdministrador && !esCocina) {
+    return (
+      <Box sx={{ p: 4, textAlign: "center" }}>
+        <Typography>{t("access.onlyAdminOrKitchen")}</Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box

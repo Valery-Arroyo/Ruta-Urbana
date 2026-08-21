@@ -28,6 +28,10 @@ class UsuarioService {
   delete(id) {
     return axios.delete(`${BASE_URL}/delete/${id}`);
   }
+
+  registro(data) {
+    return axios.post(`${BASE_URL}/registro`, data);
+  }
 }
 
 export default new UsuarioService();

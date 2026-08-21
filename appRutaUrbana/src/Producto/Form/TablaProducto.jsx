@@ -2,6 +2,8 @@ import * as React from "react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import ProductoService from "../../services/ProductoService";
+import { useAuth } from "../../context/AuthContext";
+import { ROLES } from "../../utils/constants";
 
 import {
   Box,
@@ -24,6 +26,8 @@ import DeleteIcon from "@mui/icons-material/Delete";
 
 export default function TablaProductosAdmin() {
   const { t } = useTranslation();
+  const { rol } = useAuth();
+  const esAdministrador = rol === ROLES.ADMINISTRADOR;
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -35,6 +39,14 @@ export default function TablaProductosAdmin() {
       })
       .catch(() => setLoading(false));
   }, []);
+
+  if (!esAdministrador) {
+    return (
+      <Box sx={{ p: 4, textAlign: "center" }}>
+        <Typography>{t("access.onlyAdministrator")}</Typography>
+      </Box>
+    );
+  }
 
   if (loading) {
     return (

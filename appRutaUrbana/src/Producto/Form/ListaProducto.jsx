@@ -72,7 +72,7 @@ const productoSchema = yup.object().shape({
 export default function GestionProductos() {
   const { t, i18n } = useTranslation();
   const { rol } = useAuth();
-  const esGestor = rol === ROLES.ADMINISTRADOR || rol === ROLES.ENCARGADO;
+  const esAdministrador = rol === ROLES.ADMINISTRADOR;
 
   const [data, setData] = useState([]);
   const [productoDelDiaId, setProductoDelDiaId] = useState(null);
@@ -355,7 +355,7 @@ export default function GestionProductos() {
         {t("products.title")}
       </Typography>
 
-      {esGestor && (
+      {esAdministrador && (
         <Box
           sx={{
             display: "flex",
@@ -589,7 +589,7 @@ export default function GestionProductos() {
                     {t("actions.viewDetail")}
                   </Button>
 
-                  {esGestor && (
+                  {esAdministrador && (
                     <>
                       <IconButton
                         aria-label={`${t("actions.edit")} ${prod.Nombre}`}

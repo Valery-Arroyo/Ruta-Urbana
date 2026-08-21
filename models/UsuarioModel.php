@@ -195,4 +195,40 @@ class UsuarioModel
             handleException($e);
         }
     }
+
+    public function getRolPorId($id)
+    {
+        try {
+            $idRol = intval($id);
+
+            $sql = "SELECT IdRol, NombreRol
+                FROM Rol
+                WHERE IdRol = $idRol";
+
+            $resultado = $this->enlace->executeSQL($sql, "asoc");
+
+            return $resultado ? $resultado[0] : null;
+        } catch (Exception $e) {
+            handleException($e);
+        }
+    }
+
+    public function getRolPorNombre($nombreRol)
+    {
+        try {
+            $nombreRol = addslashes($nombreRol);
+
+            $sql = "SELECT IdRol, NombreRol
+                FROM Rol
+                WHERE NombreRol = '$nombreRol'
+                LIMIT 1";
+
+            $resultado = $this->enlace->executeSQL($sql, "asoc");
+
+            return $resultado ? $resultado[0] : null;
+        } catch (Exception $e) {
+            handleException($e);
+        }
+    }
+    
 }

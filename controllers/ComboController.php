@@ -70,11 +70,13 @@ class Combo
     public function create()
     {
         try {
+            AuthMiddleware::verificar(['Administrador']);
+
             $response = new Response();
             $combo = new ComboModel();
-            
+
             $data = json_decode(file_get_contents("php://input"), true);
-            
+
             $result = $combo->create($data);
             $response->toJSON(['id' => $result]);
         } catch (Exception $e) {
@@ -86,11 +88,13 @@ class Combo
     public function update($id)
     {
         try {
+            AuthMiddleware::verificar(['Administrador']);
+
             $response = new Response();
             $combo = new ComboModel();
-            
+
             $data = json_decode(file_get_contents("php://input"), true);
-            
+
             $result = $combo->update($id, $data);
             $response->toJSON(['success' => $result]);
         } catch (Exception $e) {
@@ -102,6 +106,8 @@ class Combo
     public function delete($id)
     {
         try {
+            AuthMiddleware::verificar(['Administrador']);
+
             $response = new Response();
             $combo = new ComboModel();
 
@@ -116,6 +122,8 @@ class Combo
     public function subirImagen()
     {
         try {
+            AuthMiddleware::verificar(['Administrador']);
+
             $response = new Response();
 
             if (!isset($_FILES['imagen']) || $_FILES['imagen']['error'] !== UPLOAD_ERR_OK) {

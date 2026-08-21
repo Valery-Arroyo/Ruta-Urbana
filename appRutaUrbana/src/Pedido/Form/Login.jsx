@@ -172,6 +172,20 @@ export default function Login() {
         >
           {enviando ? t("auth.loggingIn") : t("auth.loginButton")}
         </Button>
+
+        <Button
+          fullWidth
+          type="button"
+          onClick={() => navigate("/registro")}
+          sx={{
+            mt: 1.5,
+            color: "#ff7a00",
+            textTransform: "none",
+            fontWeight: 600,
+          }}
+        >
+          ¿No tiene una cuenta? Regístrese
+        </Button>
       </Card>
     </Box>
   );

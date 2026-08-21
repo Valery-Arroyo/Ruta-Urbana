@@ -56,6 +56,8 @@ class Menu
     public function create()
     {
         try {
+            AuthMiddleware::verificar(['Administrador']);
+
             $data = json_decode(
                 file_get_contents("php://input"),
                 true
@@ -78,6 +80,8 @@ class Menu
     public function update($id)
     {
         try {
+            AuthMiddleware::verificar(['Administrador']);
+
             $data = json_decode(
                 file_get_contents("php://input"),
                 true
@@ -100,6 +104,8 @@ class Menu
     public function delete($id)
     {
         try {
+            AuthMiddleware::verificar(['Administrador']);
+
             $result = $this->menuModel->delete($id);
 
             $this->response->toJSON([

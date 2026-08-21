@@ -43,8 +43,6 @@ export default function DetallePedidoFactura() {
   const [estados, setEstados] = useState([]);
   const [actualizandoEstado, setActualizandoEstado] = useState(false);
 
-  // Tipo de cambio USD -> CRC, obtenido de un Web Service externo
-  // (frankfurter.app), solo para mostrar el total también en dólares.
   const [tipoCambio, setTipoCambio] = useState(null);
 
   useEffect(() => {
@@ -67,8 +65,6 @@ export default function DetallePedidoFactura() {
       .finally(() => setCargando(false));
   }, [id]);
 
-  // Solo Cocina edita el estado general a mano; para los demás roles
-  // avanza solo desde la pantalla de Estaciones.
   useEffect(() => {
     if (!esCocina) return;
 
@@ -103,10 +99,7 @@ export default function DetallePedidoFactura() {
     }
   };
 
-  // jsPDF con la fuente estándar (Helvetica) no soporta el símbolo ₡ que
-  // devuelve formatCurrency (Intl.NumberFormat) — usarlo rompe el cálculo
-  // de columnas de autoTable y deja la tabla en blanco. Por eso, solo para
-  // el PDF, formateamos el monto sin ese símbolo.
+  // Función para formatear valores monetarios en el PDF
   const formatCurrencyPdf = (valor) => {
     const numero = Number(valor) || 0;
     return `CRC ${numero.toLocaleString("es-CR", {
@@ -115,125 +108,127 @@ export default function DetallePedidoFactura() {
     })}`;
   };
 
-  // Genera la factura del pedido en PDF, siguiendo el mismo patrón de
-  // jsPDF + jspdf-autotable usado para "Generar Reporte" (Investigación
-  // "Reportes con PDF"), pero adaptado a una sola factura en vez de un
-  // listado general de productos.
   const generarFacturaPDF = () => {
     if (!pedido) return;
 
     try {
       const doc = new jsPDF();
 
-    // --- Encabezado de la factura ---
-    doc.setFontSize(16);
-    doc.text(t("orders.invoiceTitle"), 14, 18);
+      doc.setFontSize(16);
+      doc.text(t("orders.invoiceTitle"), 14, 18);
 
-    doc.setFontSize(10);
-    doc.text(`Orden: ${pedido.CodigoOrden || ""}`, 14, 26);
-    doc.text(
-      `${t("orders.date")}: ${formatDateTime(pedido.FechaPedido, i18n.language)}`,
-      14,
-      32,
-    );
-    doc.text(
-      `${t("orders.client")}: ${
-        pedido.NombreCliente
-          ? `${pedido.NombreCliente} - ${pedido.CorreoCliente}`
-          : t("orders.walkInClient")
-      }`,
-      14,
-      38,
-    );
-
-    let y = 44;
-    if (pedido.NombreEmpleado) {
-      doc.text(`${t("orders.manager")}: ${pedido.NombreEmpleado}`, 14, y);
-      y += 6;
-    }
-    doc.text(`${t("orders.deliveryMethod")}: ${pedido.NombreMetodoEntrega || ""}`, 14, y);
-    y += 6;
-    doc.text(
-      `${t("orders.paymentMethod")}: ${
-        pedido.NombreMetodoPago || t("orders.paymentPending")
-      }`,
-      14,
-      y,
-    );
-    y += 6;
-    doc.text(`${t("orders.status")}: ${pedido.NombreEstado || ""}`, 14, y);
-    y += 6;
-    if (pedido.DireccionEntrega) {
-      doc.text(`${t("orders.deliveryAddress")}: ${pedido.DireccionEntrega}`, 14, y);
-      y += 6;
-    }
-
-    // --- Tabla con el detalle de líneas del pedido ---
-    const columnas = [
-      t("orders.item"),
-      t("orders.unitPrice"),
-      t("orders.quantity"),
-      t("orders.subtotal"),
-      t("orders.tax"),
-      t("orders.observations"),
-    ];
-
-    const filas = detalle.map((linea) => [
-      linea.NombreItem,
-      formatCurrencyPdf(linea.PrecioUnitario),
-      linea.Cantidad,
-      formatCurrencyPdf(linea.Subtotal),
-      formatCurrencyPdf(linea.Impuesto),
-      linea.Observaciones || "-",
-    ]);
-
-    // TEMPORAL: para diagnosticar por qué la tabla sale vacía.
-    // Revisá la consola del navegador (F12) después de generar el PDF
-    // y compartime lo que imprime aquí.
-    console.log("DEBUG detalle:", detalle);
-    console.log("DEBUG filas:", filas);
-
-    autoTable(doc, {
-      head: [columnas],
-      body: filas,
-      startY: y + 4,
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [255, 140, 0] }, // #FF8C00
-    });
-
-    // --- Totales, debajo de la tabla ---
-    let totalesY = doc.lastAutoTable.finalY + 8;
-
-    const filaTotal = (etiqueta, valor) => {
-      doc.text(etiqueta, 150, totalesY, { align: "right" });
-      doc.text(String(valor), 196, totalesY, { align: "right" });
-      totalesY += 7;
-    };
-
-    doc.setFontSize(10);
-    filaTotal(t("orders.subtotalWithoutTax"), formatCurrencyPdf(pedido.Subtotal));
-    filaTotal(t("orders.tax"), formatCurrencyPdf(pedido.Impuesto));
-
-    if (Number(pedido.CostoEnvio) > 0) {
-      filaTotal(t("orders.shippingCost"), formatCurrencyPdf(pedido.CostoEnvio));
-    }
-
-    doc.setFontSize(12);
-    doc.setFont(undefined, "bold");
-    filaTotal(t("orders.totalWithTax"), formatCurrencyPdf(pedido.Total));
-    doc.setFont(undefined, "normal");
-
-    if (tipoCambio) {
-      doc.setFontSize(9);
+      doc.setFontSize(10);
+      doc.text(`Orden: ${pedido.CodigoOrden || ""}`, 14, 26);
       doc.text(
-        `~ $${(Number(pedido.Total) / tipoCambio).toFixed(2)} USD`,
-        196,
-        totalesY,
-        { align: "right" },
+        `${t("orders.date")}: ${formatDateTime(pedido.FechaPedido, i18n.language)}`,
+        14,
+        32,
       );
-    }
+      doc.text(
+        `${t("orders.client")}: ${
+          pedido.NombreCliente
+            ? `${pedido.NombreCliente} - ${pedido.CorreoCliente}`
+            : t("orders.walkInClient")
+        }`,
+        14,
+        38,
+      );
 
-    doc.save(`factura_${pedido.CodigoOrden || id}.pdf`);
+      let y = 44;
+      if (pedido.NombreEmpleado) {
+        doc.text(`${t("orders.manager")}: ${pedido.NombreEmpleado}`, 14, y);
+        y += 6;
+      }
+      doc.text(
+        `${t("orders.deliveryMethod")}: ${pedido.NombreMetodoEntrega || ""}`,
+        14,
+        y,
+      );
+      y += 6;
+      doc.text(
+        `${t("orders.paymentMethod")}: ${
+          pedido.NombreMetodoPago || t("orders.paymentPending")
+        }`,
+        14,
+        y,
+      );
+      y += 6;
+      doc.text(`${t("orders.status")}: ${pedido.NombreEstado || ""}`, 14, y);
+      y += 6;
+      if (pedido.DireccionEntrega) {
+        doc.text(
+          `${t("orders.deliveryAddress")}: ${pedido.DireccionEntrega}`,
+          14,
+          y,
+        );
+        y += 6;
+      }
+
+      const columnas = [
+        t("orders.item"),
+        t("orders.unitPrice"),
+        t("orders.quantity"),
+        t("orders.subtotal"),
+        t("orders.tax"),
+        t("orders.observations"),
+      ];
+
+      const filas = detalle.map((linea) => [
+        linea.NombreItem,
+        formatCurrencyPdf(linea.PrecioUnitario),
+        linea.Cantidad,
+        formatCurrencyPdf(linea.Subtotal),
+        formatCurrencyPdf(linea.Impuesto),
+        linea.Observaciones || "-",
+      ]);
+
+      autoTable(doc, {
+        head: [columnas],
+        body: filas,
+        startY: y + 4,
+        styles: { fontSize: 8 },
+        headStyles: { fillColor: [255, 140, 0] }, // #FF8C00
+      });
+
+      // --- Totales, debajo de la tabla ---
+      let totalesY = doc.lastAutoTable.finalY + 8;
+
+      const filaTotal = (etiqueta, valor) => {
+        doc.text(etiqueta, 150, totalesY, { align: "right" });
+        doc.text(String(valor), 196, totalesY, { align: "right" });
+        totalesY += 7;
+      };
+
+      doc.setFontSize(10);
+      filaTotal(
+        t("orders.subtotalWithoutTax"),
+        formatCurrencyPdf(pedido.Subtotal),
+      );
+      filaTotal(t("orders.tax"), formatCurrencyPdf(pedido.Impuesto));
+
+      if (Number(pedido.CostoEnvio) > 0) {
+        filaTotal(
+          t("orders.shippingCost"),
+          formatCurrencyPdf(pedido.CostoEnvio),
+        );
+      }
+
+      doc.setFontSize(12);
+      doc.setFont(undefined, "bold");
+      filaTotal(t("orders.totalWithTax"), formatCurrencyPdf(pedido.Total));
+      doc.setFont(undefined, "normal");
+
+      if (tipoCambio) {
+        doc.setFontSize(9);
+        doc.text(
+          `~ $${(Number(pedido.Total) / tipoCambio).toFixed(2)} USD`,
+          196,
+          totalesY,
+          { align: "right" },
+        );
+      }
+
+      doc.save(`factura_${pedido.CodigoOrden || id}.pdf`);
     } catch (error) {
       console.error("Error al generar la factura en PDF:", error);
       toast.error(t("orders.messages.pdfError") || "No se pudo generar el PDF");
@@ -485,7 +480,12 @@ export default function DetallePedidoFactura() {
 
           {tipoCambio && (
             <Typography
-              sx={{ textAlign: "right", color: "text.secondary", fontSize: 13, mt: 0.3 }}
+              sx={{
+                textAlign: "right",
+                color: "text.secondary",
+                fontSize: 13,
+                mt: 0.3,
+              }}
             >
               ≈ ${(Number(pedido.Total) / tipoCambio).toFixed(2)} USD
             </Typography>

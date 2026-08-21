@@ -96,6 +96,8 @@ class Producto
     public function create()
     {
         try {
+            AuthMiddleware::verificar(['Administrador']);
+
             $response = new Response();
             $producto = new ProductoModel();
 
@@ -113,6 +115,8 @@ class Producto
     public function update($id)
     {
         try {
+            AuthMiddleware::verificar(['Administrador']);
+
             $response = new Response();
             $producto = new ProductoModel();
 
@@ -129,6 +133,8 @@ class Producto
     public function delete($id)
     {
         try {
+            AuthMiddleware::verificar(['Administrador']);
+
             $response = new Response();
             $producto = new ProductoModel();
 
@@ -146,6 +152,8 @@ class Producto
     public function subirImagen()
     {
         try {
+            AuthMiddleware::verificar(['Administrador']);
+
             $response = new Response();
 
             if (!isset($_FILES['imagen']) || $_FILES['imagen']['error'] !== UPLOAD_ERR_OK) {

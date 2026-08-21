@@ -183,6 +183,7 @@ export default function ListMenusAdmin() {
   const { t } = useTranslation();
   const { rol } = useAuth();
   const esGestor = rol === ROLES.ADMINISTRADOR || rol === ROLES.ENCARGADO;
+  const esAdministrador = rol === ROLES.ADMINISTRADOR;
   const [menus, setMenus] = useState([]);
   const [productos, setProductos] = useState([]);
   const [combos, setCombos] = useState([]);
@@ -833,7 +834,7 @@ export default function ListMenusAdmin() {
         {t("menus.title")}
       </Typography>
 
-      {esGestor && (
+      {esAdministrador && (
         <Box
           sx={{
             display: "flex",
@@ -953,7 +954,7 @@ export default function ListMenusAdmin() {
                     <ZoomInIcon />
                   </IconButton>
 
-                  {esGestor && (
+                  {esAdministrador && (
                     <>
                       <IconButton onClick={() => handleEdit(menu)}>
                         <EditIcon />

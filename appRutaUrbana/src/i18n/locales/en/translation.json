@@ -3,6 +3,10 @@
     "name": "Ruta Urbana",
     "slogan": "The taste of the city"
   },
+  "access": {
+    "onlyAdministrator": "This screen is exclusive to the Administrator role.",
+    "onlyAdminOrKitchen": "This screen is exclusive to Administrator or Kitchen."
+  },
   "navigation": {
     "home": "Home",
     "products": "Products",

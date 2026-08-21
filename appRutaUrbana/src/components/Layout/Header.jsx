@@ -79,35 +79,38 @@ export default function Header() {
   const gestionItems = [];
 
   if (esGestor) {
+    gestionItems.push({
+      nombre: "Dashboard",
+      ruta: "/dashboard",
+      icono: <DashboardOutlinedIcon />,
+    });
+  }
+
+  if (esAdministrador) {
     gestionItems.push(
-      {
-        nombre: "Dashboard",
-        ruta: "/dashboard",
-        icono: <DashboardOutlinedIcon />,
-      },
       {
         nombre: t("navigation.productTable"),
         ruta: "/tabla",
         icono: <AssignmentOutlinedIcon />,
       },
       {
-        nombre: t("navigation.processes"),
-        ruta: "/preparacion",
-        icono: <SettingsOutlinedIcon />,
-      },
-      {
         nombre: t("navigation.ingredients"),
         ruta: "/ingrediente",
         icono: <EggAltOutlinedIcon />,
       },
+      {
+        nombre: t("navigation.userManagement"),
+        ruta: "/usuarios",
+        icono: <ManageAccountsOutlinedIcon />,
+      },
     );
   }
 
-  if (esAdministrador) {
+  if (esAdministrador || esCocina) {
     gestionItems.push({
-      nombre: t("navigation.userManagement"),
-      ruta: "/usuarios",
-      icono: <ManageAccountsOutlinedIcon />,
+      nombre: t("navigation.processes"),
+      ruta: "/preparacion",
+      icono: <SettingsOutlinedIcon />,
     });
   }
 

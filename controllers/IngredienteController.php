@@ -37,6 +37,8 @@ class Ingrediente
     public function create()
     {
         try {
+            AuthMiddleware::verificar(['Administrador']);
+
             $request = new Request();
             $data = (array) $request->getJSON();
 
@@ -53,6 +55,8 @@ class Ingrediente
     public function update($id)
     {
         try {
+            AuthMiddleware::verificar(['Administrador']);
+
             $request = new Request();
 
             // Convertir el objeto a arreglo
@@ -71,6 +75,8 @@ class Ingrediente
     public function delete($id)
     {
         try {
+            AuthMiddleware::verificar(['Administrador']);
+
             $resultado = $this->model->delete($id);
             return $resultado;
         } catch (Exception $e) {

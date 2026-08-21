@@ -99,32 +99,122 @@ class Usuario
     public function create()
     {
         try {
-            AuthMiddleware::verificar(['Administrador']);
+            // Devuelve los datos contenidos en el JWT.
+            $usuarioAutenticado = AuthMiddleware::verificar([
+                'Administrador',
+                'Encargado'
+            ]);
 
             $response = new Response();
             $usuarioModel = new UsuarioModel();
 
             $data = json_decode(file_get_contents("php://input"), true);
 
-            if (empty($data['Contrasena']) || strlen($data['Contrasena']) < 8) {
-                $response->status(400)->toJSON(['result' => 'La contraseña es requerida y debe tener al menos 8 caracteres']);
+            $nombre = trim($data['NombreCompleto'] ?? '');
+            $correo = trim($data['Correo'] ?? '');
+            $contrasena = $data['Contrasena'] ?? '';
+            $direccion = trim($data['Direccion'] ?? '');
+            $idRol = intval($data['IdRol'] ?? 0);
+
+            if ($nombre === '' || strlen($nombre) < 3) {
+                $response->status(400)->toJSON([
+                    'result' => 'El nombre es requerido y debe tener al menos 3 caracteres'
+                ]);
                 return;
             }
 
-            if ($usuarioModel->existeCorreo($data['Correo'] ?? '')) {
-                $response->status(409)->toJSON(['result' => 'Ya existe un usuario con ese correo']);
+            if ($correo === '' || !filter_var($correo, FILTER_VALIDATE_EMAIL)) {
+                $response->status(400)->toJSON([
+                    'result' => 'Debe ingresar un correo electrónico válido'
+                ]);
                 return;
             }
 
-            $id = $usuarioModel->create($data);
+            if ($contrasena === '' || strlen($contrasena) < 8) {
+                $response->status(400)->toJSON([
+                    'result' => 'La contraseña es requerida y debe tener al menos 8 caracteres'
+                ]);
+                return;
+            }
 
-            $response->toJSON(['id' => $id]);
+            if (strlen($direccion) > 200) {
+                $response->status(400)->toJSON([
+                    'result' => 'La dirección no puede superar los 200 caracteres'
+                ]);
+                return;
+            }
+
+            if ($idRol <= 0) {
+                $response->status(400)->toJSON([
+                    'result' => 'Debe seleccionar un rol'
+                ]);
+                return;
+            }
+
+            $rolSeleccionado = $usuarioModel->getRolPorId($idRol);
+
+            if (!$rolSeleccionado) {
+                $response->status(400)->toJSON([
+                    'result' => 'El rol seleccionado no existe'
+                ]);
+                return;
+            }
+
+            $rolActual = $usuarioAutenticado->NombreRol;
+
+            // Administrador puede crear Encargado, Cocina y Cliente.
+            if (
+                $rolActual === 'Administrador' &&
+                !in_array(
+                    $rolSeleccionado['NombreRol'],
+                    ['Encargado', 'Cocina', 'Cliente']
+                )
+            ) {
+                $response->status(403)->toJSON([
+                    'result' => 'El administrador solo puede crear usuarios Encargado, Cocina o Cliente'
+                ]);
+                return;
+            }
+
+            // Encargado solamente puede crear clientes.
+            if (
+                $rolActual === 'Encargado' &&
+                $rolSeleccionado['NombreRol'] !== 'Cliente'
+            ) {
+                $response->status(403)->toJSON([
+                    'result' => 'El encargado solo puede crear usuarios con rol Cliente'
+                ]);
+                return;
+            }
+
+            if ($usuarioModel->existeCorreo($correo)) {
+                $response->status(409)->toJSON([
+                    'result' => 'Ya existe un usuario con ese correo'
+                ]);
+                return;
+            }
+
+            $datosUsuario = [
+                'NombreCompleto' => $nombre,
+                'Correo' => $correo,
+                'Contrasena' => $contrasena,
+                'Direccion' => $direccion,
+                'IdRol' => $rolSeleccionado['IdRol'],
+                'Activo' => 1
+            ];
+
+            $id = $usuarioModel->create($datosUsuario);
+
+            $response->status(201)->toJSON([
+                'success' => 1,
+                'id' => $id,
+                'result' => 'Usuario creado correctamente'
+            ]);
         } catch (Exception $e) {
             handleException($e);
         }
     }
-
-    // Actualizar un usuario existente (solo administrador)
+    // Actualizar un usuario existente 
     public function update($id)
     {
         try {
@@ -160,6 +250,91 @@ class Usuario
             $result = $usuarioModel->delete($id);
 
             $response->toJSON(['success' => $result ? 1 : 0]);
+        } catch (Exception $e) {
+            handleException($e);
+        }
+    }
+
+    public function registro()
+    {
+        try {
+            $response = new Response();
+            $usuarioModel = new UsuarioModel();
+
+            $data = json_decode(file_get_contents("php://input"), true);
+
+            $nombre = trim($data['NombreCompleto'] ?? '');
+            $correo = trim($data['Correo'] ?? '');
+            $contrasena = $data['Contrasena'] ?? '';
+            $direccion = trim($data['Direccion'] ?? '');
+
+            // Validar nombre
+            if ($nombre === '' || strlen($nombre) < 3) {
+                $response->status(400)->toJSON([
+                    'result' => 'El nombre es requerido y debe tener al menos 3 caracteres'
+                ]);
+                return;
+            }
+
+            // Validar correo
+            if ($correo === '' || !filter_var($correo, FILTER_VALIDATE_EMAIL)) {
+                $response->status(400)->toJSON([
+                    'result' => 'Debe ingresar un correo electrónico válido'
+                ]);
+                return;
+            }
+
+            // Validar contraseña
+            if ($contrasena === '' || strlen($contrasena) < 8) {
+                $response->status(400)->toJSON([
+                    'result' => 'La contraseña es requerida y debe tener al menos 8 caracteres'
+                ]);
+                return;
+            }
+
+            // Validar longitud de dirección
+            if (strlen($direccion) > 200) {
+                $response->status(400)->toJSON([
+                    'result' => 'La dirección no puede superar los 200 caracteres'
+                ]);
+                return;
+            }
+
+            // Validar correo duplicado
+            if ($usuarioModel->existeCorreo($correo)) {
+                $response->status(409)->toJSON([
+                    'result' => 'Ya existe un usuario con ese correo'
+                ]);
+                return;
+            }
+
+            // El rol se obtiene exclusivamente en el servidor.
+            $rolCliente = $usuarioModel->getRolPorNombre('Cliente');
+
+            if (!$rolCliente) {
+                $response->status(500)->toJSON([
+                    'result' => 'No se encontró el rol Cliente'
+                ]);
+                return;
+            }
+
+            // Nunca se utiliza un IdRol enviado por React.
+            $datosUsuario = [
+                'NombreCompleto' => $nombre,
+                'Correo' => $correo,
+                'Contrasena' => $contrasena,
+                'Direccion' => $direccion,
+                'IdRol' => $rolCliente['IdRol'],
+                'Activo' => 1
+            ];
+
+            $id = $usuarioModel->create($datosUsuario);
+
+            $response->status(201)->toJSON([
+                'success' => 1,
+                'id' => $id,
+                'result' => 'Registro realizado correctamente'
+            ]);
         } catch (Exception $e) {
             handleException($e);
         }

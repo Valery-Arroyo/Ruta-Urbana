@@ -72,7 +72,7 @@ export default function ListCombosAdmin() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { rol } = useAuth();
-  const esGestor = rol === ROLES.ADMINISTRADOR || rol === ROLES.ENCARGADO;
+  const esAdministrador = rol === ROLES.ADMINISTRADOR;
 
   const [data, setData] = useState([]);
   const [productos, setProductos] = useState([]);
@@ -282,7 +282,7 @@ export default function ListCombosAdmin() {
         {t("combos.title")}
       </Typography>
 
-      {esGestor && (
+      {esAdministrador && (
         <Box
           sx={{
             display: "flex",
@@ -414,7 +414,7 @@ export default function ListCombosAdmin() {
                   {t("actions.viewDetail")}
                 </Button>
 
-                {esGestor && (
+                {esAdministrador && (
                   <>
                     <IconButton onClick={() => handleEdit(combo)}>
                       <EditIcon />

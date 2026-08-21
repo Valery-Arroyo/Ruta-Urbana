@@ -61,6 +61,8 @@ class Preparacion
     public function create()
     {
         try {
+            AuthMiddleware::verificar(['Administrador', 'Cocina']);
+
             $response = new Response();
             $preparacion = new PreparacionModel();
 
@@ -77,6 +79,8 @@ class Preparacion
     public function update($id)
     {
         try {
+            AuthMiddleware::verificar(['Administrador', 'Cocina']);
+
             $response = new Response();
             $preparacion = new PreparacionModel();
 
@@ -93,6 +97,8 @@ class Preparacion
     public function delete($id)
     {
         try {
+            AuthMiddleware::verificar(['Administrador', 'Cocina']);
+
             $response = new Response();
             $preparacion = new PreparacionModel();
 
