@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("RutaUrbana.TareaProgramada")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a4a1b22494786df2149011f747f16b9c1bdb3766")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+dc83134f77d9b8686692a4a8a4228a4322019200")]
 [assembly: System.Reflection.AssemblyProductAttribute("RutaUrbana.TareaProgramada")]
 [assembly: System.Reflection.AssemblyTitleAttribute("RutaUrbana.TareaProgramada")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
