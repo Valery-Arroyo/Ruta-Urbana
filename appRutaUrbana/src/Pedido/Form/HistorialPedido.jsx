@@ -1,5 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
+
 import { Link } from "react-router-dom";
+
 import { useTranslation } from "react-i18next";
 
 import {
@@ -16,11 +18,15 @@ import {
   MenuItem,
   CircularProgress,
 } from "@mui/material";
+
 import VisibilityIcon from "@mui/icons-material/Visibility";
 
 import { useAuth } from "../../context/AuthContext";
+
 import PedidoService from "../../services/PedidoService";
+
 import { formatCurrency, formatDateTime } from "../../utils/format";
+
 import { ROLES } from "../../utils/constants";
 
 const colorPorEstado = {
@@ -33,6 +39,7 @@ const colorPorEstado = {
 
 export default function HistorialPedidos() {
   const { t, i18n } = useTranslation();
+
   const { usuario, rol, isAuthenticated } = useAuth();
 
   // Administrador, Encargado y Cocina ven el historial completo de
@@ -45,51 +52,79 @@ export default function HistorialPedidos() {
     rol === ROLES.COCINA;
 
   const [pedidos, setPedidos] = useState([]);
+
   const [estados, setEstados] = useState([]);
+
   const [cargando, setCargando] = useState(true);
 
   const [filtroFecha, setFiltroFecha] = useState("");
+
   const [filtroEstado, setFiltroEstado] = useState("");
 
-  const cargarPedidos = useCallback(async () => {
-    setCargando(true);
-
-    try {
-      if (esGestor) {
-        const response = await PedidoService.getHistorialTodos(
-          filtroFecha,
-          filtroEstado,
-        );
-        setPedidos(response.data?.pedidos || []);
-      } else {
-        const response = await PedidoService.getHistorialCliente();
-        setPedidos(response.data?.pedidos || []);
+  const cargarPedidos = useCallback(
+    async (mostrarCarga = true) => {
+      if (mostrarCarga) {
+        setCargando(true);
       }
-    } catch (error) {
-      console.error("Error cargando historial de pedidos", error);
-    } finally {
-      setCargando(false);
-    }
-  }, [esGestor, filtroFecha, filtroEstado]);
+
+      try {
+        if (esGestor) {
+          const response = await PedidoService.getHistorialTodos(
+            filtroFecha,
+            filtroEstado,
+          );
+
+          setPedidos(response.data?.pedidos || []);
+        } else {
+          const response = await PedidoService.getHistorialCliente();
+
+          setPedidos(response.data?.pedidos || []);
+        }
+      } catch (error) {
+        console.error("Error cargando historial de pedidos", error);
+      } finally {
+        if (mostrarCarga) {
+          setCargando(false);
+        }
+      }
+    },
+    [esGestor, filtroFecha, filtroEstado],
+  );
 
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    cargarPedidos();
-  }, [isAuthenticated, cargarPedidos]);
+    // Primera consulta mostrando el indicador de carga
+    cargarPedidos(true);
+
+    // Si es Cliente, actualizar automáticamente cada 5 segundos
+    if (!esGestor) {
+      const intervalo = setInterval(() => {
+        // Actualización silenciosa para no mostrar el CircularProgress
+        cargarPedidos(false);
+      }, 5000);
+
+      // Detener el intervalo cuando el usuario salga de esta pantalla
+      return () => clearInterval(intervalo);
+    }
+  }, [isAuthenticated, esGestor, cargarPedidos]);
 
   useEffect(() => {
     if (!esGestor) return;
 
     PedidoService.getEstados()
       .then((response) => setEstados(response.data?.estados || []))
-      .catch((error) => console.error("Error cargando estados", error));
+      .catch((error) =>
+        console.error("Error cargando estados", error),
+      );
   }, [esGestor]);
 
   if (!isAuthenticated) {
     return (
       <Box sx={{ p: 4, textAlign: "center" }}>
-        <Typography sx={{ mb: 2 }}>{t("orders.mustLogin")}</Typography>
+        <Typography sx={{ mb: 2 }}>
+          {t("orders.mustLogin")}
+        </Typography>
       </Box>
     );
   }
@@ -104,7 +139,10 @@ export default function HistorialPedidos() {
         {t("orders.historyTitle")}
       </Typography>
 
-      <Typography align="center" sx={{ color: "text.secondary", mb: 4 }}>
+      <Typography
+        align="center"
+        sx={{ color: "text.secondary", mb: 4 }}
+      >
         {esGestor
           ? t("orders.historySubtitleManager")
           : t("orders.historySubtitleClient", {
@@ -113,14 +151,27 @@ export default function HistorialPedidos() {
       </Typography>
 
       {esGestor && (
-        <Box sx={{ display: "flex", gap: 2, mb: 3, flexWrap: "wrap" }}>
+        <Box
+          sx={{
+            display: "flex",
+            gap: 2,
+            mb: 3,
+            flexWrap: "wrap",
+          }}
+        >
           <TextField
             label={t("orders.filterByDate")}
             type="date"
             size="small"
             value={filtroFecha}
-            onChange={(event) => setFiltroFecha(event.target.value)}
-            slotProps={{ inputLabel: { shrink: true } }}
+            onChange={(event) =>
+              setFiltroFecha(event.target.value)
+            }
+            slotProps={{
+              inputLabel: {
+                shrink: true,
+              },
+            }}
             sx={{ minWidth: 200 }}
           />
 
@@ -129,12 +180,20 @@ export default function HistorialPedidos() {
             label={t("orders.filterByStatus")}
             size="small"
             value={filtroEstado}
-            onChange={(event) => setFiltroEstado(event.target.value)}
+            onChange={(event) =>
+              setFiltroEstado(event.target.value)
+            }
             sx={{ minWidth: 220 }}
           >
-            <MenuItem value="">{t("orders.allStatuses")}</MenuItem>
+            <MenuItem value="">
+              {t("orders.allStatuses")}
+            </MenuItem>
+
             {estados.map((estado) => (
-              <MenuItem key={estado.IdEstado} value={estado.IdEstado}>
+              <MenuItem
+                key={estado.IdEstado}
+                value={estado.IdEstado}
+              >
                 {estado.Nombre}
               </MenuItem>
             ))}
@@ -143,50 +202,107 @@ export default function HistorialPedidos() {
       )}
 
       {cargando ? (
-        <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            py: 6,
+          }}
+        >
           <CircularProgress sx={{ color: "#FF8C00" }} />
         </Box>
       ) : pedidos.length === 0 ? (
-        <Typography align="center" sx={{ color: "text.secondary", py: 4 }}>
+        <Typography
+          align="center"
+          sx={{
+            color: "text.secondary",
+            py: 4,
+          }}
+        >
           {t("orders.noOrders")}
         </Typography>
       ) : (
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>{t("orders.code")}</TableCell>
-              <TableCell>{t("orders.date")}</TableCell>
-              {esGestor && <TableCell>{t("orders.client")}</TableCell>}
-              <TableCell>{t("orders.deliveryMethod")}</TableCell>
-              <TableCell>{t("orders.status")}</TableCell>
-              <TableCell align="right">{t("orders.total")}</TableCell>
-              <TableCell align="center">{t("orders.detail")}</TableCell>
+              <TableCell>
+                {t("orders.code")}
+              </TableCell>
+
+              <TableCell>
+                {t("orders.date")}
+              </TableCell>
+
+              {esGestor && (
+                <TableCell>
+                  {t("orders.client")}
+                </TableCell>
+              )}
+
+              <TableCell>
+                {t("orders.deliveryMethod")}
+              </TableCell>
+
+              <TableCell>
+                {t("orders.status")}
+              </TableCell>
+
+              <TableCell align="right">
+                {t("orders.total")}
+              </TableCell>
+
+              <TableCell align="center">
+                {t("orders.detail")}
+              </TableCell>
             </TableRow>
           </TableHead>
 
           <TableBody>
             {pedidos.map((pedido) => (
-              <TableRow key={pedido.IdPedido} hover>
-                <TableCell>{pedido.CodigoOrden}</TableCell>
+              <TableRow
+                key={pedido.IdPedido}
+                hover
+              >
                 <TableCell>
-                  {formatDateTime(pedido.FechaPedido, i18n.language)}
+                  {pedido.CodigoOrden}
                 </TableCell>
+
+                <TableCell>
+                  {formatDateTime(
+                    pedido.FechaPedido,
+                    i18n.language,
+                  )}
+                </TableCell>
+
                 {esGestor && (
                   <TableCell>
-                    {pedido.NombreCliente || t("orders.walkInClient")}
+                    {pedido.NombreCliente ||
+                      t("orders.walkInClient")}
                   </TableCell>
                 )}
-                <TableCell>{pedido.NombreMetodoEntrega}</TableCell>
+
+                <TableCell>
+                  {pedido.NombreMetodoEntrega}
+                </TableCell>
+
                 <TableCell>
                   <Chip
                     size="small"
                     label={pedido.NombreEstado}
-                    color={colorPorEstado[pedido.IdEstado] || "default"}
+                    color={
+                      colorPorEstado[pedido.IdEstado] ||
+                      "default"
+                    }
                   />
                 </TableCell>
+
                 <TableCell align="right">
-                  {formatCurrency(pedido.Total, i18n.language)}
+                  {formatCurrency(
+                    pedido.Total,
+                    i18n.language,
+                  )}
                 </TableCell>
+
                 <TableCell align="center">
                   <IconButton
                     component={Link}

@@ -39,6 +39,7 @@ export default function DetallePedidoFactura() {
   const { t, i18n } = useTranslation();
   const { rol } = useAuth();
   const esCocina = rol === ROLES.COCINA;
+  const esCliente = rol === ROLES.CLIENTE;
 
   const [pedido, setPedido] = useState(null);
   const [detalle, setDetalle] = useState([]);
@@ -57,16 +58,39 @@ export default function DetallePedidoFactura() {
   }, []);
 
   useEffect(() => {
-    PedidoService.getDetalle(id)
-      .then((response) => {
+    if (!id) {
+      setCargando(false);
+      return;
+    }
+
+    const cargarDetalle = async (mostrarCarga = true) => {
+      try {
+        if (mostrarCarga) {
+          setCargando(true);
+        }
+
+        const response = await PedidoService.getDetalle(id);
         setPedido(response.data?.encabezado || null);
         setDetalle(response.data?.detalle || []);
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error("Error al obtener el detalle del pedido:", error);
-      })
-      .finally(() => setCargando(false));
-  }, [id]);
+      } finally {
+        if (mostrarCarga) {
+          setCargando(false);
+        }
+      }
+    };
+
+    cargarDetalle(true);
+
+    if (esCliente) {
+      const intervalo = setInterval(() => {
+        cargarDetalle(false);
+      }, 5000);
+
+      return () => clearInterval(intervalo);
+    }
+  }, [id, esCliente]);
 
   useEffect(() => {
     if (!esCocina) return;
@@ -240,8 +264,6 @@ export default function DetallePedidoFactura() {
 
   // Exporta la factura del pedido a Excel con formato: encabezado del
   // pedido, tabla de líneas con colores de marca y bordes, y totales
-  // destacados. Usa ExcelJS porque la librería "xlsx" (SheetJS) gratuita
-  // no permite dar estilos a las celdas.
   const generarFacturaExcel = async () => {
     if (!pedido) return;
 
@@ -287,7 +309,10 @@ export default function DetallePedidoFactura() {
       };
 
       filaInfo("Orden", pedido.CodigoOrden || "");
-      filaInfo(t("orders.date"), formatDateTime(pedido.FechaPedido, i18n.language));
+      filaInfo(
+        t("orders.date"),
+        formatDateTime(pedido.FechaPedido, i18n.language),
+      );
       filaInfo(
         t("orders.client"),
         pedido.NombreCliente
@@ -331,7 +356,11 @@ export default function DetallePedidoFactura() {
         const celda = sheet.getCell(filaEncabezadoTabla, i + 1);
         celda.value = texto;
         celda.font = { bold: true, color: { argb: BLANCO } };
-        celda.fill = { type: "pattern", pattern: "solid", fgColor: { argb: NARANJA } };
+        celda.fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: NARANJA },
+        };
         celda.alignment = { horizontal: "center", vertical: "middle" };
         celda.border = bordeFino;
       });
@@ -356,7 +385,11 @@ export default function DetallePedidoFactura() {
           celda.border = bordeFino;
 
           if (idx % 2 === 1) {
-            celda.fill = { type: "pattern", pattern: "solid", fgColor: { argb: FRANJA } };
+            celda.fill = {
+              type: "pattern",
+              pattern: "solid",
+              fgColor: { argb: FRANJA },
+            };
           }
           if (i === 1 || i === 3 || i === 4) {
             celda.numFmt = "#,##0";
@@ -402,7 +435,9 @@ export default function DetallePedidoFactura() {
       saveAs(blob, `factura_${pedido.CodigoOrden || id}.xlsx`);
     } catch (error) {
       console.error("Error al generar la factura en Excel:", error);
-      toast.error(t("orders.messages.excelError") || "No se pudo generar el Excel");
+      toast.error(
+        t("orders.messages.excelError") || "No se pudo generar el Excel",
+      );
     }
   };
 
@@ -587,6 +622,142 @@ export default function DetallePedidoFactura() {
               pedido.DireccionEntrega,
             )}
         </Grid>
+
+        {esCliente && (
+          <>
+            <Divider sx={{ mb: 3 }} />
+
+            <Box sx={{ mb: 4 }}>
+              <Typography variant="h6" sx={{ fontWeight: 800, mb: 3 }}>
+                Seguimiento del pedido
+              </Typography>
+
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  width: "100%",
+                  overflowX: "auto",
+                  pb: 1,
+                }}
+              >
+                {[
+                  { id: 1, nombre: "Pendiente de pago" },
+                  { id: 2, nombre: "Aceptada" },
+                  { id: 3, nombre: "Preparación" },
+                  { id: 4, nombre: "Procesando" },
+                  { id: 5, nombre: "Entregada" },
+                ].map((estado, index, lista) => {
+                  const idEstadoActual = Number(pedido.IdEstado);
+                  const completado = idEstadoActual > estado.id;
+                  const actual = idEstadoActual === estado.id;
+
+                  return (
+                    <Box
+                      key={estado.id}
+                      sx={{
+                        flex: 1,
+                        minWidth: 120,
+                        display: "flex",
+                        alignItems: "flex-start",
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          position: "relative",
+                          zIndex: 2,
+                          minWidth: 105,
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            width: 34,
+                            height: 34,
+                            borderRadius: "50%",
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            bgcolor:
+                              completado || actual ? "#FF8C00" : "#E0E0E0",
+                            color: completado || actual ? "#FFFFFF" : "#777777",
+                            border: actual
+                              ? "3px solid #111"
+                              : "3px solid transparent",
+                            fontWeight: "bold",
+                            transition: "all 0.3s ease",
+                          }}
+                        >
+                          {completado ? "✓" : estado.id}
+                        </Box>
+
+                        <Typography
+                          variant="caption"
+                          align="center"
+                          sx={{
+                            mt: 1,
+                            px: 0.5,
+                            fontWeight: actual ? 800 : completado ? 600 : 400,
+                            color: actual
+                              ? "#FF8C00"
+                              : completado
+                                ? "text.primary"
+                                : "text.secondary",
+                          }}
+                        >
+                          {estado.nombre}
+                        </Typography>
+
+                        {actual && (
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              mt: 0.5,
+                              color: "#FF8C00",
+                              fontWeight: 700,
+                              fontSize: 10,
+                            }}
+                          >
+                            Estado actual
+                          </Typography>
+                        )}
+                      </Box>
+
+                      {index < lista.length - 1 && (
+                        <Box
+                          sx={{
+                            flex: 1,
+                            height: 4,
+                            mt: "15px",
+                            mx: -1,
+                            bgcolor:
+                              idEstadoActual > estado.id
+                                ? "#FF8C00"
+                                : "#E0E0E0",
+                            transition: "background-color 0.3s ease",
+                          }}
+                        />
+                      )}
+                    </Box>
+                  );
+                })}
+              </Box>
+
+              <Typography
+                sx={{
+                  mt: 2,
+                  color: "text.secondary",
+                  fontSize: 13,
+                  textAlign: "center",
+                }}
+              >
+                El estado del pedido se actualiza automáticamente.
+              </Typography>
+            </Box>
+          </>
+        )}
 
         <Divider sx={{ mb: 2 }} />
 
