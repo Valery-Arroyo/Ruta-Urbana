@@ -4,6 +4,8 @@ import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import ExcelJS from "exceljs";
+import { saveAs } from "file-saver";
 
 import {
   Box,
@@ -24,6 +26,7 @@ import {
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
+import GridOnIcon from "@mui/icons-material/GridOn";
 
 import PedidoService from "../../services/PedidoService";
 import { formatCurrency, formatDateTime } from "../../utils/format";
@@ -235,6 +238,174 @@ export default function DetallePedidoFactura() {
     }
   };
 
+  // Exporta la factura del pedido a Excel con formato: encabezado del
+  // pedido, tabla de líneas con colores de marca y bordes, y totales
+  // destacados. Usa ExcelJS porque la librería "xlsx" (SheetJS) gratuita
+  // no permite dar estilos a las celdas.
+  const generarFacturaExcel = async () => {
+    if (!pedido) return;
+
+    try {
+      const NARANJA = "FFFF8C00";
+      const NEGRO = "FF111111";
+      const BLANCO = "FFFFFFFF";
+      const FRANJA = "FFFFF3E0";
+
+      const workbook = new ExcelJS.Workbook();
+      workbook.creator = "Ruta Urbana";
+      workbook.created = new Date();
+
+      const sheet = workbook.addWorksheet("Factura");
+      sheet.columns = [
+        { width: 30 },
+        { width: 16 },
+        { width: 12 },
+        { width: 16 },
+        { width: 14 },
+        { width: 28 },
+      ];
+
+      // --- Título ---
+      sheet.mergeCells("A1:F1");
+      const tituloCelda = sheet.getCell("A1");
+      tituloCelda.value = t("orders.invoiceTitle");
+      tituloCelda.font = { bold: true, size: 16, color: { argb: NEGRO } };
+      tituloCelda.alignment = { vertical: "middle" };
+      sheet.getRow(1).height = 28;
+
+      // --- Encabezado del pedido (etiqueta en negrita + valor) ---
+      let fila = 3;
+      const filaInfo = (etiqueta, valor) => {
+        const etiquetaCelda = sheet.getCell(`A${fila}`);
+        etiquetaCelda.value = etiqueta;
+        etiquetaCelda.font = { bold: true };
+
+        sheet.mergeCells(`B${fila}:F${fila}`);
+        sheet.getCell(`B${fila}`).value = valor ?? "";
+
+        fila += 1;
+      };
+
+      filaInfo("Orden", pedido.CodigoOrden || "");
+      filaInfo(t("orders.date"), formatDateTime(pedido.FechaPedido, i18n.language));
+      filaInfo(
+        t("orders.client"),
+        pedido.NombreCliente
+          ? `${pedido.NombreCliente} - ${pedido.CorreoCliente}`
+          : t("orders.walkInClient"),
+      );
+      if (pedido.NombreEmpleado) {
+        filaInfo(t("orders.manager"), pedido.NombreEmpleado);
+      }
+      filaInfo(t("orders.deliveryMethod"), pedido.NombreMetodoEntrega);
+      filaInfo(
+        t("orders.paymentMethod"),
+        pedido.NombreMetodoPago || t("orders.paymentPending"),
+      );
+      filaInfo(t("orders.status"), pedido.NombreEstado);
+      if (pedido.DireccionEntrega) {
+        filaInfo(t("orders.deliveryAddress"), pedido.DireccionEntrega);
+      }
+
+      fila += 1; // fila en blanco antes de la tabla
+
+      // --- Encabezado de la tabla de líneas ---
+      const bordeFino = {
+        top: { style: "thin" },
+        left: { style: "thin" },
+        bottom: { style: "thin" },
+        right: { style: "thin" },
+      };
+
+      const filaEncabezadoTabla = fila;
+      const columnas = [
+        t("orders.item"),
+        t("orders.unitPrice"),
+        t("orders.quantity"),
+        t("orders.subtotal"),
+        t("orders.tax"),
+        t("orders.observations"),
+      ];
+
+      columnas.forEach((texto, i) => {
+        const celda = sheet.getCell(filaEncabezadoTabla, i + 1);
+        celda.value = texto;
+        celda.font = { bold: true, color: { argb: BLANCO } };
+        celda.fill = { type: "pattern", pattern: "solid", fgColor: { argb: NARANJA } };
+        celda.alignment = { horizontal: "center", vertical: "middle" };
+        celda.border = bordeFino;
+      });
+      sheet.getRow(filaEncabezadoTabla).height = 20;
+
+      // --- Filas de detalle ---
+      fila += 1;
+      detalle.forEach((linea, idx) => {
+        const filaActual = fila + idx;
+        const valores = [
+          linea.NombreItem,
+          Number(linea.PrecioUnitario) || 0,
+          linea.Cantidad,
+          Number(linea.Subtotal) || 0,
+          Number(linea.Impuesto) || 0,
+          linea.Observaciones || "",
+        ];
+
+        valores.forEach((valor, i) => {
+          const celda = sheet.getCell(filaActual, i + 1);
+          celda.value = valor;
+          celda.border = bordeFino;
+
+          if (idx % 2 === 1) {
+            celda.fill = { type: "pattern", pattern: "solid", fgColor: { argb: FRANJA } };
+          }
+          if (i === 1 || i === 3 || i === 4) {
+            celda.numFmt = "#,##0";
+            celda.alignment = { horizontal: "right" };
+          } else if (i === 2) {
+            celda.alignment = { horizontal: "center" };
+          }
+        });
+      });
+
+      fila += detalle.length + 1; // fila en blanco antes de los totales
+
+      // --- Totales ---
+      const filaTotal = (etiqueta, valor, destacado = false) => {
+        const etiquetaCelda = sheet.getCell(`D${fila}`);
+        etiquetaCelda.value = etiqueta;
+        etiquetaCelda.font = { bold: destacado };
+        etiquetaCelda.alignment = { horizontal: "right" };
+
+        const valorCelda = sheet.getCell(`F${fila}`);
+        valorCelda.value = Number(valor) || 0;
+        valorCelda.numFmt = "#,##0";
+        valorCelda.alignment = { horizontal: "right" };
+        valorCelda.font = destacado
+          ? { bold: true, color: { argb: NARANJA }, size: 12 }
+          : {};
+
+        fila += 1;
+      };
+
+      filaTotal(t("orders.subtotalWithoutTax"), pedido.Subtotal);
+      filaTotal(t("orders.tax"), pedido.Impuesto);
+      if (Number(pedido.CostoEnvio) > 0) {
+        filaTotal(t("orders.shippingCost"), pedido.CostoEnvio);
+      }
+      filaTotal(t("orders.totalWithTax"), pedido.Total, true);
+
+      // --- Guardar el archivo ---
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      saveAs(blob, `factura_${pedido.CodigoOrden || id}.xlsx`);
+    } catch (error) {
+      console.error("Error al generar la factura en Excel:", error);
+      toast.error(t("orders.messages.excelError") || "No se pudo generar el Excel");
+    }
+  };
+
   if (cargando) {
     return (
       <Box
@@ -304,20 +475,39 @@ export default function DetallePedidoFactura() {
             {t("actions.back")}
           </Button>
 
-          <Button
-            variant="contained"
-            startIcon={<PictureAsPdfIcon />}
-            onClick={generarFacturaPDF}
-            sx={{
-              bgcolor: "#111",
-              color: "#FF8C00",
-              fontWeight: "bold",
-              textTransform: "none",
-              "&:hover": { bgcolor: "#333" },
-            }}
-          >
-            Imprimir Factura
-          </Button>
+          <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
+            <Button
+              variant="contained"
+              startIcon={<PictureAsPdfIcon />}
+              onClick={generarFacturaPDF}
+              sx={{
+                bgcolor: "#111",
+                color: "#FF8C00",
+                fontWeight: "bold",
+                textTransform: "none",
+                minWidth: 190,
+                "&:hover": { bgcolor: "#333" },
+              }}
+            >
+              Imprimir Factura
+            </Button>
+
+            <Button
+              variant="contained"
+              startIcon={<GridOnIcon />}
+              onClick={generarFacturaExcel}
+              sx={{
+                bgcolor: "#111",
+                color: "#FF8C00",
+                fontWeight: "bold",
+                textTransform: "none",
+                minWidth: 190,
+                "&:hover": { bgcolor: "#333" },
+              }}
+            >
+              Exportar a Excel
+            </Button>
+          </Box>
         </Box>
 
         <Box

@@ -38,6 +38,7 @@
     "react-i18next": "^17.0.11",
     "react-toastify": "^11.1.0",
     "styled-components": "^6.4.2",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.2/xlsx-0.20.2.tgz",
     "yup": "^1.7.1"
   },
   "devDependencies": {
