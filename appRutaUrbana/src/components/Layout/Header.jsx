@@ -126,7 +126,7 @@ export default function Header() {
   // Cocina nunca registra pedidos ("Nuevo pedido" no aplica), pero sí
   // debe poder ver los que ya existen ("Historial") y trabajar sus
   // líneas ("Estaciones"), su única herramienta del día a día.
-  if (isAuthenticated && !esCocina) {
+  if (isAuthenticated && !esCocina && !esAdministrador) {
     itemsDirectos.push({
       nombre: t("navigation.newOrder"),
       ruta: "/pedidos/nuevo",

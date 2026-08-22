@@ -74,18 +74,20 @@ export default function Estaciones() {
 
       lineas.forEach((l) => {
         if (l.IdPedido === linea.IdPedido) {
-          lineasDelPedido.set(l.IdDetalle, Number(l.Completado) === 1);
+          const key = `${l.IdDetalle}-${l.NombreEstacion || "sin-estacion"}`;
+          lineasDelPedido.set(key, Number(l.Completado) === 1);
         }
       });
 
-      lineasDelPedido.set(linea.IdDetalle, true);
+      const keyActual = `${linea.IdDetalle}-${linea.NombreEstacion || "sin-estacion"}`;
+      lineasDelPedido.set(keyActual, true);
 
       seCompletaElPedido = Array.from(lineasDelPedido.values()).every(Boolean);
     }
 
     try {
       setGuardando(true);
-      await PedidoService.cambiarEstadoLinea(linea.IdDetalle, completado);
+      await PedidoService.cambiarEstadoLinea(linea.IdDetalle, linea.IdEstacion, completado);
       await cargarLineas();
 
       if (seCompletaElPedido) {

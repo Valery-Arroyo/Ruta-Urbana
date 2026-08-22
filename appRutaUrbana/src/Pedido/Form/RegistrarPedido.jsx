@@ -55,6 +55,7 @@ export default function RegistrarPedido() {
 
   const esGestor = rol === ROLES.ADMINISTRADOR || rol === ROLES.ENCARGADO;
   const esCocina = rol === ROLES.COCINA;
+  const esAdministrador = rol === ROLES.ADMINISTRADOR;
 
   const {
     lineas,
@@ -380,6 +381,14 @@ export default function RegistrarPedido() {
     return (
       <Box sx={{ p: 4, textAlign: "center" }}>
         <Typography>{t("stations.onlyKitchen")}</Typography>
+      </Box>
+    );
+  }
+
+  if (esAdministrador) {
+    return (
+      <Box sx={{ p: 4, textAlign: "center" }}>
+        <Typography>{t("access.onlyEncargadoOrClient")}</Typography>
       </Box>
     );
   }

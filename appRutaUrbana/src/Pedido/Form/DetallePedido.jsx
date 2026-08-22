@@ -744,17 +744,6 @@ export default function DetallePedidoFactura() {
                   );
                 })}
               </Box>
-
-              <Typography
-                sx={{
-                  mt: 2,
-                  color: "text.secondary",
-                  fontSize: 13,
-                  textAlign: "center",
-                }}
-              >
-                El estado del pedido se actualiza automáticamente.
-              </Typography>
             </Box>
           </>
         )}

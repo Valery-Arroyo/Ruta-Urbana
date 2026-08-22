@@ -141,7 +141,7 @@ class Pedido
     public function create()
     {
         try {
-            $tokenData = AuthMiddleware::verificar(['Cliente', 'Encargado', 'Administrador']);
+            $tokenData = AuthMiddleware::verificar(['Cliente', 'Encargado']);
 
             $response = new Response();
             $pedidoModel = new PedidoModel();
@@ -220,6 +220,7 @@ class Pedido
 
             $resultado = $pedidoModel->cambiarEstadoLinea(
                 $data['IdDetalle'],
+                $data['IdEstacion'] ?? null,
                 $data['Completado'] ?? 1,
                 $tokenData->IdUsuario
             );

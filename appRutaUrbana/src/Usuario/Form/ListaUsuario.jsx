@@ -113,7 +113,8 @@ export default function ListaUsuario() {
   const cargarRoles = async () => {
     try {
       const response = await UsuarioService.getRoles();
-      setRoles(response.data?.roles || []);
+      const todos = response.data?.roles || [];
+      setRoles(todos.filter((r) => r.NombreRol !== "Cliente"));
     } catch (error) {
       console.error("Error cargando roles", error);
     }

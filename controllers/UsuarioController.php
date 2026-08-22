@@ -162,16 +162,15 @@ class Usuario
 
             $rolActual = $usuarioAutenticado->NombreRol;
 
-            // Administrador puede crear Encargado, Cocina y Cliente.
             if (
                 $rolActual === 'Administrador' &&
                 !in_array(
                     $rolSeleccionado['NombreRol'],
-                    ['Encargado', 'Cocina', 'Cliente']
+                    ['Encargado', 'Cocina', 'Administrador']
                 )
             ) {
                 $response->status(403)->toJSON([
-                    'result' => 'El administrador solo puede crear usuarios Encargado, Cocina o Cliente'
+                    'result' => 'El administrador solo puede crear usuarios Encargado, Cocina o Administrador'
                 ]);
                 return;
             }

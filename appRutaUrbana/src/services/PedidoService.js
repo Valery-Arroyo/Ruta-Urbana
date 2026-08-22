@@ -66,9 +66,10 @@ class PedidoService {
   }
 
   /* Marca una línea del pedido como completada (o pendiente de nuevo) */
-  cambiarEstadoLinea(idDetalle, completado) {
+  cambiarEstadoLinea(idDetalle, idEstacion, completado) {
     return axios.post(`${BASE_URL}/cambiarEstadoLinea`, {
       IdDetalle: idDetalle,
+      IdEstacion: idEstacion,
       Completado: completado,
     });
   }

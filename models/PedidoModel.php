@@ -301,10 +301,15 @@ class PedidoModel
                         p.IdEstado,
                         est.Nombre AS NombreEstadoPedido,
                         d.Cantidad,
-                        d.Completado,
+                        CASE
+                            WHEN lineaEst.IdEstacion IS NOT NULL THEN
+                                CASE WHEN he.HoraSalida IS NOT NULL THEN 1 ELSE 0 END
+                            ELSE d.Completado
+                        END AS Completado,
                         d.Observaciones,
                         COALESCE(pr.Nombre, c.Nombre) AS NombreItem,
                         cli.NombreCompleto AS NombreCliente,
+                        lineaEst.IdEstacion,
                         lineaEst.NombreEstacion
                     FROM DetallePedido d
                     INNER JOIN Pedido p ON d.IdPedido = p.IdPedido
@@ -314,21 +319,22 @@ class PedidoModel
                     LEFT JOIN Usuario cli ON p.IdCliente = cli.IdUsuario
                     LEFT JOIN (
                         -- Estación propia de cada producto individual
-                        SELECT pp.IdProducto AS IdProductoLinea, NULL AS IdComboLinea, e.Nombre AS NombreEstacion
+                        SELECT pp.IdProducto AS IdProductoLinea, NULL AS IdComboLinea, e.IdEstacion, e.Nombre AS NombreEstacion
                         FROM ProcesoPreparacion pp
                         INNER JOIN Estacion e ON pp.IdEstacion = e.IdEstacion
                         WHERE pp.IdProducto IS NOT NULL
 
                         UNION
 
-                        SELECT NULL AS IdProductoLinea, cp.IdCombo AS IdComboLinea, e.Nombre AS NombreEstacion
+                        SELECT NULL AS IdProductoLinea, cp.IdCombo AS IdComboLinea, e.IdEstacion, e.Nombre AS NombreEstacion
                         FROM ComboProducto cp
                         INNER JOIN ProcesoPreparacion pp ON pp.IdProducto = cp.IdProducto
                         INNER JOIN Estacion e ON pp.IdEstacion = e.IdEstacion
                     ) lineaEst ON (d.IdProducto IS NOT NULL AND lineaEst.IdProductoLinea = d.IdProducto)
                                 OR (d.IdCombo IS NOT NULL AND lineaEst.IdComboLinea = d.IdCombo)
+                    LEFT JOIN HistorialEstacion he ON he.IdDetalle = d.IdDetalle AND he.IdEstacion = lineaEst.IdEstacion
                     WHERE p.IdEstado <> 5 OR DATE(p.FechaPedido) = CURDATE()
-                    ORDER BY lineaEst.NombreEstacion, d.Completado ASC, p.FechaPedido";
+                    ORDER BY lineaEst.NombreEstacion, Completado ASC, p.FechaPedido";
 
             return $this->enlace->executeSQL($sql, "asoc");
         } catch (Exception $e) {
@@ -337,14 +343,12 @@ class PedidoModel
     }
 
 
-    public function cambiarEstadoLinea($idDetalle, $completado, $idUsuarioToken)
+    public function cambiarEstadoLinea($idDetalle, $idEstacion, $completado, $idUsuarioToken)
     {
         try {
             $idDetalle = intval($idDetalle);
             $completado = intval($completado) ? 1 : 0;
-
-            $sqlUpdate = "UPDATE DetallePedido SET Completado = $completado WHERE IdDetalle = $idDetalle";
-            $this->enlace->executeSQL_DML($sqlUpdate);
+            $idEstacion = !empty($idEstacion) ? intval($idEstacion) : null;
 
             $sqlPedido = "SELECT p.IdPedido, p.IdEstado FROM DetallePedido d
                           INNER JOIN Pedido p ON d.IdPedido = p.IdPedido
@@ -358,14 +362,69 @@ class PedidoModel
             $idPedido = intval($resultado[0]['IdPedido']);
             $idEstadoActual = intval($resultado[0]['IdEstado']);
 
+            if ($idEstacion) {
+                $existe = $this->enlace->executeSQL(
+                    "SELECT IdHistorial FROM HistorialEstacion WHERE IdDetalle = $idDetalle AND IdEstacion = $idEstacion",
+                    "asoc"
+                );
+
+                if ($completado === 1) {
+                    if (empty($existe)) {
+                        $this->enlace->executeSQL_DML(
+                            "INSERT INTO HistorialEstacion (IdPedido, IdDetalle, IdEstacion, HoraIngreso, HoraSalida)
+                             VALUES ($idPedido, $idDetalle, $idEstacion, NOW(), NOW())"
+                        );
+                    } else {
+                        $this->enlace->executeSQL_DML(
+                            "UPDATE HistorialEstacion SET HoraSalida = NOW()
+                             WHERE IdDetalle = $idDetalle AND IdEstacion = $idEstacion"
+                        );
+                    }
+                } elseif (!empty($existe)) {
+                    $this->enlace->executeSQL_DML(
+                        "UPDATE HistorialEstacion SET HoraSalida = NULL
+                         WHERE IdDetalle = $idDetalle AND IdEstacion = $idEstacion"
+                    );
+                }
+            } else {
+                $this->enlace->executeSQL_DML(
+                    "UPDATE DetallePedido SET Completado = $completado WHERE IdDetalle = $idDetalle"
+                );
+            }
+
             if ($idEstadoActual < 3) {
                 $this->enlace->executeSQL_DML("UPDATE Pedido SET IdEstado = 3 WHERE IdPedido = $idPedido");
                 $this->registrarHistorial($idPedido, 3, $idUsuarioToken, 'La cocina empezó a preparar el pedido');
                 $idEstadoActual = 3;
             }
 
-            $sqlPendientes = "SELECT COUNT(*) AS Pendientes FROM DetallePedido
-                               WHERE IdPedido = $idPedido AND Completado = 0";
+            $sqlPendientes = "SELECT COUNT(*) AS Pendientes FROM (
+                SELECT
+                    CASE
+                        WHEN lineaEst.IdEstacion IS NOT NULL THEN
+                            CASE WHEN he.HoraSalida IS NOT NULL THEN 1 ELSE 0 END
+                        ELSE d.Completado
+                    END AS Completado
+                FROM DetallePedido d
+                LEFT JOIN (
+                    SELECT pp.IdProducto AS IdProductoLinea, NULL AS IdComboLinea, e.IdEstacion
+                    FROM ProcesoPreparacion pp
+                    INNER JOIN Estacion e ON pp.IdEstacion = e.IdEstacion
+                    WHERE pp.IdProducto IS NOT NULL
+
+                    UNION
+
+                    SELECT NULL AS IdProductoLinea, cp.IdCombo AS IdComboLinea, e.IdEstacion
+                    FROM ComboProducto cp
+                    INNER JOIN ProcesoPreparacion pp ON pp.IdProducto = cp.IdProducto
+                    INNER JOIN Estacion e ON pp.IdEstacion = e.IdEstacion
+                ) lineaEst ON (d.IdProducto IS NOT NULL AND lineaEst.IdProductoLinea = d.IdProducto)
+                            OR (d.IdCombo IS NOT NULL AND lineaEst.IdComboLinea = d.IdCombo)
+                LEFT JOIN HistorialEstacion he ON he.IdDetalle = d.IdDetalle AND he.IdEstacion = lineaEst.IdEstacion
+                WHERE d.IdPedido = $idPedido
+            ) x
+            WHERE x.Completado = 0";
+
             $pendientes = $this->enlace->executeSQL($sqlPendientes, "asoc");
             $cantidadPendientes = intval($pendientes[0]['Pendientes'] ?? 0);
 
