@@ -15,19 +15,41 @@ import {
 
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
+// Componente para mostrar el detalle de un producto
 export default function DetalleProducto() {
+
+  // Se obtienen las funciones de traducción y navegación, 
+  // así como el ID del producto desde los parámetros de la URL
   const { t } = useTranslation();
+
+  // Se obtiene el ID del producto desde los parámetros de la URL
   const { id } = useParams();
+
+  // Se inicializa el hook de navegación para permitir regresar a la página anterior
   const navigate = useNavigate();
 
+  // Estados locales para almacenar la información del producto,
   const [producto, setProducto] = useState(null);
+
+  // Estado para manejar la carga de datos
   const [loading, setLoading] = useState(true);
+
+  // Estado para almacenar el ID del producto del día
   const [productoDelDiaId, setProductoDelDiaId] = useState(null);
 
+  // useEffect para obtener los datos del producto y del producto del día al montar el componente
   useEffect(() => {
+
+    // Se llama al servicio para obtener el detalle del producto por su ID
     ProductoService.getProducto(id)
+
+    // Se llama al servicio para obtener el detalle del producto por su ID
       .then((response) => {
+
+        // Se establece el estado del producto con la información obtenida
         setProducto(response.data[0]);
+
+        // Se detiene la carga después de obtener los datos
         console.log(response.data[0]);
         setLoading(false);
       })
@@ -36,18 +58,23 @@ export default function DetalleProducto() {
         setLoading(false);
       });
 
+    // Se llama al servicio para obtener el ID del producto del día
     ProductoService.getProductoDelDia()
       .then((response) => {
+
+        // Se establece el estado con el ID del producto del día,
         setProductoDelDiaId(response.data?.IdProducto ?? null);
       })
       .catch(() => setProductoDelDiaId(null));
   }, [id]);
 
+  // Se determina si el producto actual es el producto del día comparando los IDs
   const esProductoDelDia =
     producto &&
     productoDelDiaId !== null &&
     Number(producto.IdProducto) === Number(productoDelDiaId);
 
+    // Se renderiza el componente, mostrando un indicador de carga mientras se obtienen los datos
   if (loading)
     return (
       <Box
@@ -117,6 +144,8 @@ export default function DetalleProducto() {
         )}
 
         <Button
+
+        // Botón para regresar a la página anterior, con estilo condicional según si es producto del día
           variant="outlined"
           startIcon={<ArrowBackIcon />}
           onClick={() => navigate(-1)}

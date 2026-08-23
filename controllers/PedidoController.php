@@ -16,9 +16,7 @@ class Pedido
         }
     }
 
-    // Tipo de cambio USD -> CRC (Web Service externo, consumido aquí en
-    // el servidor y no desde el navegador, porque el servicio externo no
-    // permite llamadas directas desde el navegador por política CORS).
+    // Catálogos para el formulario de registro de pedido
     public function tipoCambio()
     {
         try {
@@ -40,6 +38,7 @@ class Pedido
         }
     }
 
+    // Catálogos para el formulario de registro de pedido
     public function metodosEntrega()
     {
         try {
@@ -68,8 +67,6 @@ class Pedido
         }
     }
 
-    // Historial del cliente autenticado (ignora el Id que venga en la URL:
-    // el usuario a consultar SIEMPRE es el que indica el token, nunca la interfaz)
     public function historialCliente($idUsuario = null)
     {
         try {
@@ -86,8 +83,6 @@ class Pedido
         }
     }
 
-    // Historial completo: Administrador, Encargado y Cocina (Cocina lo
-    // necesita para ver los pedidos existentes, aunque nunca registra uno)
     public function historialTodos($fecha = null, $estado = null)
     {
         try {
@@ -120,9 +115,6 @@ class Pedido
                 return;
             }
 
-            // Un cliente solo puede ver el detalle de sus propios pedidos
-            // (se castean ambos lados a entero: el token trae el Id como
-            // vino en el JSON del JWT y puede no coincidir el tipo exacto)
             if (
                 $tokenData->NombreRol === 'Cliente' &&
                 intval($result['encabezado']['IdCliente'] ?? 0) !== intval($tokenData->IdUsuario)
@@ -161,8 +153,7 @@ class Pedido
         }
     }
 
-    // Cambiar el estado general de un pedido a mano (uso excepcional; en la
-    // práctica el estado avanza solo cuando la Cocina trabaja las líneas)
+    // Cambiar el estado de un pedido (solo para cocina)
     public function update($id)
     {
         try {
@@ -186,8 +177,6 @@ class Pedido
         }
     }
 
-    // Líneas de pedido pendientes, agrupadas por estación (pantalla de Estaciones,
-    // uso exclusivo del rol Cocina)
     public function estaciones()
     {
         try {
@@ -231,6 +220,7 @@ class Pedido
         }
     }
 
+    // Dashboard con estadísticas de pedidos y productos más pedidos
     public function dashboard()
     {
         try {

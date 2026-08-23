@@ -160,10 +160,6 @@ export default function ListPreparacionPublic() {
     cargarCombos();
   }, []);
 
-  /*
-   * Busca la imagen del producto o combo del proceso, para que las
-   * tarjetas no se vean tan vacías (solo texto).
-   */
   const obtenerImagenProceso = (item) => {
     const origen = item.esProducto
       ? productos.find((p) => Number(p.IdProducto) === Number(item.IdProducto))
@@ -202,13 +198,6 @@ export default function ListPreparacionPublic() {
     );
   };
 
-  /*
-   * Permite únicamente números enteros.
-   *
-   * Si el usuario intenta ingresar letras, espacios,
-   * puntos, comas o signos, muestra un toast y
-   * no agrega el carácter inválido.
-   */
   const manejarCampoNumerico = (setter, index, campo, valor) => {
     if (/^\d*$/.test(valor)) {
       modificarPaso(setter, index, campo, valor);
@@ -237,13 +226,6 @@ export default function ListPreparacionPublic() {
     setOpen(true);
   };
 
-  /*
-   * Elimina un paso dentro del diálogo de edición.
-   *
-   * Si ya existe en la base de datos, almacena su
-   * IdProceso para eliminarlo cuando se guarden
-   * los cambios.
-   */
   const handleRemoverPaso = (index) => {
     setPasosForm((prev) => {
       const pasoEliminar = prev[index];

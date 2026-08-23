@@ -17,16 +17,26 @@ import {
 
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
+// Componente para mostrar el detalle de un menú
 const API_URL = import.meta.env.VITE_BASE_URL;
 
+// Componente para mostrar el detalle de un menú
 export default function DetalleMenu() {
   const { t } = useTranslation();
+
+  // Obtener el ID del menú desde los parámetros de la URL
   const { id } = useParams();
+
+  // Obtener la función de navegación para redirigir a otras páginas
   const navigate = useNavigate();
 
+  // Estado local para manejar el detalle del menú y el estado de carga
   const [detalle, setDetalle] = useState(null);
+
+  // Estado local para manejar el estado de carga mientras se obtiene el detalle del menú
   const [loading, setLoading] = useState(true);
 
+  // useEffect para obtener el detalle del menú al montar el componente
   useEffect(() => {
     MenuService.get(id)
       .then((response) => {
@@ -34,6 +44,7 @@ export default function DetalleMenu() {
         console.log("PRODUCTOS:", response.data.Productos);
         console.log("COMBOS:", response.data.Combos);
 
+        // Se establece el estado del detalle del menú con la respuesta del backend
         setDetalle(response.data);
       })
       .catch((error) => {
@@ -45,6 +56,8 @@ export default function DetalleMenu() {
       });
   }, [id]);
 
+
+  // Función para formatear la hora en formato de 12 horas con AM/PM
   const formatearHora = (hora) => {
     if (!hora) return t("menus.detail.notDefined");
 
@@ -63,6 +76,7 @@ export default function DetalleMenu() {
     return `${horaNumero}:${minutos} ${periodo}`;
   };
 
+  // Función para formatear el precio en colones costarricenses sin decimales
   const formatearPrecio = (precio) => {
     const precioNumero = Number(precio);
 
@@ -76,6 +90,7 @@ export default function DetalleMenu() {
     });
   };
 
+  // Función para obtener la URL de la imagen del producto o combo, manejando rutas relativas y absolutas
   const obtenerUrlImagen = (item) => {
     const imagen =
       item.ImagenProducto || item.ImagenCombo || item.Imagen || item.RutaImagen;
@@ -89,6 +104,8 @@ export default function DetalleMenu() {
       .replace(/\\/g, "/")
       .replace(/^\/+/, "");
 
+
+      // Se verifica si la ruta es absoluta (comienza con http:// o https://) y se devuelve tal cual
     if (rutaLimpia.startsWith("http://") || rutaLimpia.startsWith("https://")) {
       return rutaLimpia;
     }
@@ -118,6 +135,7 @@ export default function DetalleMenu() {
     );
   }
 
+  // Si no se encuentra el detalle del menú, se muestra un mensaje de error y un botón para regresar a la lista de menús
   if (!detalle) {
     return (
       <Box
@@ -130,6 +148,8 @@ export default function DetalleMenu() {
           gap: 2,
         }}
       >
+
+        // Se muestra un mensaje de error indicando que no se pudo cargar el detalle del menú
         <Typography variant="h5">{t("menus.detail.loadError")}</Typography>
 
         <Button
@@ -143,15 +163,15 @@ export default function DetalleMenu() {
     );
   }
 
+  // Se obtienen los productos y combos del detalle del menú, asegurando que sean arreglos válidos
   const productos = Array.isArray(detalle.Productos) ? detalle.Productos : [];
 
+  // Se obtienen los combos del detalle del menú, asegurando que sean arreglos válidos
   const combos = Array.isArray(detalle.Combos) ? detalle.Combos : [];
 
+  // Se combinan los productos y combos en un solo arreglo para su posterior procesamiento
   const safeItems = [...productos, ...combos];
 
-  /*
-   * Agrupar productos y combos por categoría.
-   */
   const itemsPorCategoria = safeItems.reduce((acc, item) => {
     const categoria =
       item.Categoria || item.NombreCategoria || t("menus.detail.otherCategory");
@@ -173,8 +193,8 @@ export default function DetalleMenu() {
         bgcolor: "#fafafa",
       }}
     >
-      {/* ENCABEZADO */}
 
+      // Se muestra el nombre del menú en un estilo destacado
       <Typography
         variant="h3"
         sx={{
@@ -207,12 +227,17 @@ export default function DetalleMenu() {
           fontSize: "1.05rem",
         }}
       >
+
+        // Se muestra la información de los días disponibles del menú, 
+        // o un mensaje indicando que no se han definido días
         {t("menus.detail.days")}:{" "}
         {detalle.DiasDisponibles?.trim()
           ? detalle.DiasDisponibles
           : t("menus.detail.noDaysDefined")}
       </Typography>
 
+      // Se muestra la información de la validez del menú, 
+      // incluyendo las fechas de inicio y fin, o mensajes indicando que no se han definido
       {(detalle.FechaInicio || detalle.FechaFin) && (
         <Typography
           variant="body1"
@@ -242,6 +267,8 @@ export default function DetalleMenu() {
       </Typography>
 
       <Button
+
+      // Se muestra un botón para regresar a la lista de menús, con estilo personalizado
         variant="outlined"
         startIcon={<ArrowBackIcon />}
         onClick={() => navigate("/menu")}
@@ -259,10 +286,12 @@ export default function DetalleMenu() {
           },
         }}
       >
+
+        // Se muestra el texto del botón para regresar a la lista de menús, 
+        // traducido según el idioma seleccionado
         {t("menus.detail.backToList")}
       </Button>
 
-      {/* MENÚ SIN ELEMENTOS */}
 
       {safeItems.length === 0 && (
         <Typography
@@ -277,8 +306,8 @@ export default function DetalleMenu() {
         </Typography>
       )}
 
-      {/* ELEMENTOS AGRUPADOS POR CATEGORÍA */}
-
+      // Se muestran los productos y combos agrupados por categoría, 
+      // con estilo de tarjeta para cada elemento
       {Object.entries(itemsPorCategoria).map(([categoria, items]) => (
         <Box
           key={categoria}

@@ -36,6 +36,8 @@ export default function DetallePreparacion() {
         if (response.data && response.data.length > 0) {
           const primerRegistro = response.data[0];
           
+          // Se estructura la información de la preparación, 
+          // incluyendo el nombre, imagen y pasos ordenados
           const preparacionEstructurada = {
             Nombre: primerRegistro.NombreProducto || primerRegistro.NombreCombo,
             Imagen: primerRegistro.RutaImagen || primerRegistro.Imagen || null,
@@ -46,6 +48,7 @@ export default function DetallePreparacion() {
             })).sort((a, b) => a.OrdenPaso - b.OrdenPaso)
           };
           
+          // Se actualiza el estado con la preparación estructurada
           setData(preparacionEstructurada);
         }
         setLoading(false);

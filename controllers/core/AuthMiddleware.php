@@ -3,11 +3,6 @@
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 
-/*
- * Utilidad de autenticación con JWT. Genera el token al iniciar sesión
- * y lo verifica en cada endpoint que lo necesite, leyendo el
- * encabezado "Authorization: Bearer <token>".
- */
 class AuthMiddleware
 {
     // Genera el token para un usuario que acaba de iniciar sesión
@@ -25,12 +20,6 @@ class AuthMiddleware
         return JWT::encode($payload, Config::get('SECRET_KEY'), 'HS256');
     }
 
-    /*
-     * Verifica que la solicitud traiga un token válido y, si se indican
-     * roles permitidos, que el rol del usuario esté entre ellos.
-     * Devuelve los datos del token (para que el controlador sepa quién
-     * es el usuario) o lanza una excepción si no es válido.
-     */
     public static function verificar($rolesPermitidos = [])
     {
         $headers = getallheaders();

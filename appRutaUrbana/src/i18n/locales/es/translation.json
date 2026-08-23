@@ -6,7 +6,8 @@
   "access": {
     "onlyAdministrator": "Esta pantalla es exclusiva del rol Administrador.",
     "onlyAdminOrKitchen": "Esta pantalla es exclusiva de Administrador o Cocina.",
-    "onlyEncargadoOrClient": "Esta pantalla es exclusiva de Encargado y Cliente."
+    "onlyEncargadoOrClient": "Esta pantalla es exclusiva de Encargado y Cliente.",
+    "onlyStaff": "Esta pantalla es exclusiva de Administrador y Encargado."
   },
   "navigation": {
     "home": "Inicio",

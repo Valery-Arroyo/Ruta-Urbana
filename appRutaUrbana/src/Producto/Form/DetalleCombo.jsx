@@ -14,6 +14,7 @@ import {
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
+// Componente para mostrar el detalle de un combo
 export default function DetalleCombo() {
   const { t } = useTranslation();
   const { id } = useParams();
@@ -21,25 +22,31 @@ export default function DetalleCombo() {
   const [combo, setCombo] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // useEffect para obtener el detalle del combo al montar el componente
   useEffect(() => {
+    // Se llama al servicio para obtener el detalle del combo por su ID
     ComboService.getCombo(id)
       .then((response) => {
         const data = response.data || [];
 
+        // Si no se encuentra el combo, se establece el estado en null y se detiene la carga
         if (!Array.isArray(data) || data.length === 0) {
           setCombo(null);
           setLoading(false);
           return;
         }
 
+        // Se obtiene la información del combo y sus productos asociados
         const base = data[0];
 
+        // Se mapea la lista de productos del combo para obtener solo la información necesaria
         const productos = data.map((item) => ({
           IdProducto: item.IdProducto,
           Nombre: item.NombreProducto,
           Cantidad: item.Cantidad,
         }));
 
+        // Se establece el estado del combo con la información obtenida
         setCombo({
           IdCombo: base.IdCombo,
           Nombre: base.NombreCombo,
@@ -50,6 +57,7 @@ export default function DetalleCombo() {
           productos,
         });
 
+        // Se detiene la carga después de obtener los datos
         setLoading(false);
       })
       .catch((error) => {

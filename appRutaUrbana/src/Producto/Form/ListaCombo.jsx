@@ -40,6 +40,7 @@ import * as yup from "yup";
 import { useAuth } from "../../context/AuthContext";
 import { ROLES } from "../../utils/constants";
 
+// Schema de validación para el formulario de combos
 const comboSchema = yup.object().shape({
   Nombre: yup
     .string()
@@ -86,6 +87,7 @@ export default function ListCombosAdmin() {
   const [previewImagen, setPreviewImagen] = useState("");
   const [subiendoImagen, setSubiendoImagen] = useState(false);
 
+  // Configuración de react-hook-form con yup para validación
   const {
     handleSubmit,
     reset,
@@ -106,19 +108,27 @@ export default function ListCombosAdmin() {
     },
   });
 
+  // Se obtienen  los productos agregados al combo desde el formulario
   const productosAgregados = watch("Productos");
 
+  //| useEffect para cargar combos, productos y categorías al montar el componente
   useEffect(() => {
     cargarCombos();
     cargarProductos();
     cargarCategorias();
   }, []);
 
+
+  // Función para cargar los combos desde el servicio
   const cargarCombos = async () => {
     try {
+
+      // Se obtiene la lista de combos desde el servicio 
       const response = await ComboService.getCombos();
 
       const agrupados = response.data.reduce((acc, item) => {
+
+        // Se busca si el combo ya existe en el acumulador
         let combo = acc.find((c) => c.IdCombo === item.IdCombo);
 
         if (!combo) {
@@ -127,6 +137,7 @@ export default function ListCombosAdmin() {
             Productos: [],
           };
 
+          // Se agrega el combo al acumulador
           acc.push(combo);
         }
 
@@ -141,6 +152,7 @@ export default function ListCombosAdmin() {
         return acc;
       }, []);
 
+      // Se actualiza el estado con la lista de combos agrupados
       setData(agrupados);
     } catch (error) {
       console.error(error);
@@ -148,15 +160,19 @@ export default function ListCombosAdmin() {
     }
   };
 
+  // Función para cargar los productos desde el servicio
   const cargarProductos = async () => {
     try {
+      // Se obtiene la lista de productos desde el servicio
       const response = await ProductoService.getProductos();
+      // Se actualiza el estado con la lista de productos
       setProductos(response.data || []);
     } catch (error) {
       console.error("Error cargando productos", error);
     }
   };
 
+  // Función para cargar las categorías desde el servici:
   const cargarCategorias = async () => {
     try {
       const response = await CategoriaService.getCategorias();
@@ -166,10 +182,14 @@ export default function ListCombosAdmin() {
     }
   };
 
+
+  // Función para manejar la apertura del diálogo de edición/creación de combos
   const handleEdit = (combo) => {
     setPreviewImagen("");
 
     if (combo) {
+
+      // Si se pasa un combo, se establece como seleccionado y se rellenan los campos del formulario
       setComboSeleccionado(combo);
 
       reset({
@@ -202,6 +222,7 @@ export default function ListCombosAdmin() {
     setOpen(true);
   };
 
+  // Función para manejar el cierre del diálogo de edición/creación de combos
   const handleSave = async (data) => {
     try {
       console.log("Datos enviados:", data);
@@ -226,35 +247,58 @@ export default function ListCombosAdmin() {
     }
   };
 
+
+  // Función para manejar el cambio de imagen del combo
   const handleImagenChange = async (e) => {
+
+    // Se obtiene el archivo seleccionado
     const archivo = e.target.files?.[0];
+
+    // Si no hay archivo seleccionado, se retorna
     if (!archivo) return;
 
+    // Se validan el tipo y tamaño del archivo
     const tiposPermitidos = ["image/jpeg", "image/png", "image/webp"];
+    // Tamaño máximo permitido: 5MB
     const tamanoMaximo = 5 * 1024 * 1024;
 
-    if (!tiposPermitidos.includes(archivo.type) || archivo.size > tamanoMaximo) {
+    if (
+
+      // Si el tipo de archivo no está permitido o el tamaño es mayor al máximo permitido, 
+      // se muestra un mensaje de error y se retorna
+      !tiposPermitidos.includes(archivo.type) ||
+      archivo.size > tamanoMaximo
+    ) {
       toast.error(t("combos.messages.invalidImage"));
       e.target.value = "";
       return;
     }
 
+    // Se establece la imagen de vista previa
     setPreviewImagen(URL.createObjectURL(archivo));
 
     try {
+
+      // Se sube la imagen al servidor y se obtiene la ruta de la imagen
       setSubiendoImagen(true);
+
+      // Se llama al servicio para subir la imagen y se obtiene la respuesta
       const response = await ComboService.uploadImagen(archivo);
+
+      // Se establece la ruta de la imagen en el formulario
       setValue("RutaImagen", response.data.ruta, { shouldValidate: true });
     } catch (error) {
       console.error(error);
       toast.error(t("combos.messages.uploadImageError"));
       setPreviewImagen("");
     } finally {
+      // Se indica que la imagen ya no se está subiendo y se limpia el input de archivo
       setSubiendoImagen(false);
       e.target.value = "";
     }
   };
 
+  // Función para manejar la eliminación de un combo
   const handleDelete = async () => {
     try {
       await ComboService.delete(comboEliminar.IdCombo);
@@ -279,9 +323,11 @@ export default function ListCombosAdmin() {
           mb: 3,
         }}
       >
+        // Se muestra el título de la página de combos
         {t("combos.title")}
       </Typography>
 
+      // Se muestra el botón para crear un nuevo combo solo si el usuario es administrador
       {esAdministrador && (
         <Box
           sx={{
@@ -327,9 +373,13 @@ export default function ListCombosAdmin() {
               textAlign: "center",
             }}
           >
+
+            // Se muestra un mensaje si no hay combos disponibles
             {t("combos.noCombos")}
           </Typography>
         ) : (
+
+          // Se mapea la lista de combos y se renderiza un Card para cada combo
           data.map((combo) => (
             <Card
               key={combo.IdCombo}
@@ -341,6 +391,8 @@ export default function ListCombosAdmin() {
                 boxShadow: "0 4px 12px rgba(0,0,0,.12)",
               }}
             >
+
+              // Se muestra la imagen del combo y el precio especial en un Chip
               <Box sx={{ position: "relative" }}>
                 <CardMedia
                   component="img"
@@ -357,10 +409,15 @@ export default function ListCombosAdmin() {
                 />
 
                 <Chip
-                  label={`₡${Number(combo.PrecioEspecial).toLocaleString("es-CR", {
-                    minimumFractionDigits: 0,
-                    maximumFractionDigits: 0,
-                  })}`}
+
+                // Se muestra el precio especial del combo en un Chip con estilo personalizado
+                  label={`₡${Number(combo.PrecioEspecial).toLocaleString(
+                    "es-CR",
+                    {
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 0,
+                    },
+                  )}`}
                   sx={{
                     position: "absolute",
                     top: 10,
@@ -417,12 +474,16 @@ export default function ListCombosAdmin() {
                     px: 3,
                     py: 0.8,
                   }}
+
+                  // Se navega a la página de detalle del combo al hacer clic en el botón
                   onClick={() => navigate(`/combos/${combo.IdCombo}`)}
                 >
                   {t("actions.viewDetail")}
                 </Button>
 
                 <Box sx={{ justifySelf: "end", display: "flex" }}>
+
+                  // Se muestran los botones de editar y eliminar solo si el usuario es administrador
                   {esAdministrador && (
                     <>
                       <IconButton onClick={() => handleEdit(combo)}>
@@ -549,6 +610,9 @@ export default function ListCombosAdmin() {
             <Box
               component="img"
               src={
+
+                // Se muestra la imagen de vista previa si existe, 
+                // de lo contrario se muestra la imagen del combo o una imagen por defecto
                 previewImagen ||
                 (watch("RutaImagen")
                   ? `http://localhost:81/apirutaurbana/${watch("RutaImagen")}`
@@ -574,6 +638,8 @@ export default function ListCombosAdmin() {
                 borderColor: "#FF8C00",
               }}
             >
+
+              // Se muestra un mensaje diferente en el botón según el estado de la imagen
               {subiendoImagen
                 ? t("combos.uploadingImage")
                 : watch("RutaImagen")
@@ -603,6 +669,8 @@ export default function ListCombosAdmin() {
             error={!!errors.IdCategoria}
             helperText={errors.IdCategoria?.message}
           >
+
+            // Se mapea la lista de categorías y se renderiza un MenuItem para cada categoría
             {categorias.map((cat) => (
               <MenuItem key={cat.IdCategoria} value={cat.IdCategoria}>
                 {cat.Nombre}
@@ -631,7 +699,11 @@ export default function ListCombosAdmin() {
               select
               fullWidth
               label={t("combos.selectProduct")}
+
+              // Se mapea la lista de productos y se renderiza un MenuItem para cada producto
               value={productoSeleccionado}
+
+              // Se actualiza el estado del producto seleccionado al cambiar el valor del select
               onChange={(e) => setProductoSeleccionado(e.target.value)}
             >
               {productos.map((prod) => (
@@ -742,6 +814,7 @@ export default function ListCombosAdmin() {
             ))}
           </Box>
 
+          // Se muestra el mensaje de error si hay productos duplicados
           {errors.Productos && (
             <Typography
               color="error"
@@ -755,6 +828,7 @@ export default function ListCombosAdmin() {
         </DialogContent>
 
         <DialogActions>
+          // Se muestra el botón de cancelar para cerrar el diálogo sin guardar cambios
           <Button onClick={() => setOpen(false)}>{t("actions.cancel")}</Button>
 
           <Button
@@ -775,7 +849,4 @@ export default function ListCombosAdmin() {
       </Dialog>
     </Box>
   );
-
 }
-
-

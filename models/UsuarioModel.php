@@ -8,6 +8,7 @@ class UsuarioModel
         $this->enlace = new MySqlConnect();
     }
 
+    // Obtener un usuario por su correo electrónico
     public function getPorCorreo($correo)
     {
         try {
@@ -34,6 +35,7 @@ class UsuarioModel
         }
     }
 
+    // Obtener un usuario por su ID
     public function getPorId($id)
     {
         try {
@@ -58,6 +60,7 @@ class UsuarioModel
         }
     }
 
+    // Obtener todos los clientes activos
     public function getClientes()
     {
         try {
@@ -77,6 +80,7 @@ class UsuarioModel
         }
     }
 
+    // Obtener todos los usuarios, incluyendo su rol y estado activo
     public function all()
     {
         try {
@@ -108,6 +112,8 @@ class UsuarioModel
         }
     }
 
+    //  Verifica si un correo ya está registrado en la base de datos, 
+    // excluyendo opcionalmente un ID de usuario específico 
     public function existeCorreo($correo, $idUsuarioExcluir = null)
     {
         try {
@@ -126,6 +132,7 @@ class UsuarioModel
         }
     }
 
+    // Crear un nuevo usuario
     public function create($data)
     {
         try {
@@ -149,6 +156,7 @@ class UsuarioModel
         }
     }
 
+    // Actualizar un usuario existente
     public function update($id, $data)
     {
         try {
@@ -196,6 +204,7 @@ class UsuarioModel
         }
     }
 
+    // Obtener un rol por su ID
     public function getRolPorId($id)
     {
         try {
@@ -213,6 +222,7 @@ class UsuarioModel
         }
     }
 
+    // Obtener un rol por su nombre
     public function getRolPorNombre($nombreRol)
     {
         try {

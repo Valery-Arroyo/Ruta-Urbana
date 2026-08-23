@@ -55,7 +55,6 @@ class Combo
             // interactuar con la base de datos
             $combo = new ComboModel();
 
-            // CAMBIO AQUÍ: Llama al método correcto del modelo para buscar por ID, no por categoría
             $result = $combo->get($id);
 
             // Utiliza el método "toJSON" del objeto Response para formatear el resultado

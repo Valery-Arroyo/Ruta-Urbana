@@ -6,7 +6,8 @@
   "access": {
     "onlyAdministrator": "This screen is exclusive to the Administrator role.",
     "onlyAdminOrKitchen": "This screen is exclusive to Administrator or Kitchen.",
-    "onlyEncargadoOrClient": "This screen is exclusive to Manager and Client."
+    "onlyEncargadoOrClient": "This screen is exclusive to Manager and Client.",
+    "onlyStaff": "This screen is exclusive to Administrator and Manager."
   },
   "navigation": {
     "home": "Home",

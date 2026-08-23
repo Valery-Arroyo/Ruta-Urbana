@@ -13,6 +13,8 @@ class Ingrediente
     public function index()
     {
         try {
+            AuthMiddleware::verificar(['Administrador', 'Encargado']);
+
             $response = new Response();
             $resultado = $this->model->all();
             $response->toJSON($resultado);
@@ -26,6 +28,8 @@ class Ingrediente
     public function get($id)
     {
         try {
+            AuthMiddleware::verificar(['Administrador', 'Encargado']);
+
             $resultado = $this->model->get($id);
             return $resultado;
         } catch (Exception $e) {

@@ -121,9 +121,12 @@ export default function GestionProductos() {
   useEffect(() => {
     cargarProductos();
     cargarProductoDelDia();
-    cargarIngredientes();
     cargarCategorias();
-  }, []);
+
+    if (esAdministrador) {
+      cargarIngredientes();
+    }
+  }, [esAdministrador]);
 
   const cargarProductos = async () => {
     try {
@@ -137,13 +140,6 @@ export default function GestionProductos() {
     }
   };
 
-  /*
-   * Consulta el endpoint que valida la fecha en el servidor
-   * (CURDATE()) y, si es necesario, elige un nuevo producto del
-   * día ahí mismo. Se usa el IdProducto que devuelve, en vez del
-   * flag EsProductoDelDia que viene con la lista completa, porque
-   * ese flag puede quedar desactualizado de un día para otro.
-   */
   const cargarProductoDelDia = async () => {
     try {
       const response = await ProductoService.getProductoDelDia();
@@ -174,10 +170,6 @@ export default function GestionProductos() {
     }
   };
 
-  /*
-   * Obtiene correctamente la URL de la imagen.
-   * Acepta las propiedades Imagen e Imagenes.
-   */
   const obtenerImagenProducto = (producto) => {
     const imagenGuardada = producto.Imagenes || producto.Imagen;
 
@@ -405,13 +397,6 @@ export default function GestionProductos() {
           </Typography>
         ) : (
           data.map((prod) => {
-            /*
-             * Se compara contra el IdProducto que devolvió el
-             * endpoint productoDelDia (que valida la fecha en el
-             * servidor), no contra el flag EsProductoDelDia de esta
-             * lista, que puede quedar desactualizado de un día
-             * para otro.
-             */
             const esProductoDelDia =
               productoDelDiaId !== null &&
               Number(prod.IdProducto) === Number(productoDelDiaId);

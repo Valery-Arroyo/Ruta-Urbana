@@ -29,10 +29,7 @@ export default function Estaciones() {
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
 
-  // "todos" o el IdPedido elegido, para ver solo las líneas de un pedido.
   const [filtroPedido, setFiltroPedido] = useState("todos");
-  // "todas" o el nombre de una estación, para ir de estación en estación
-  // en vez de ver todas las columnas a la vez.
   const [estacionActiva, setEstacionActiva] = useState("todas");
 
   const cargarLineas = useCallback(async () => {
@@ -63,10 +60,6 @@ export default function Estaciones() {
   const handleCambiarEstadoLinea = async (linea, completado) => {
     if (guardando) return;
 
-    // Antes de guardar se revisa si esta línea era la última pendiente de
-    // su pedido, para saber si hay que avisar que el pedido ya terminó.
-    // Se usa un Map por IdDetalle (no por posición) porque un combo puede
-    // aparecer repetido, una vez por cada estación que le corresponde.
     let seCompletaElPedido = false;
 
     if (completado === 1) {
@@ -124,15 +117,12 @@ export default function Estaciones() {
     return Array.from(mapa, ([IdPedido, CodigoOrden]) => ({ IdPedido, CodigoOrden }));
   }, [lineas]);
 
-  // Si se filtra por pedido, solo se ven los productos/combos de ese pedido.
   const lineasDelPedido = useMemo(() => {
     if (filtroPedido === "todos") return lineas;
 
     return lineas.filter((linea) => String(linea.IdPedido) === String(filtroPedido));
   }, [lineas, filtroPedido]);
 
-  // Las estaciones que se ofrecen como botones dependen del pedido elegido:
-  // si un pedido no usa la Freidora, ese botón ni aparece para él.
   const nombresEstacionesDisponibles = useMemo(() => {
     const set = new Set(
       lineasDelPedido.map((linea) => linea.NombreEstacion || t("stations.noStation")),
@@ -141,7 +131,6 @@ export default function Estaciones() {
     return Array.from(set);
   }, [lineasDelPedido, t]);
 
-  // Y por último, si además se eligió una estación puntual, se deja solo esa.
   const lineasVisibles = useMemo(() => {
     if (estacionActiva === "todas") return lineasDelPedido;
 
@@ -171,16 +160,9 @@ export default function Estaciones() {
     );
   }
 
-  // Dos columnas: lo que falta y lo que ya se terminó. Al marcar una
-  // línea como "Finalizado" pasa sola de una columna a la otra en el
-  // siguiente refresco (cargarLineas() se llama después de cada cambio).
   const pendientes = lineasVisibles.filter((linea) => Number(linea.Completado) !== 1);
   const finalizados = lineasVisibles.filter((linea) => Number(linea.Completado) === 1);
 
-  // Un combo puede repetirse con el mismo IdDetalle una vez por cada
-  // estación que le toca; la key de React necesita ser única por
-  // tarjeta, no solo por línea, o si no React confunde las dos copias
-  // al reconciliar el DOM (bug real que hacía ver mal el filtro).
   const tarjeta = (linea) => (
     <Card
       key={`${linea.IdDetalle}-${linea.NombreEstacion || "sin-estacion"}`}

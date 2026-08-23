@@ -75,8 +75,6 @@ export default function RegistrarPedido() {
   const [metodosEntrega, setMetodosEntrega] = useState([]);
   const [metodosPago, setMetodosPago] = useState([]);
 
-  // Tipo de cambio USD -> CRC, obtenido de un Web Service externo
-  // (frankfurter.app), solo para mostrar el total también en dólares.
   const [tipoCambio, setTipoCambio] = useState(null);
 
   const [itemSeleccionado, setItemSeleccionado] = useState("");
@@ -86,7 +84,6 @@ export default function RegistrarPedido() {
   const [dialogoPagoAbierto, setDialogoPagoAbierto] = useState(false);
   const [enviando, setEnviando] = useState(false);
 
-  // Datos del pago simulado
   const [tipoPago, setTipoPago] = useState("efectivo");
   const [numeroTarjeta, setNumeroTarjeta] = useState("");
   const [nombreTarjeta, setNombreTarjeta] = useState("");
@@ -105,19 +102,14 @@ export default function RegistrarPedido() {
     defaultValues: { IdCliente: "", IdMetodoEntrega: "", DireccionEntrega: "" },
   });
 
-  // Para el efecto de precargar la dirección del cliente, se observa el
-  // valor de los campos del formulario que indican el cliente y el método de entrega
   const idClienteSeleccionado = watch("IdCliente");
   const idMetodoEntregaSeleccionado = watch("IdMetodoEntrega");
 
-  // Carga de catálogos necesarios para armar el formulario
   useEffect(() => {
     ProductoService.getProductos()
       .then((response) => setProductos(response.data || []))
       .catch((error) => console.error("Error cargando productos", error));
 
-      // Se obtienen los combos y se 
-      // Se filtran para que no haya duplicados (el backend devuelve varias filas por combo, una por cada producto incluido)
     ComboService.getCombos()
       .then((response) => {
         const combosUnicos = [];
@@ -134,7 +126,6 @@ export default function RegistrarPedido() {
       })
       .catch((error) => console.error("Error cargando combos", error));
 
-      // Se obtienen los métodos de entrega y pago
     PedidoService.getMetodosEntrega()
       .then((response) =>
         setMetodosEntrega(response.data?.metodosEntrega || []),
@@ -143,21 +134,16 @@ export default function RegistrarPedido() {
         console.error("Error cargando métodos de entrega", error),
       );
 
-      // Se obtienen los métodos de pago
     PedidoService.getMetodosPago()
       .then((response) => setMetodosPago(response.data?.metodosPago || []))
       .catch((error) => console.error("Error cargando métodos de pago", error));
 
-      // Se obtienen los clientes si el usuario es un gestor
     if (esGestor) {
       AuthService.getClientes()
         .then((response) => setClientes(response.data?.clientes || []))
         .catch((error) => console.error("Error cargando clientes", error));
     }
 
-      // Tipo de cambio (lo obtiene nuestro backend de un Web Service
-      // externo). Si falla, simplemente no se muestra el equivalente
-      // en dólares; no debe romper la pantalla.
     PedidoService.getTipoCambio()
       .then((response) => setTipoCambio(response.data?.tipoCambio || null))
       .catch((error) =>
@@ -374,9 +360,6 @@ export default function RegistrarPedido() {
     }
   };
 
-  // Cocina nunca registra pedidos: solo los ve y los trabaja en Estaciones.
-  // Se corta aquí (después de todos los hooks) por si alguien entra a esta
-  // ruta escribiéndola directo, sin pasar por el menú.
   if (esCocina) {
     return (
       <Box sx={{ p: 4, textAlign: "center" }}>

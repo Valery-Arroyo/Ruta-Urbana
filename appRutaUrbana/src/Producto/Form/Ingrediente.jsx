@@ -30,18 +30,28 @@ import AddIcon from "@mui/icons-material/Add";
 
 import toast from "react-hot-toast";
 
+// Componente para listar y administrar los ingredientes
 export default function ListIngredientesAdmin() {
   const { t } = useTranslation();
+
+  // Obtener el rol del usuario autenticado
   const { rol } = useAuth();
   const esAdministrador = rol === ROLES.ADMINISTRADOR;
+  const esGestor = rol === ROLES.ADMINISTRADOR || rol === ROLES.ENCARGADO;
+
+  // Estado local para manejar la lista de ingredientes, el estado del diálogo y el ingrediente seleccionado
   const [data, setData] = useState([]);
+  // Estado para controlar la apertura del diálogo de edición/creación1
   const [open, setOpen] = useState(false);
   const [ingredienteSeleccionado, setIngredienteSeleccionado] = useState(null);
 
+
+  // useEffect para cargar los ingredientes al montar el componente
   useEffect(() => {
     cargarIngredientes();
   }, []);
 
+  // Función para cargar los ingredientes desde el servicio
   const cargarIngredientes = () => {
     IngredienteService.getIngredientes()
       .then((response) => {
@@ -53,6 +63,7 @@ export default function ListIngredientesAdmin() {
       });
   };
 
+  // Función para manejar la apertura del diálogo de edición/creación
   const handleEdit = (ingrediente) => {
     if (ingrediente) {
       setIngredienteSeleccionado({ ...ingrediente });
@@ -65,11 +76,14 @@ export default function ListIngredientesAdmin() {
     setOpen(true);
   };
 
+  // Función para manejar el cierre del diálogo de edición/creación
   const handleClose = () => {
     setOpen(false);
     setIngredienteSeleccionado(null);
   };
 
+
+  // Función para manejar la eliminación de un ingrediente
   const handleDelete = async (id) => {
     if (!window.confirm(t("ingredientsPage.confirmDelete"))) return;
 
@@ -122,6 +136,14 @@ export default function ListIngredientesAdmin() {
       );
     }
   };
+
+  if (!esGestor) {
+    return (
+      <Box sx={{ p: 4, textAlign: "center" }}>
+        <Typography>{t("access.onlyStaff")}</Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ p: 3 }}>

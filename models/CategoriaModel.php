@@ -14,7 +14,6 @@ class CategoriaModel
         try {
             $sql = "SELECT IdCategoria, Nombre FROM Categoria";
 
-            // CORRECCIÓN: Faltaba ejecutar la consulta y retornar el resultado
             $resultado = $this->enlace->ExecuteSQL($sql);
             return $resultado;
         } catch (Exception $e) {

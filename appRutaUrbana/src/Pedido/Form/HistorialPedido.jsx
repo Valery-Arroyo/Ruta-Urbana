@@ -42,10 +42,6 @@ export default function HistorialPedidos() {
 
   const { usuario, rol, isAuthenticated } = useAuth();
 
-  // Administrador, Encargado y Cocina ven el historial completo de
-  // pedidos (con filtros y columna de cliente); el Cliente solo ve los
-  // suyos. Cocina nunca registra pedidos, solo los consulta y los
-  // trabaja desde Estaciones.
   const esGestor =
     rol === ROLES.ADMINISTRADOR ||
     rol === ROLES.ENCARGADO ||

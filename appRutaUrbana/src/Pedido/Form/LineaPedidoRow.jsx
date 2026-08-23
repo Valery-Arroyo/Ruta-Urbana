@@ -4,6 +4,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 
 import { formatCurrency } from "../../utils/format";
 
+// Componente para mostrar una fila de línea de pedido 
 export default function LineaPedidoRow({
   linea,
   idioma,
@@ -11,24 +12,31 @@ export default function LineaPedidoRow({
   onCambiarObservaciones,
   onEliminar,
 }) {
+
+  // Estado local para manejar la cantidad como texto
   const [cantidadTexto, setCantidadTexto] = useState(String(linea.cantidad));
 
+  // useEffect para actualizar el estado local cuando la cantidad de la línea cambie
   useEffect(() => {
     setCantidadTexto(String(linea.cantidad));
   }, [linea.cantidad]);
 
+  // Función para manejar el cambio en el campo de cantidad
   const manejarCambioCantidad = (event) => {
     const soloNumeros = event.target.value.replace(/[^0-9]/g, "");
     setCantidadTexto(soloNumeros);
 
+    // Si el campo está vacío, no se realiza ninguna acción
     if (soloNumeros === "") {
-      // La caja se ve vacía, pero todavía no se confirma ningún cambio
+      
       return;
     }
 
+    // Llamar a la función onCambiarCantidad con la nueva cantidad
     onCambiarCantidad(linea.key, parseInt(soloNumeros, 10));
   };
 
+  // Función para manejar el evento onBlur del campo de cantidad
   const manejarBlurCantidad = () => {
     if (cantidadTexto === "") {
       setCantidadTexto(String(linea.cantidad));

@@ -73,24 +73,23 @@ export default function Header() {
       ruta: "/menu",
       icono: <MenuBookOutlinedIcon />,
     },
-    {
-      nombre: t("navigation.ingredients"),
-      ruta: "/ingrediente",
-      icono: <EggAltOutlinedIcon />,
-    },
   ];
 
-  // Procesos es una herramienta interna de cocina/administración; el
-  // cliente y los visitantes sin sesión no deben verla en el Catálogo.
   if (esGestor) {
-    catalogoItems.push({
-      nombre: t("navigation.processes"),
-      ruta: "/preparacion",
-      icono: <SettingsOutlinedIcon />,
-    });
+    catalogoItems.push(
+      {
+        nombre: t("navigation.ingredients"),
+        ruta: "/ingrediente",
+        icono: <EggAltOutlinedIcon />,
+      },
+      {
+        nombre: t("navigation.processes"),
+        ruta: "/preparacion",
+        icono: <SettingsOutlinedIcon />,
+      },
+    );
   }
 
-  // Herramientas de administración de cocina/inventario/usuarios: solo personal.
   const gestionItems = [];
 
   if (esGestor) {
@@ -116,10 +115,8 @@ export default function Header() {
     );
   }
 
-  // Los de uso diario quedan sueltos, visibles siempre en la barra.
   const itemsDirectos = [];
 
-  // Cocina no usa la página de Inicio (aterriza directo en Estaciones).
   if (!esCocina) {
     itemsDirectos.push({
       nombre: t("navigation.home"),
@@ -128,9 +125,6 @@ export default function Header() {
     });
   }
 
-  // Cocina nunca registra pedidos ("Nuevo pedido" no aplica), pero sí
-  // debe poder ver los que ya existen ("Historial") y trabajar sus
-  // líneas ("Estaciones"), su única herramienta del día a día.
   if (isAuthenticated && !esCocina && !esAdministrador) {
     itemsDirectos.push({
       nombre: t("navigation.newOrder"),
@@ -150,8 +144,6 @@ export default function Header() {
       icono: <SoupKitchenOutlinedIcon />,
     });
 
-    // Cocina no ve el menú Catálogo, así que Procesos queda como
-    // enlace directo para que no pierda acceso a esa herramienta.
     itemsDirectos.push({
       nombre: t("navigation.processes"),
       ruta: "/preparacion",
@@ -274,10 +266,6 @@ export default function Header() {
               },
             };
 
-            // Los items sueltos van directo a su ruta. Los desplegables
-            // (Catálogo, Gestión) agrupan varias rutas bajo un solo botón.
-            // Cocina no vende ni atiende catálogo: su barra queda en
-            // Inicio, Estaciones e Historial únicamente.
             const bloques = [
               ...itemsDirectos.map((item) => ({
                 tipo: "link",
@@ -409,6 +397,7 @@ export default function Header() {
           <LanguageSelector />
         </Box>
 
+// El botón de login/logout se muestra a la derecha, con el nombre del usuario si está autenticado.
         {isAuthenticated ? (
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
             <Typography
