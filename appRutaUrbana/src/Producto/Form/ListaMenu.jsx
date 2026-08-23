@@ -31,7 +31,6 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
-import ZoomInIcon from "@mui/icons-material/ZoomIn";
 
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -942,32 +941,49 @@ export default function ListMenusAdmin() {
 
                 <CardActions
                   sx={{
-                    justifyContent: "center",
+                    display: "grid",
+                    gridTemplateColumns: "1fr auto 1fr",
+                    alignItems: "center",
                   }}
                 >
-                  <IconButton
-                    sx={{
-                      color: "#FF8C00",
-                    }}
+                  <Box />
+
+                  <Button
+                    size="medium"
                     onClick={() => navigate(`/menu/${menu.IdMenu}`)}
+                    sx={{
+                      justifySelf: "center",
+                      color: "#000000",
+                      fontWeight: "bold",
+                      textTransform: "none",
+                      fontSize: "1rem",
+                      px: 3,
+                      py: 0.8,
+
+                      "&:hover": {
+                        bgcolor: "rgba(255,140,0,.1)",
+                      },
+                    }}
                   >
-                    <ZoomInIcon />
-                  </IconButton>
+                    {t("actions.viewDetail")}
+                  </Button>
 
-                  {esAdministrador && (
-                    <>
-                      <IconButton onClick={() => handleEdit(menu)}>
-                        <EditIcon />
-                      </IconButton>
+                  <Box sx={{ justifySelf: "end", display: "flex" }}>
+                    {esAdministrador && (
+                      <>
+                        <IconButton onClick={() => handleEdit(menu)}>
+                          <EditIcon />
+                        </IconButton>
 
-                      <IconButton
-                        color="error"
-                        onClick={() => confirmarEliminar(menu)}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </>
-                  )}
+                        <IconButton
+                          color="error"
+                          onClick={() => confirmarEliminar(menu)}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </>
+                    )}
+                  </Box>
                 </CardActions>
               </Card>
             );

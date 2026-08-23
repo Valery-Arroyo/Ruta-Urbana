@@ -50,13 +50,10 @@ export default function Login() {
         }),
       );
 
-      if (
-        usuarioAutenticado.NombreRol === ROLES.ADMINISTRADOR ||
-        usuarioAutenticado.NombreRol === ROLES.ENCARGADO
-      ) {
-        navigate("/pedidos/historial");
+      if (usuarioAutenticado.NombreRol === ROLES.COCINA) {
+        navigate("/pedidos/estaciones");
       } else {
-        navigate("/pedidos/nuevo");
+        navigate("/home");
       }
     } catch (error) {
       const mensaje =

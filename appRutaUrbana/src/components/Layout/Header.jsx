@@ -73,7 +73,22 @@ export default function Header() {
       ruta: "/menu",
       icono: <MenuBookOutlinedIcon />,
     },
+    {
+      nombre: t("navigation.ingredients"),
+      ruta: "/ingrediente",
+      icono: <EggAltOutlinedIcon />,
+    },
   ];
+
+  // Procesos es una herramienta interna de cocina/administración; el
+  // cliente y los visitantes sin sesión no deben verla en el Catálogo.
+  if (esGestor) {
+    catalogoItems.push({
+      nombre: t("navigation.processes"),
+      ruta: "/preparacion",
+      icono: <SettingsOutlinedIcon />,
+    });
+  }
 
   // Herramientas de administración de cocina/inventario/usuarios: solo personal.
   const gestionItems = [];
@@ -94,11 +109,6 @@ export default function Header() {
         icono: <AssignmentOutlinedIcon />,
       },
       {
-        nombre: t("navigation.ingredients"),
-        ruta: "/ingrediente",
-        icono: <EggAltOutlinedIcon />,
-      },
-      {
         nombre: t("navigation.userManagement"),
         ruta: "/usuarios",
         icono: <ManageAccountsOutlinedIcon />,
@@ -106,22 +116,17 @@ export default function Header() {
     );
   }
 
-  if (esAdministrador || esCocina) {
-    gestionItems.push({
-      nombre: t("navigation.processes"),
-      ruta: "/preparacion",
-      icono: <SettingsOutlinedIcon />,
-    });
-  }
-
   // Los de uso diario quedan sueltos, visibles siempre en la barra.
-  const itemsDirectos = [
-    {
+  const itemsDirectos = [];
+
+  // Cocina no usa la página de Inicio (aterriza directo en Estaciones).
+  if (!esCocina) {
+    itemsDirectos.push({
       nombre: t("navigation.home"),
       ruta: "/home",
       icono: <HomeOutlinedIcon />,
-    },
-  ];
+    });
+  }
 
   // Cocina nunca registra pedidos ("Nuevo pedido" no aplica), pero sí
   // debe poder ver los que ya existen ("Historial") y trabajar sus
@@ -143,6 +148,14 @@ export default function Header() {
       nombre: t("navigation.stations"),
       ruta: "/pedidos/estaciones",
       icono: <SoupKitchenOutlinedIcon />,
+    });
+
+    // Cocina no ve el menú Catálogo, así que Procesos queda como
+    // enlace directo para que no pierda acceso a esa herramienta.
+    itemsDirectos.push({
+      nombre: t("navigation.processes"),
+      ruta: "/preparacion",
+      icono: <SettingsOutlinedIcon />,
     });
   }
 
@@ -266,6 +279,11 @@ export default function Header() {
             // Cocina no vende ni atiende catálogo: su barra queda en
             // Inicio, Estaciones e Historial únicamente.
             const bloques = [
+              ...itemsDirectos.map((item) => ({
+                tipo: "link",
+                key: item.ruta,
+                ...item,
+              })),
               !esCocina && {
                 tipo: "desplegable",
                 key: "catalogo",
@@ -276,11 +294,6 @@ export default function Header() {
                 abrir: (e) => setCatalogoAnchor(e.currentTarget),
                 cerrar: () => setCatalogoAnchor(null),
               },
-              ...itemsDirectos.map((item) => ({
-                tipo: "link",
-                key: item.ruta,
-                ...item,
-              })),
               gestionItems.length > 0 && {
                 tipo: "desplegable",
                 key: "gestion",
@@ -304,22 +317,16 @@ export default function Header() {
                   </Button>
                 ) : (
                   <>
-                    <Button
-                      onClick={bloque.abrir}
-                      sx={estiloBoton}
-                      endIcon={
-                        <KeyboardArrowDownIcon
-                          sx={{
-                            fontSize: "20px !important",
-                            mb: "4px !important",
-                          }}
-                        />
-                      }
-                    >
+                    <Button onClick={bloque.abrir} sx={estiloBoton}>
                       {bloque.icono}
-                      <Typography sx={{ fontWeight: 600, fontSize: 15 }}>
-                        {bloque.nombre}
-                      </Typography>
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 0.3 }}>
+                        <Typography sx={{ fontWeight: 600, fontSize: 15 }}>
+                          {bloque.nombre}
+                        </Typography>
+                        <KeyboardArrowDownIcon
+                          sx={{ fontSize: "20px !important", mb: "0 !important" }}
+                        />
+                      </Box>
                     </Button>
 
                     <Menu

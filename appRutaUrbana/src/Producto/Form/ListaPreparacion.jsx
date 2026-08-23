@@ -7,10 +7,10 @@ import toast from "react-hot-toast";
 import {
   Card,
   CardContent,
+  CardMedia,
   CardActions,
   IconButton,
   Typography,
-  Grid,
   Box,
   Chip,
   Button,
@@ -25,7 +25,6 @@ import {
 import {
   Edit as EditIcon,
   Delete as DeleteIcon,
-  ZoomIn as ZoomInIcon,
   Add as AddIcon,
   RemoveCircle as RemoveIcon,
 } from "@mui/icons-material";
@@ -33,6 +32,7 @@ import {
 import PreparacionService from "../../services/PreparacionService";
 import EstacionService from "../../services/EstacionService";
 import ProductoService from "../../services/ProductoService";
+import ComboService from "../../services/ComboService";
 
 import { useAuth } from "../../context/AuthContext";
 import { ROLES } from "../../utils/constants";
@@ -54,10 +54,12 @@ export default function ListPreparacionPublic() {
   const { rol } = useAuth();
   const esAdministrador = rol === ROLES.ADMINISTRADOR;
   const esCocina = rol === ROLES.COCINA;
+  const esGestor = rol === ROLES.ADMINISTRADOR || rol === ROLES.ENCARGADO;
 
   const [data, setData] = useState([]);
   const [estaciones, setEstaciones] = useState([]);
   const [productos, setProductos] = useState([]);
+  const [combos, setCombos] = useState([]);
 
   const [open, setOpen] = useState(false);
   const [procesoEdit, setProcesoEdit] = useState(null);
@@ -141,11 +143,51 @@ export default function ListPreparacionPublic() {
     }
   };
 
+  const cargarCombos = async () => {
+    try {
+      const response = await ComboService.getCombos();
+
+      setCombos(response.data || []);
+    } catch (e) {
+      console.error("Error cargando combos:", e);
+    }
+  };
+
   useEffect(() => {
     cargarDatos();
     cargarEstaciones();
     cargarProductos();
+    cargarCombos();
   }, []);
+
+  /*
+   * Busca la imagen del producto o combo del proceso, para que las
+   * tarjetas no se vean tan vacías (solo texto).
+   */
+  const obtenerImagenProceso = (item) => {
+    const origen = item.esProducto
+      ? productos.find((p) => Number(p.IdProducto) === Number(item.IdProducto))
+      : combos.find((c) => Number(c.IdCombo) === Number(item.IdCombo));
+
+    const imagenGuardada = item.esProducto
+      ? origen?.Imagenes || origen?.Imagen
+      : origen?.RutaImagen;
+
+    if (!imagenGuardada) {
+      return "/no-image.png";
+    }
+
+    const primeraImagen = String(imagenGuardada).split(",")[0].trim();
+
+    if (
+      primeraImagen.startsWith("http://") ||
+      primeraImagen.startsWith("https://")
+    ) {
+      return primeraImagen;
+    }
+
+    return `http://localhost:81/apirutaurbana/${primeraImagen}`;
+  };
 
   const modificarPaso = (setter, index, campo, valor) => {
     setter((prev) =>
@@ -444,10 +486,6 @@ export default function ListPreparacionPublic() {
     }
   };
 
-  const blackIcon = {
-    color: "#000",
-  };
-
   const redIcon = {
     color: "#d32f2f",
   };
@@ -456,7 +494,9 @@ export default function ListPreparacionPublic() {
     color: "#616161",
   };
 
-  if (!esAdministrador && !esCocina) {
+  const puedeEditar = esAdministrador || esCocina;
+
+  if (!esGestor && !esCocina) {
     return (
       <Box sx={{ p: 4, textAlign: "center" }}>
         <Typography>{t("access.onlyAdminOrKitchen")}</Typography>
@@ -496,35 +536,68 @@ export default function ListPreparacionPublic() {
             {t("preparations.title")}
           </Typography>
 
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            sx={{
-              bgcolor: "#FF8C00",
-            }}
-            onClick={abrirCreacion}
-          >
-            {t("preparations.create")}
-          </Button>
+          {puedeEditar && (
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              sx={{
+                bgcolor: "#FF8C00",
+              }}
+              onClick={abrirCreacion}
+            >
+              {t("preparations.create")}
+            </Button>
+          )}
         </Box>
 
-        <Grid container spacing={2}>
+        <Box
+          sx={{
+            display: "grid",
+            justifyContent: "center",
+            gap: 2,
+
+            gridTemplateColumns: {
+              xs: "1fr",
+              sm: "repeat(2,270px)",
+              md: "repeat(3,270px)",
+              lg: "repeat(4,270px)",
+            },
+          }}
+        >
           {data.map((item, index) => {
             const key = item.IdProducto
               ? `prod-${item.IdProducto}`
               : `combo-${item.IdCombo}`;
 
             return (
-              <Grid item key={key || index} xs={12} sm={6} md={3}>
-                <Card
-                  sx={{
-                    p: 1.5,
-                    borderRadius: 3,
-                  }}
-                >
+              <Card
+                key={key || index}
+                sx={{
+                  borderRadius: 3,
+                  overflow: "hidden",
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                  <CardMedia
+                    component="img"
+                    height="140"
+                    image={obtenerImagenProceso(item)}
+                    alt={item.Nombre}
+                    onError={(event) => {
+                      event.currentTarget.onerror = null;
+                      event.currentTarget.src = "/no-image.png";
+                    }}
+                    sx={{
+                      objectFit: "cover",
+                    }}
+                  />
+
                   <CardContent
                     sx={{
-                      p: 0,
+                      p: 1.5,
+                      pb: "0 !important",
+                      flexGrow: 1,
                     }}
                   >
                     <Typography
@@ -547,10 +620,15 @@ export default function ListPreparacionPublic() {
 
                   <CardActions
                     sx={{
-                      justifyContent: "flex-end",
+                      display: "grid",
+                      gridTemplateColumns: "1fr auto 1fr",
+                      alignItems: "center",
                     }}
                   >
-                    <IconButton
+                    <Box />
+
+                    <Button
+                      size="medium"
                       onClick={() =>
                         navigate(
                           item.IdProducto
@@ -558,31 +636,48 @@ export default function ListPreparacionPublic() {
                             : `/preparacion/combo/${item.IdCombo}`,
                         )
                       }
-                      sx={blackIcon}
-                    >
-                      <ZoomInIcon />
-                    </IconButton>
+                      sx={{
+                        justifySelf: "center",
+                        color: "#000000",
+                        fontWeight: "bold",
+                        textTransform: "none",
+                        fontSize: "1rem",
+                        px: 3,
+                        py: 0.8,
 
-                    <IconButton
-                      onClick={() => abrirEdicion(item)}
-                      sx={grayIcon}
+                        "&:hover": {
+                          bgcolor: "rgba(255,140,0,.1)",
+                        },
+                      }}
                     >
-                      <EditIcon />
-                    </IconButton>
+                      {t("actions.viewDetail")}
+                    </Button>
 
-                    <IconButton
-                      onClick={() => confirmarEliminarProceso(item)}
-                      disabled={eliminando === key}
-                      sx={redIcon}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
+                    <Box sx={{ justifySelf: "end", display: "flex" }}>
+                    {puedeEditar && (
+                      <>
+                        <IconButton
+                          onClick={() => abrirEdicion(item)}
+                          sx={grayIcon}
+                        >
+                          <EditIcon />
+                        </IconButton>
+
+                        <IconButton
+                          onClick={() => confirmarEliminarProceso(item)}
+                          disabled={eliminando === key}
+                          sx={redIcon}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </>
+                    )}
+                    </Box>
                   </CardActions>
-                </Card>
-              </Grid>
+              </Card>
             );
           })}
-        </Grid>
+        </Box>
       </Box>
 
       {/* CONFIRMAR ELIMINACIÓN DEL PROCESO COMPLETO */}

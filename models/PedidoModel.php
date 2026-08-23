@@ -333,7 +333,7 @@ class PedidoModel
                     ) lineaEst ON (d.IdProducto IS NOT NULL AND lineaEst.IdProductoLinea = d.IdProducto)
                                 OR (d.IdCombo IS NOT NULL AND lineaEst.IdComboLinea = d.IdCombo)
                     LEFT JOIN HistorialEstacion he ON he.IdDetalle = d.IdDetalle AND he.IdEstacion = lineaEst.IdEstacion
-                    WHERE p.IdEstado <> 5 OR DATE(p.FechaPedido) = CURDATE()
+                    WHERE p.IdEstado <> 5
                     ORDER BY lineaEst.NombreEstacion, Completado ASC, p.FechaPedido";
 
             return $this->enlace->executeSQL($sql, "asoc");

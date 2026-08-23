@@ -398,39 +398,49 @@ export default function ListCombosAdmin() {
 
               <CardActions
                 sx={{
-                  justifyContent: "space-between",
+                  display: "grid",
+                  gridTemplateColumns: "1fr auto 1fr",
+                  alignItems: "center",
                   borderTop: "1px solid #eee",
                 }}
               >
+                <Box />
+
                 <Button
-                  size="small"
+                  size="medium"
                   sx={{
+                    justifySelf: "center",
                     color: "#000000",
                     fontWeight: "bold",
                     textTransform: "none",
+                    fontSize: "1rem",
+                    px: 3,
+                    py: 0.8,
                   }}
                   onClick={() => navigate(`/combos/${combo.IdCombo}`)}
                 >
                   {t("actions.viewDetail")}
                 </Button>
 
-                {esAdministrador && (
-                  <>
-                    <IconButton onClick={() => handleEdit(combo)}>
-                      <EditIcon />
-                    </IconButton>
+                <Box sx={{ justifySelf: "end", display: "flex" }}>
+                  {esAdministrador && (
+                    <>
+                      <IconButton onClick={() => handleEdit(combo)}>
+                        <EditIcon />
+                      </IconButton>
 
-                    <IconButton
-                      color="error"
-                      onClick={() => {
-                        setComboEliminar(combo);
-                        setOpenDelete(true);
-                      }}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </>
-                )}
+                      <IconButton
+                        color="error"
+                        onClick={() => {
+                          setComboEliminar(combo);
+                          setOpenDelete(true);
+                        }}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </>
+                  )}
+                </Box>
               </CardActions>
             </Card>
           ))

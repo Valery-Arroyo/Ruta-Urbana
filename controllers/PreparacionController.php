@@ -4,6 +4,8 @@ class Preparacion
     public function index()
     {
         try {
+            AuthMiddleware::verificar(['Administrador', 'Encargado', 'Cocina']);
+
             $response = new Response();
             $preparacion = new PreparacionModel();
             $result = $preparacion->all();
@@ -17,6 +19,8 @@ class Preparacion
     public function get($idProducto)
     {
         try {
+            AuthMiddleware::verificar(['Administrador', 'Encargado', 'Cocina']);
+
             $response = new Response();
             $preparacion = new PreparacionModel();
             $result = $preparacion->get($idProducto);
@@ -30,6 +34,8 @@ class Preparacion
     public function getProcesoCombo($idCombo)
     {
         try {
+            AuthMiddleware::verificar(['Administrador', 'Encargado', 'Cocina']);
+
             $response = new Response();
             $preparacion = new PreparacionModel();
             $result = $preparacion->getProcesoCombo($idCombo);

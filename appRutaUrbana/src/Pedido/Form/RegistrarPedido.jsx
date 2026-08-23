@@ -380,7 +380,7 @@ export default function RegistrarPedido() {
   if (esCocina) {
     return (
       <Box sx={{ p: 4, textAlign: "center" }}>
-        <Typography>{t("stations.onlyKitchen")}</Typography>
+        <Typography>{t("access.onlyEncargadoOrClient")}</Typography>
       </Box>
     );
   }

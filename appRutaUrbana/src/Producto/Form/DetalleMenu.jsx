@@ -9,10 +9,10 @@ import {
   Card,
   CardContent,
   Typography,
-  Grid,
   Box,
   Button,
   CircularProgress,
+  Chip,
 } from "@mui/material";
 
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -299,24 +299,27 @@ export default function DetalleMenu() {
             {categoria}
           </Typography>
 
-          <Grid container spacing={3} alignItems="stretch">
+          <Box
+            sx={{
+              display: "grid",
+              justifyContent: "center",
+              gap: 3,
+
+              gridTemplateColumns: {
+                xs: "1fr",
+                sm: "repeat(2,320px)",
+                md: "repeat(3,320px)",
+                lg: "repeat(4,320px)",
+              },
+            }}
+          >
             {items.map((item, index) => (
-              <Grid
+              <Card
                 key={`${
                   item.IdProducto
                     ? `producto-${item.IdProducto}`
                     : `combo-${item.IdCombo}`
                 }-${index}`}
-                size={{
-                  xs: 12,
-                  sm: 6,
-                  md: 4,
-                }}
-                sx={{
-                  display: "flex",
-                }}
-              >
-                <Card
                   sx={{
                     width: "100%",
                     display: "flex",
@@ -332,28 +335,43 @@ export default function DetalleMenu() {
                     },
                   }}
                 >
-                  <Box
-                    component="img"
-                    src={obtenerUrlImagen(item)}
-                    alt={item.Nombre || item.NombreItem || "Imagen"}
-                    onError={(event) => {
-                      event.currentTarget.onerror = null;
-                      event.currentTarget.src = "/no-image.png";
-                    }}
-                    sx={{
-                      width: "100%",
-                      height: 220,
-                      objectFit: "cover",
-                      flexShrink: 0,
-                    }}
-                  />
+                  <Box sx={{ position: "relative" }}>
+                    <Box
+                      component="img"
+                      src={obtenerUrlImagen(item)}
+                      alt={item.Nombre || item.NombreItem || "Imagen"}
+                      onError={(event) => {
+                        event.currentTarget.onerror = null;
+                        event.currentTarget.src = "/no-image.png";
+                      }}
+                      sx={{
+                        width: "100%",
+                        height: 220,
+                        objectFit: "cover",
+                        flexShrink: 0,
+                      }}
+                    />
+
+                    <Chip
+                      label={`₡${formatearPrecio(item.Precio ?? item.PrecioEspecial)}`}
+                      sx={{
+                        position: "absolute",
+                        top: 10,
+                        right: 10,
+                        bgcolor: "#FF8C00",
+                        color: "#111111",
+                        fontWeight: "bold",
+                        fontSize: "0.9rem",
+                        boxShadow: "0 3px 10px rgba(0,0,0,.35)",
+                      }}
+                    />
+                  </Box>
 
                   <CardContent
                     sx={{
                       display: "flex",
                       flexDirection: "column",
                       flexGrow: 1,
-                      height: "100%",
                     }}
                   >
                     <Typography
@@ -377,41 +395,10 @@ export default function DetalleMenu() {
                     >
                       {item.Descripcion || t("menus.detail.noDescription")}
                     </Typography>
-
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        mt: "auto",
-                        pt: 2,
-                        borderTop: "1px solid #eee",
-                      }}
-                    >
-                      <Typography
-                        sx={{
-                          fontWeight: "bold",
-                          fontSize: "1rem",
-                        }}
-                      >
-                        {t("menus.detail.price")}
-                      </Typography>
-
-                      <Typography
-                        sx={{
-                          fontWeight: "bold",
-                          color: "black",
-                          fontSize: "1.3rem",
-                        }}
-                      >
-                        ₡{formatearPrecio(item.Precio ?? item.PrecioEspecial)}
-                      </Typography>
-                    </Box>
                   </CardContent>
                 </Card>
-              </Grid>
             ))}
-          </Grid>
+          </Box>
         </Box>
       ))}
     </Box>

@@ -123,14 +123,6 @@ export default function ListIngredientesAdmin() {
     }
   };
 
-  if (!esAdministrador) {
-    return (
-      <Box sx={{ p: 4, textAlign: "center" }}>
-        <Typography>{t("access.onlyAdministrator")}</Typography>
-      </Box>
-    );
-  }
-
   return (
     <Box sx={{ p: 3 }}>
       <Typography
@@ -141,27 +133,29 @@ export default function ListIngredientesAdmin() {
         {t("ingredientsPage.title")}
       </Typography>
 
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "flex-end",
-          mb: 3,
-        }}
-      >
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => handleEdit(null)}
+      {esAdministrador && (
+        <Box
           sx={{
-            bgcolor: "#FF8C00",
-            "&:hover": {
-              bgcolor: "#E67E00",
-            },
+            display: "flex",
+            justifyContent: "flex-end",
+            mb: 3,
           }}
         >
-          {t("ingredientsPage.new")}
-        </Button>
-      </Box>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => handleEdit(null)}
+            sx={{
+              bgcolor: "#FF8C00",
+              "&:hover": {
+                bgcolor: "#E67E00",
+              },
+            }}
+          >
+            {t("ingredientsPage.new")}
+          </Button>
+        </Box>
+      )}
 
       <TableContainer component={Paper}>
         <Table>
@@ -175,9 +169,11 @@ export default function ListIngredientesAdmin() {
                 <b>{t("ingredientsPage.columnName")}</b>
               </TableCell>
 
-              <TableCell align="center">
-                <b>{t("ingredientsPage.columnActions")}</b>
-              </TableCell>
+              {esAdministrador && (
+                <TableCell align="center">
+                  <b>{t("ingredientsPage.columnActions")}</b>
+                </TableCell>
+              )}
             </TableRow>
           </TableHead>
 
@@ -188,21 +184,23 @@ export default function ListIngredientesAdmin() {
 
                 <TableCell>{ingrediente.Nombre}</TableCell>
 
-                <TableCell align="center">
-                  <IconButton
-                    color="primary"
-                    onClick={() => handleEdit(ingrediente)}
-                  >
-                    <EditIcon />
-                  </IconButton>
+                {esAdministrador && (
+                  <TableCell align="center">
+                    <IconButton
+                      color="primary"
+                      onClick={() => handleEdit(ingrediente)}
+                    >
+                      <EditIcon />
+                    </IconButton>
 
-                  <IconButton
-                    color="error"
-                    onClick={() => handleDelete(ingrediente.IdIngrediente)}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </TableCell>
+                    <IconButton
+                      color="error"
+                      onClick={() => handleDelete(ingrediente.IdIngrediente)}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </TableCell>
+                )}
               </TableRow>
             ))}
           </TableBody>

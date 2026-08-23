@@ -22,6 +22,7 @@ export default function DetalleProducto() {
 
   const [producto, setProducto] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [productoDelDiaId, setProductoDelDiaId] = useState(null);
 
   useEffect(() => {
     ProductoService.getProducto(id)
@@ -34,7 +35,18 @@ export default function DetalleProducto() {
         console.error("Error al obtener detalle:", error);
         setLoading(false);
       });
+
+    ProductoService.getProductoDelDia()
+      .then((response) => {
+        setProductoDelDiaId(response.data?.IdProducto ?? null);
+      })
+      .catch(() => setProductoDelDiaId(null));
   }, [id]);
+
+  const esProductoDelDia =
+    producto &&
+    productoDelDiaId !== null &&
+    Number(producto.IdProducto) === Number(productoDelDiaId);
 
   if (loading)
     return (
@@ -73,10 +85,37 @@ export default function DetalleProducto() {
           display: "flex",
           flexDirection: "column",
           borderRadius: 4,
-          border: "2px solid #FF8C00",
-          boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
+          border: esProductoDelDia ? "3px solid #FF8C00" : "2px solid #FF8C00",
+          boxShadow: esProductoDelDia
+            ? "0 10px 28px rgba(255, 140, 0, 0.45)"
+            : "0 10px 25px rgba(0,0,0,0.15)",
+          bgcolor: esProductoDelDia ? "#111111" : "#FFFFFF",
+          color: esProductoDelDia ? "#FFFFFF" : "inherit",
         }}
       >
+        {esProductoDelDia && (
+          <Box
+            sx={{
+              bgcolor: "#000000",
+              color: "#FF8C00",
+              textAlign: "center",
+              py: 1.2,
+              px: 1,
+              mb: 2,
+              mx: -3,
+              mt: -3,
+              fontWeight: "bold",
+              letterSpacing: "0.12rem",
+              fontSize: "0.9rem",
+              borderTopLeftRadius: 16,
+              borderTopRightRadius: 16,
+              borderBottom: "1px solid rgba(255,140,0,.45)",
+            }}
+          >
+            ⭐ {t("products.productOfTheDay")} ⭐
+          </Box>
+        )}
+
         <Button
           variant="outlined"
           startIcon={<ArrowBackIcon />}
@@ -84,13 +123,15 @@ export default function DetalleProducto() {
           sx={{
             mb: 2,
             alignSelf: "flex-start",
-            color: "black",
-            borderColor: "black",
+            color: esProductoDelDia ? "#FFFFFF" : "black",
+            borderColor: esProductoDelDia ? "#FFFFFF" : "black",
             fontWeight: "bold",
             textTransform: "none",
             "&:hover": {
-              borderColor: "black",
-              backgroundColor: "#FFF3E0",
+              borderColor: esProductoDelDia ? "#FFFFFF" : "black",
+              backgroundColor: esProductoDelDia
+                ? "rgba(255,255,255,.12)"
+                : "#FFF3E0",
             },
           }}
         >
@@ -119,7 +160,7 @@ export default function DetalleProducto() {
           sx={{
             mt: 2,
             fontSize: "1.05rem",
-            color: "text.secondary",
+            color: esProductoDelDia ? "rgba(255,255,255,.75)" : "text.secondary",
             letterSpacing: 0.5,
           }}
         >
@@ -133,6 +174,7 @@ export default function DetalleProducto() {
             fontSize: "2.2rem",
             fontWeight: 700,
             letterSpacing: 1,
+            color: esProductoDelDia ? "#FFFFFF" : "inherit",
           }}
         >
           {producto.Nombre}
@@ -144,6 +186,7 @@ export default function DetalleProducto() {
             mt: 1,
             fontSize: "1.05rem",
             lineHeight: 1.7,
+            color: esProductoDelDia ? "rgba(255,255,255,.85)" : "inherit",
           }}
         >
           {producto.Descripcion}
@@ -155,6 +198,7 @@ export default function DetalleProducto() {
             mt: 3,
             fontWeight: 700,
             letterSpacing: 1,
+            color: esProductoDelDia ? "#FFFFFF" : "inherit",
           }}
         >
           {t("productDetail.ingredients")}
@@ -167,6 +211,7 @@ export default function DetalleProducto() {
             sx={{
               fontSize: "1rem",
               py: 0.3,
+              color: esProductoDelDia ? "rgba(255,255,255,.85)" : "inherit",
             }}
           >
             • {ingrediente.Nombre}
@@ -180,13 +225,16 @@ export default function DetalleProducto() {
             alignItems: "center",
             mt: 3,
             pt: 2,
-            borderTop: "1px solid #e0e0e0",
+            borderTop: esProductoDelDia
+              ? "1px solid rgba(255,255,255,.12)"
+              : "1px solid #e0e0e0",
           }}
         >
           <Typography
             variant="h6"
             sx={{
               fontWeight: "bold",
+              color: esProductoDelDia ? "#FFFFFF" : "inherit",
             }}
           >
             {t("productDetail.price")}
@@ -196,7 +244,7 @@ export default function DetalleProducto() {
             variant="h5"
             sx={{
               fontWeight: "bold",
-              color: "black",
+              color: esProductoDelDia ? "#FF8C00" : "black",
               fontSize: "1.7rem",
             }}
           >

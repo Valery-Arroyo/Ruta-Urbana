@@ -180,8 +180,6 @@ export default function DetallePedidoFactura() {
         y,
       );
       y += 6;
-      doc.text(`${t("orders.status")}: ${pedido.NombreEstado || ""}`, 14, y);
-      y += 6;
       if (pedido.DireccionEntrega) {
         doc.text(
           `${t("orders.deliveryAddress")}: ${pedido.DireccionEntrega}`,
@@ -327,7 +325,6 @@ export default function DetallePedidoFactura() {
         t("orders.paymentMethod"),
         pedido.NombreMetodoPago || t("orders.paymentPending"),
       );
-      filaInfo(t("orders.status"), pedido.NombreEstado);
       if (pedido.DireccionEntrega) {
         filaInfo(t("orders.deliveryAddress"), pedido.DireccionEntrega);
       }
@@ -592,7 +589,7 @@ export default function DetallePedidoFactura() {
             t("orders.paymentMethod"),
             pedido.NombreMetodoPago || t("orders.paymentPending"),
           )}
-          {esCocina ? (
+          {esCocina && (
             <Grid size={{ xs: 12, sm: 6 }}>
               <Typography sx={{ fontSize: 13, color: "text.secondary" }}>
                 {t("orders.status")}
@@ -613,8 +610,6 @@ export default function DetallePedidoFactura() {
                 ))}
               </TextField>
             </Grid>
-          ) : (
-            filaEncabezado(t("orders.status"), pedido.NombreEstado)
           )}
           {pedido.DireccionEntrega &&
             filaEncabezado(

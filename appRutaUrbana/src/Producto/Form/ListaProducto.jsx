@@ -547,37 +547,32 @@ export default function GestionProductos() {
                     {prod.Descripcion}
                   </Typography>
 
-                  {esProductoDelDia && (
-                    <Typography
-                      align="center"
-                      sx={{
-                        color: "rgba(255,255,255,.7)",
-                        fontSize: "0.75rem",
-                        mt: 1,
-                        fontStyle: "italic",
-                      }}
-                    >
-                      {t("products.selectedAutomatically")}
-                    </Typography>
-                  )}
                 </CardContent>
 
                 <CardActions
                   sx={{
-                    justifyContent: "space-between",
+                    display: "grid",
+                    gridTemplateColumns: "1fr auto 1fr",
+                    alignItems: "center",
 
                     borderTop: esProductoDelDia
                       ? "1px solid rgba(255,255,255,.12)"
                       : "1px solid #eee",
                   }}
                 >
+                  <Box />
+
                   <Button
-                    size="small"
+                    size="medium"
                     onClick={() => navigate(`/productos/${prod.IdProducto}`)}
                     sx={{
+                      justifySelf: "center",
                       color: esProductoDelDia ? "#FFFFFF" : "#000000",
                       fontWeight: "bold",
                       textTransform: "none",
+                      fontSize: "1rem",
+                      px: 3,
+                      py: 0.8,
 
                       "&:hover": {
                         bgcolor: esProductoDelDia
@@ -589,40 +584,42 @@ export default function GestionProductos() {
                     {t("actions.viewDetail")}
                   </Button>
 
-                  {esAdministrador && (
-                    <>
-                      <IconButton
-                        aria-label={`${t("actions.edit")} ${prod.Nombre}`}
-                        onClick={() => handleEdit(prod)}
-                        sx={{
-                          color: esProductoDelDia ? "#FFFFFF" : "inherit",
+                  <Box sx={{ justifySelf: "end", display: "flex" }}>
+                    {esAdministrador && (
+                      <>
+                        <IconButton
+                          aria-label={`${t("actions.edit")} ${prod.Nombre}`}
+                          onClick={() => handleEdit(prod)}
+                          sx={{
+                            color: esProductoDelDia ? "#FFFFFF" : "inherit",
 
-                          "&:hover": {
-                            bgcolor: esProductoDelDia
-                              ? "rgba(255,255,255,.12)"
-                              : "rgba(0,0,0,.04)",
-                          },
-                        }}
-                      >
-                        <EditIcon />
-                      </IconButton>
+                            "&:hover": {
+                              bgcolor: esProductoDelDia
+                                ? "rgba(255,255,255,.12)"
+                                : "rgba(0,0,0,.04)",
+                            },
+                          }}
+                        >
+                          <EditIcon />
+                        </IconButton>
 
-                      <IconButton
-                        aria-label={`${t("actions.delete")} ${prod.Nombre}`}
-                        color="error"
-                        onClick={() => confirmarEliminar(prod)}
-                        sx={{
-                          "&:hover": {
-                            bgcolor: esProductoDelDia
-                              ? "rgba(211,47,47,.18)"
-                              : "rgba(211,47,47,.08)",
-                          },
-                        }}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </>
-                  )}
+                        <IconButton
+                          aria-label={`${t("actions.delete")} ${prod.Nombre}`}
+                          color="error"
+                          onClick={() => confirmarEliminar(prod)}
+                          sx={{
+                            "&:hover": {
+                              bgcolor: esProductoDelDia
+                                ? "rgba(211,47,47,.18)"
+                                : "rgba(211,47,47,.08)",
+                            },
+                          }}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </>
+                    )}
+                  </Box>
                 </CardActions>
               </Card>
             );

@@ -64,12 +64,11 @@
     "english": "English"
   },
   "products": {
-    "title": "Product Management",
+    "title": "Our Products",
     "new": "New Product",
     "edit": "Edit Product",
     "noProducts": "No products registered.",
     "productOfTheDay": "Product of the day",
-    "selectedAutomatically": "Automatically selected",
     "confirmDeleteTitle": "Confirm deletion",
     "confirmDeleteMessage": "Are you sure you want to delete the product",
     "selectIngredient": "Select ingredient",
@@ -127,7 +126,7 @@
     }
   },
   "menus": {
-    "title": "Menu Management",
+    "title": "Our Menus",
     "new": "New Menu",
     "edit": "Edit Menu",
     "create": "Create Menu",
